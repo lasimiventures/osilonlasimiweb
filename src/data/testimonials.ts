@@ -1,0 +1,58 @@
+import type { Testimonial } from '../types';
+
+export const testimonials: Testimonial[] = [
+  {
+    id: 't-1',
+    name: 'James Mwangi',
+    role: 'IT Director',
+    company: 'Kenya Commercial Bank',
+    content: 'OSIL has been our trusted IT partner for over five years. Their team delivered a complete network infrastructure overhaul across 30 branches with minimal downtime. Their professionalism and technical expertise are unmatched in the region.',
+    avatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=200',
+    rating: 5,
+  },
+  {
+    id: 't-2',
+    name: 'Dr. Amina Hassan',
+    role: 'Vice Chancellor',
+    company: 'Nairobi Technical University',
+    content: 'The computer lab and campus network project OSIL completed for us transformed our teaching capabilities. Their education team understood our budget constraints and delivered a solution that exceeded our expectations.',
+    avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=200',
+    rating: 5,
+  },
+  {
+    id: 't-3',
+    name: 'Peter Ochieng',
+    role: 'Operations Manager',
+    company: 'Safari Logistics Ltd',
+    content: 'We rely on OSIL for all our IT hardware and managed services. Their proactive support has reduced our downtime by 80%. The quote system is fast and their pricing is always competitive.',
+    avatar: 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg?auto=compress&cs=tinysrgb&w=200',
+    rating: 5,
+  },
+  {
+    id: 't-4',
+    name: 'Grace Wanjiku',
+    role: 'Procurement Officer',
+    company: 'Ministry of Health',
+    content: 'OSIL has consistently delivered quality IT equipment for our ministry within tight procurement timelines. Their compliance with government procurement processes and their after-sales support are excellent.',
+    avatar: 'https://images.pexels.com/photos/1181695/pexels-photo-1181695.jpeg?auto=compress&cs=tinysrgb&w=200',
+    rating: 4,
+  },
+  {
+    id: 't-5',
+    name: 'David Kimani',
+    role: 'CEO',
+    company: 'AgriTech Solutions',
+    content: 'As a growing tech startup, we needed an IT partner that could scale with us. OSIL provided our entire office setup, cloud migration, and ongoing support. They treat our business like their own.',
+    avatar: 'https://images.pexels.com/photos/2379006/pexels-photo-2379006.jpeg?auto=compress&cs=tinysrgb&w=200',
+    rating: 5,
+  },
+  {
+    id: 't-6',
+    name: 'Sarah Mutua',
+    role: 'Program Director',
+    company: 'Hope International NGO',
+    content: 'OSIL understood our field work requirements and provided rugged devices and satellite connectivity solutions that work even in remote areas. Their NGO pricing helped us maximize our program budget.',
+    avatar: 'https://images.pexels.com/photos/1181691/pexels-photo-1181691.jpeg?auto=compress&cs=tinysrgb&w=200',
+    rating: 5,
+  },
+];

@@ -1,0 +1,73 @@
+import type { Solution } from '../types';
+
+export const solutions: Solution[] = [
+  {
+    id: 'sol-1',
+    title: 'Corporate Solutions',
+    slug: 'corporate',
+    description: 'OSIL delivers comprehensive IT solutions for corporate enterprises, from desktop fleets to data center infrastructure. We understand the unique challenges of large organizations: standardization across departments, security compliance, BYOD policies, and multi-site coordination. Our corporate solutions include end-to-end device management, enterprise networking, cloud collaboration platforms, and dedicated account management. We partner with Fortune 500 technology brands to deliver reliable, scalable solutions that support your business growth.',
+    shortDescription: 'End-to-end IT for enterprises: device management, networking, cloud, and security.',
+    icon: 'Building2',
+    features: ['Enterprise Device Management', 'Multi-site Network Architecture', 'Cloud Collaboration & M365', 'Cybersecurity & Compliance', 'Help Desk & SLA Support', 'IT Asset Lifecycle Management'],
+    image: 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=800',
+    targetAudience: ['Multinational Corporations', 'Regional Headquarters', 'Banking & Financial Services', 'Insurance Companies', 'Manufacturing Enterprises'],
+  },
+  {
+    id: 'sol-2',
+    title: 'Government Solutions',
+    slug: 'government',
+    description: 'We provide secure, compliant IT solutions for government agencies and public institutions. Our government practice includes supply chain security, local content compliance, tender process support, and long-term maintenance contracts. We deliver desktops, servers, networking, and surveillance solutions that meet public procurement standards. Our team understands the importance of transparency, accountability, and data sovereignty in public sector technology.',
+    shortDescription: 'Secure, compliant IT solutions for government agencies and public institutions.',
+    icon: 'Landmark',
+    features: ['Public Procurement Compliance', 'Local Content & Supply Chain', 'Secure Infrastructure', 'Surveillance & Security Systems', 'Tender & Proposal Support', 'Long-term Maintenance Contracts'],
+    image: 'https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&w=800',
+    targetAudience: ['National Ministries', 'County Governments', 'Parastatals', 'Public Universities', 'Municipalities'],
+  },
+  {
+    id: 'sol-3',
+    title: 'Education Solutions',
+    slug: 'education',
+    description: 'Empower learning with technology solutions designed for schools, colleges, and universities. We provide student and teacher devices, computer labs, interactive whiteboards, campus networking, and learning management systems. Our education solutions support blended learning, digital classrooms, and campus-wide connectivity. We offer special education pricing, device protection plans, and training for educators.',
+    shortDescription: 'Student devices, computer labs, interactive classrooms, and campus networking.',
+    icon: 'GraduationCap',
+    features: ['Student & Teacher Devices', 'Computer Labs & Libraries', 'Interactive Classroom Technology', 'Campus Wi-Fi & Networking', 'Learning Management Systems', 'Device Protection & Training'],
+    image: 'https://images.pexels.com/photos/1181396/pexels-photo-1181396.jpeg?auto=compress&cs=tinysrgb&w=800',
+    targetAudience: ['Primary Schools', 'Secondary Schools', 'Colleges', 'Universities', 'Vocational Training Centers'],
+  },
+  {
+    id: 'sol-4',
+    title: 'NGO Solutions',
+    slug: 'ngo',
+    description: 'Non-governmental organizations require reliable, cost-effective technology to maximize their impact. We provide NGO-tailored solutions including field devices, satellite connectivity, solar-powered equipment, data collection tools, and secure communication systems. Our NGO practice understands the need for durability, portability, and operation in challenging environments. We offer NGO pricing and support for grant-funded projects.',
+    shortDescription: 'Cost-effective, durable technology for field operations and data collection.',
+    icon: 'Heart',
+    features: ['Rugged Field Devices', 'Solar Power Solutions', 'Data Collection & Reporting Tools', 'Satellite & Remote Connectivity', 'Secure Communication', 'Grant-Funded Project Support'],
+    image: 'https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=800',
+    targetAudience: ['International NGOs', 'Local Charities', 'Research Organizations', 'Humanitarian Agencies', 'Development Partners'],
+  },
+  {
+    id: 'sol-5',
+    title: 'SME Solutions',
+    slug: 'sme',
+    description: 'Small and medium enterprises need enterprise-grade technology without enterprise complexity. Our SME solutions include affordable desktops and laptops, cloud-based productivity suites, simple networking, and pay-as-you-grow IT support. We help SMEs leverage technology to compete with larger businesses while keeping costs predictable and manageable.',
+    shortDescription: 'Affordable enterprise-grade tech for SMEs: cloud, networking, and support.',
+    icon: 'Store',
+    features: ['Affordable Business Devices', 'Cloud Productivity Suites', 'Simple Secure Networking', 'IT Support Packages', 'Backup & Disaster Recovery', 'Scalable Growth Plans'],
+    image: 'https://images.pexels.com/photos/1181677/pexels-photo-1181677.jpeg?auto=compress&cs=tinysrgb&w=800',
+    targetAudience: ['Startups', 'Small Businesses', 'Professional Services', 'Retailers', 'Restaurants'],
+  },
+  {
+    id: 'sol-6',
+    title: 'Enterprise Solutions',
+    slug: 'enterprise',
+    description: 'For large enterprises with complex IT environments, we deliver comprehensive solutions including data centers, private cloud, enterprise networking, advanced security, and global support. Our enterprise team architects solutions for high availability, disaster recovery, and multi-tenancy. We provide dedicated account executives, custom SLAs, and strategic technology partnerships.',
+    shortDescription: 'Data centers, private cloud, enterprise security, and global support.',
+    icon: 'Globe',
+    features: ['Data Center Architecture', 'Private & Hybrid Cloud', 'Enterprise Network Design', 'Advanced Security & SOC', 'Global Support & SLAs', 'Strategic Partnership Programs'],
+    image: 'https://images.pexels.com/photos/325229/pexels-photo-325229.jpeg?auto=compress&cs=tinysrgb&w=800',
+    targetAudience: ['Multinationals', 'Telecoms', 'Banks', 'Insurance Groups', 'Large Manufacturers'],
+  },
+];
+
+export const getSolutionBySlug = (slug: string): Solution | undefined =>
+  solutions.find((s) => s.slug === slug);

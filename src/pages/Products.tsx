@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SEO } from '../components/SEO';
+import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
 import { SearchBar } from '../components/SearchBar';
 import { FilterSidebar } from '../components/FilterSidebar';
@@ -66,6 +67,11 @@ export function Products() {
 
       <section className="bg-slate-50 py-8 border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-3">
+            <Breadcrumb crumbs={[
+              { label: 'Products' },
+            ]} />
+          </div>
           <h1 className="text-2xl font-bold text-slate-900 mb-2">Products</h1>
           <p className="text-sm text-slate-500">Explore our complete catalog of technology products</p>
         </div>

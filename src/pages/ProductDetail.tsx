@@ -1,8 +1,9 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ShoppingCart, Check, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Check } from 'lucide-react';
 import { SEO } from '../components/SEO';
+import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
 import { getProductBySlug, getRelatedProducts } from '../data/products';
 import { getCategoryBySlug } from '../data/categories';
@@ -55,19 +56,12 @@ export function ProductDetail() {
 
       <section className="bg-slate-50 py-6 border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Link to="/" className="hover:text-blue-600">Home</Link>
-            <ChevronRight className="w-3 h-3" />
-            <Link to="/products" className="hover:text-blue-600">Products</Link>
-            <ChevronRight className="w-3 h-3" />
-            {category && (
-              <>
-                <Link to={`/category/${category.slug}`} className="hover:text-blue-600">{category.name}</Link>
-                <ChevronRight className="w-3 h-3" />
-              </>
-            )}
-            <span className="text-slate-900 font-medium">{product.name}</span>
-          </div>
+          <Breadcrumb crumbs={[
+            { label: 'Products', path: '/products' },
+            { label: category?.name || 'Category', path: category ? `/category/${category.slug}` : undefined },
+            { label: product.brand, path: `/brand/${product.brandSlug}` },
+            { label: product.name },
+          ]} />
         </div>
       </section>
 

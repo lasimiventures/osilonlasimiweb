@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
-import { ChevronRight } from 'lucide-react';
 import { SEO } from '../components/SEO';
+import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
 import { SearchBar } from '../components/SearchBar';
 import { getCategoryBySlug, getRelatedCategories } from '../data/categories';
@@ -45,13 +45,10 @@ export function CategoryPage() {
           <img src={category.image} alt={category.name} className="w-full h-full object-cover opacity-30" />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-          <div className="flex items-center gap-2 text-sm text-slate-300 mb-3">
-            <Link to="/" className="hover:text-white">Home</Link>
-            <ChevronRight className="w-3 h-3" />
-            <Link to="/products" className="hover:text-white">Products</Link>
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-white font-medium">{category.name}</span>
-          </div>
+          <Breadcrumb crumbs={[
+            { label: 'Products', path: '/products' },
+            { label: category.name },
+          ]} />
           <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">{category.name}</h1>
           <p className="text-lg text-slate-300 max-w-2xl">{category.description}</p>
         </div>

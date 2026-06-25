@@ -1,7 +1,8 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState } from 'react';
-import { ChevronRight, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { SEO } from '../components/SEO';
+import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
 import { SearchBar } from '../components/SearchBar';
 import { getBrandBySlug } from '../data/brands';
@@ -42,12 +43,11 @@ export function BrandPage() {
           <img src={brand.logo} alt={brand.name} className="w-full h-full object-cover opacity-30" />
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-          <div className="flex items-center gap-2 text-sm text-slate-300 mb-3">
-            <Link to="/" className="hover:text-white">Home</Link>
-            <ChevronRight className="w-3 h-3" />
-            <Link to="/brands" className="hover:text-white">Brands</Link>
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-white font-medium">{brand.name}</span>
+          <div className="mb-3">
+            <Breadcrumb crumbs={[
+              { label: 'Brands', path: '/brands' },
+              { label: brand.name },
+            ]} />
           </div>
           <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">{brand.name}</h1>
           <p className="text-lg text-slate-300 max-w-2xl mb-4">{brand.description}</p>

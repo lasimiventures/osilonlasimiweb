@@ -19,20 +19,20 @@ import { testimonials } from '../data/testimonials';
 import { clientLogos, techPartners, industries, companyStats } from '../data/company';
 
 const categoryIconMap: Record<string, React.ReactNode> = {
-  Laptop: <Laptop className="w-6 h-6" />,
-  Monitor: <Monitor className="w-6 h-6" />,
-  Cpu: <Cpu className="w-6 h-6" />,
-  Server: <Server className="w-6 h-6" />,
-  Smartphone: <Smartphone className="w-6 h-6" />,
-  Tablet: <Tablet className="w-6 h-6" />,
-  Printer: <Printer className="w-6 h-6" />,
-  Wifi: <Wifi className="w-6 h-6" />,
-  HardDrive: <HardDrive className="w-6 h-6" />,
-  Projector: <Projector className="w-6 h-6" />,
-  Video: <Video className="w-6 h-6" />,
-  Plug: <Plug className="w-6 h-6" />,
-  Code: <Code className="w-6 h-6" />,
-  Shield: <Shield className="w-6 h-6" />,
+  Laptop: <Laptop className="w-5 h-5" />,
+  Monitor: <Monitor className="w-5 h-5" />,
+  Cpu: <Cpu className="w-5 h-5" />,
+  Server: <Server className="w-5 h-5" />,
+  Smartphone: <Smartphone className="w-5 h-5" />,
+  Tablet: <Tablet className="w-5 h-5" />,
+  Printer: <Printer className="w-5 h-5" />,
+  Wifi: <Wifi className="w-5 h-5" />,
+  HardDrive: <HardDrive className="w-5 h-5" />,
+  Projector: <Projector className="w-5 h-5" />,
+  Video: <Video className="w-5 h-5" />,
+  Plug: <Plug className="w-5 h-5" />,
+  Code: <Code className="w-5 h-5" />,
+  Shield: <Shield className="w-5 h-5" />,
 };
 
 const categoryColors: Record<string, { bg: string; text: string; border: string }> = {
@@ -111,6 +111,32 @@ export function Home() {
   return (
     <>
       <SEO meta={{ title: 'OSIL Ltd - ICT Solutions & Electronics | Kenya', description: 'OSIL Ltd is a leading ICT solutions provider in Kenya, offering laptops, desktops, phones, servers, networking, and professional IT services for enterprises and consumers.', keywords: ['OSIL', 'ICT solutions', 'Kenya', 'laptops', 'phones', 'servers', 'networking', 'IT services'] }} />
+
+      {/* Category Quick Bar — small icons, one row, above hero */}
+      <section className="bg-slate-50 border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-1 overflow-x-auto py-3 scrollbar-hide">
+            {categories.map((cat) => {
+              const colors = categoryColors[cat.slug] || { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-100' };
+              return (
+                <Link
+                  key={cat.id}
+                  to={`/category/${cat.slug}`}
+                  className={`group flex items-center gap-2 px-3 py-2 rounded-lg border ${colors.border} bg-white hover:shadow-sm transition-all shrink-0`}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${colors.bg} ${colors.text} group-hover:scale-105 transition-transform`}>
+                    {categoryIconMap[cat.icon] || <Laptop className="w-4 h-4" />}
+                  </div>
+                  <div className="leading-none">
+                    <div className="text-xs font-semibold text-slate-900 group-hover:text-brand-blue transition-colors whitespace-nowrap">{cat.name}</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">{cat.productCount} products</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
       {/* Minimal Hero */}
       <section className="relative bg-white overflow-hidden">
@@ -217,52 +243,32 @@ export function Home() {
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="py-12 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-bold text-slate-900">Shop by Category</h2>
-            <p className="text-xs text-slate-400 mt-1">Find exactly what you need</p>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-            {categories.map((cat) => {
-              const colors = categoryColors[cat.slug] || { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-100' };
-              return (
-                <Link key={cat.id} to={`/category/${cat.slug}`} className={`group bg-white border rounded-xl p-4 text-center hover:shadow-md transition-all ${colors.border}`}>
-                  <div className={`w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center ${colors.bg} ${colors.text} group-hover:scale-110 transition-transform`}>
-                    {categoryIconMap[cat.icon] || <Laptop className="w-6 h-6" />}
-                  </div>
-                  <h3 className="text-xs font-semibold text-slate-900 group-hover:text-brand-blue transition-colors">{cat.name}</h3>
-                  <p className="text-xs text-slate-400 mt-1">{cat.productCount} products</p>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Brands */}
-      <section className="py-12 bg-white">
+      {/* Featured Brands — single row, text-style logos */}
+      <section className="py-12 bg-white border-y border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-6">
             <h2 className="text-xl font-bold text-slate-900">Featured Brands</h2>
             <p className="text-xs text-slate-400 mt-1">Authorized dealer for leading brands</p>
           </div>
-          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+          <div className="flex items-center justify-center flex-wrap gap-3 lg:gap-4">
             {allBrands.slice(0, 16).map((brand) => {
               const colorClass = brandColorMap[brand.slug] || 'bg-slate-500';
               return (
-                <Link key={brand.id} to={`/brand/${brand.slug}`} className="group bg-white border border-slate-100 rounded-xl p-3 text-center hover:shadow-md hover:border-brand-blue/20 transition-all">
-                  <div className={`w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center text-white font-bold text-xs ${colorClass}`}>
-                    {brand.name.slice(0, 2)}
+                <Link
+                  key={brand.id}
+                  to={`/brand/${brand.slug}`}
+                  className="group flex items-center gap-2 px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg hover:border-brand-blue/20 hover:shadow-sm transition-all"
+                >
+                  <div className={`w-6 h-6 rounded flex items-center justify-center text-white font-bold text-[10px] ${colorClass}`}>
+                    {brand.name.slice(0, 1)}
                   </div>
-                  <h3 className="text-xs font-semibold text-slate-900 group-hover:text-brand-blue transition-colors truncate">{brand.name}</h3>
-                  <p className="text-xs text-slate-400">{brand.productCount} items</p>
+                  <span className="text-sm font-semibold text-slate-700 group-hover:text-brand-blue transition-colors whitespace-nowrap">{brand.name}</span>
+                  <span className="text-[10px] text-slate-400 bg-white border border-slate-100 px-1.5 py-0.5 rounded">{brand.productCount}</span>
                 </Link>
               );
             })}
           </div>
-          <div className="text-center mt-4">
+          <div className="text-center mt-5">
             <Link to="/brands" className="inline-flex items-center gap-1 text-xs font-medium text-brand-blue hover:text-brand-blue-dark transition-colors">
               View All Brands <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -431,18 +437,18 @@ export function Home() {
         </div>
       </section>
 
-      {/* Technology Partners */}
-      <section className="py-8 bg-white">
+      {/* Technology Partners — single row with text-style logos */}
+      <section className="py-8 bg-white border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-5">
             <h2 className="text-base font-bold text-slate-900">Our Technology Partners</h2>
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-4 lg:gap-6">
+          <div className="flex items-center justify-center flex-wrap gap-3 lg:gap-4">
             {techPartners.map((tp) => {
               const colorClass = brandColorMap[tp.name.toLowerCase()] || brandColorMap[tp.name.toLowerCase().replace(' ', '-')] || 'bg-slate-500';
               return (
                 <div key={tp.id} className="flex items-center gap-2 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2 hover:border-brand-blue/20 transition-colors">
-                  <div className={`w-7 h-7 rounded flex items-center justify-center text-white font-bold text-[10px] ${colorClass}`}>
+                  <div className={`w-6 h-6 rounded flex items-center justify-center text-white font-bold text-[10px] ${colorClass}`}>
                     {tp.name.slice(0, 1)}
                   </div>
                   <span className="text-sm font-semibold text-slate-700">{tp.name}</span>

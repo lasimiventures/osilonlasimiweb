@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown, ShoppingCart, Search, Laptop, Monitor, Cpu, Server, Smartphone, Tablet, Printer, Wifi, HardDrive, Projector, Video, Plug, Code, Shield } from 'lucide-react';
+import { Menu, X, ChevronDown, ShoppingCart, Search, Laptop, Monitor, Cpu, Server, Smartphone, Tablet, Printer, Wifi, HardDrive, Projector, Video, Plug, Code, Shield, LayoutGrid, ChevronRight } from 'lucide-react';
 import { useQuote } from '../context/QuoteContext';
 import { categories } from '../data/categories';
 import { services } from '../data/services';
@@ -26,14 +26,14 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const location = useLocation();
   const { itemCount } = useQuote();
 
   useEffect(() => {
     setIsOpen(false);
     setProductsOpen(false);
-    setServicesOpen(false);
+    setMoreOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -56,33 +56,35 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-0.5">
             <Link to="/" className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue rounded-md transition-colors">Home</Link>
 
-            {/* Products Dropdown */}
+            {/* Products Mega Dropdown */}
             <div
               className="relative"
               onMouseEnter={() => setProductsOpen(true)}
               onMouseLeave={() => setProductsOpen(false)}
             >
-              <button className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue rounded-md transition-colors">
-                Products <ChevronDown className="w-3 h-3" />
+              <button className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-brand-blue bg-brand-blue-pale rounded-md transition-colors">
+                <LayoutGrid className="w-4 h-4" /> Products <ChevronDown className={`w-3 h-3 transition-transform ${productsOpen ? 'rotate-180' : ''}`} />
               </button>
               {productsOpen && (
-                <div className="absolute top-full left-0 w-72 bg-white rounded-xl shadow-xl border border-slate-100 py-2 mt-1">
-                  <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Categories</div>
-                  {categories.map((cat) => (
-                    <Link
-                      key={cat.id}
-                      to={`/category/${cat.slug}`}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-brand-blue-pale hover:text-brand-blue transition-colors"
-                    >
-                      <span className="text-slate-400">{categoryIcons[cat.icon] || <Laptop className="w-4 h-4" />}</span>
-                      {cat.name}
-                    </Link>
-                  ))}
-                  <div className="border-t border-slate-100 mt-2 pt-2">
-                    <Link to="/products" className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-brand-blue hover:bg-brand-blue-pale transition-colors">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 w-[640px] bg-white rounded-xl shadow-xl border border-slate-100 py-3 mt-1 z-50">
+                  <div className="px-4 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Shop by Category</div>
+                  <div className="grid grid-cols-3 gap-0.5 px-3">
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        to={`/category/${cat.slug}`}
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-brand-blue-pale hover:text-brand-blue rounded-lg transition-colors"
+                      >
+                        <span className="text-slate-400">{categoryIcons[cat.icon] || <Laptop className="w-4 h-4" />}</span>
+                        <span className="truncate">{cat.name}</span>
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="border-t border-slate-100 mt-2 pt-2 px-3">
+                    <Link to="/products" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-brand-blue hover:bg-brand-blue-pale rounded-lg transition-colors">
                       <Search className="w-4 h-4" /> Browse All Products
                     </Link>
                   </div>
@@ -90,40 +92,43 @@ export function Navbar() {
               )}
             </div>
 
-            {/* Services Dropdown */}
+            {/* More Dropdown - Services, Solutions, Brands, About, Contact */}
             <div
               className="relative"
-              onMouseEnter={() => setServicesOpen(true)}
-              onMouseLeave={() => setServicesOpen(false)}
+              onMouseEnter={() => setMoreOpen(true)}
+              onMouseLeave={() => setMoreOpen(false)}
             >
               <button className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue rounded-md transition-colors">
-                Services <ChevronDown className="w-3 h-3" />
+                More <ChevronDown className={`w-3 h-3 transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
               </button>
-              {servicesOpen && (
-                <div className="absolute top-full left-0 w-72 bg-white rounded-xl shadow-xl border border-slate-100 py-2 mt-1">
-                  <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Our Services</div>
-                  {services.map((svc) => (
-                    <Link
-                      key={svc.id}
-                      to={`/services`}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-slate-700 hover:bg-brand-blue-pale hover:text-brand-blue transition-colors"
-                    >
-                      {svc.title}
-                    </Link>
-                  ))}
-                  <div className="border-t border-slate-100 mt-2 pt-2">
-                    <Link to="/services" className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-brand-blue hover:bg-brand-blue-pale transition-colors">
-                      <Search className="w-4 h-4" /> View All Services
+              {moreOpen && (
+                <div className="absolute top-full right-0 w-64 bg-white rounded-xl shadow-xl border border-slate-100 py-2 mt-1 z-50">
+                  <div className="border-b border-slate-100 pb-2 mb-2">
+                    <div className="px-3 py-1.5 text-xs font-semibold text-slate-400 uppercase tracking-wider">Services</div>
+                    {services.map((svc) => (
+                      <Link key={svc.id} to="/services" className="flex items-center gap-2 px-4 py-1.5 text-sm text-slate-700 hover:bg-brand-blue-pale hover:text-brand-blue transition-colors">
+                        {svc.title}
+                      </Link>
+                    ))}
+                    <Link to="/services" className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-brand-blue hover:bg-brand-blue-pale transition-colors">
+                      <ChevronRight className="w-3 h-3" /> View All Services
                     </Link>
                   </div>
+                  <Link to="/solutions" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-brand-blue-pale hover:text-brand-blue transition-colors">
+                    <Shield className="w-4 h-4 text-slate-400" /> Solutions
+                  </Link>
+                  <Link to="/brands" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-brand-blue-pale hover:text-brand-blue transition-colors">
+                    <LayoutGrid className="w-4 h-4 text-slate-400" /> Brands
+                  </Link>
+                  <Link to="/about" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-brand-blue-pale hover:text-brand-blue transition-colors">
+                    <Cpu className="w-4 h-4 text-slate-400" /> About Us
+                  </Link>
+                  <Link to="/contact" className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-brand-blue-pale hover:text-brand-blue transition-colors">
+                    <Wifi className="w-4 h-4 text-slate-400" /> Contact Us
+                  </Link>
                 </div>
               )}
             </div>
-
-            <Link to="/solutions" className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue rounded-md transition-colors">Solutions</Link>
-            <Link to="/brands" className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue rounded-md transition-colors">Brands</Link>
-            <Link to="/about" className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue rounded-md transition-colors">About</Link>
-            <Link to="/contact" className="px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue rounded-md transition-colors">Contact</Link>
           </nav>
 
           {/* Right Actions */}
@@ -158,18 +163,20 @@ export function Navbar() {
         <div className="lg:hidden bg-white border-t border-slate-100 max-h-[calc(100vh-80px)] overflow-y-auto">
           <div className="px-4 py-3 space-y-1">
             <Link to="/" className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md">Home</Link>
-            <Link to="/products" className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md">All Products</Link>
-            <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">Categories</div>
+            <Link to="/products" className="block px-3 py-2 text-sm font-medium text-brand-blue bg-brand-blue-pale rounded-md">All Products</Link>
+            <div className="px-3 py-1 text-xs font-semibold text-slate-400 uppercase tracking-wider">Categories</div>
             {categories.map((cat) => (
               <Link key={cat.id} to={`/category/${cat.slug}`} className="block px-3 py-2 text-sm text-slate-600 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md ml-3">
                 {cat.name}
               </Link>
             ))}
-            <Link to="/services" className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md">Services</Link>
-            <Link to="/solutions" className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md">Solutions</Link>
-            <Link to="/brands" className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md">Brands</Link>
-            <Link to="/about" className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md">About Us</Link>
-            <Link to="/contact" className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md">Contact</Link>
+            <div className="border-t border-slate-100 mt-2 pt-2">
+              <Link to="/services" className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md">Services</Link>
+              <Link to="/solutions" className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md">Solutions</Link>
+              <Link to="/brands" className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md">Brands</Link>
+              <Link to="/about" className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md">About Us</Link>
+              <Link to="/contact" className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-brand-blue hover:bg-brand-blue-pale rounded-md">Contact</Link>
+            </div>
             <Link to="/request-quote" className="block px-3 py-2 text-sm font-medium text-white bg-brand-blue rounded-md text-center mt-2">Request Quote</Link>
           </div>
         </div>

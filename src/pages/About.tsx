@@ -1,17 +1,29 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CheckCircle, Award, Users, Globe, Target, Heart } from 'lucide-react';
-import { SEO } from '../components/SEO';
+import { SEO, generateBreadcrumbSchema, getCanonicalUrl, generateOrganizationSchema } from '../components/SEO';
 import { companyStats, teamMembers } from '../data/company';
 
 export function About() {
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: 'https://osil.co.ke' },
+    { name: 'About Us', url: 'https://osil.co.ke/about' },
+  ]);
+
+  const organizationSchema = generateOrganizationSchema();
+
   return (
     <>
       <SEO meta={{
-        title: 'About Us | OSIL Ltd - ICT Solutions Kenya',
-        description: 'Learn about OSIL Ltd, a leading ICT solutions provider in Kenya with 15+ years of experience delivering technology products, services, and solutions to enterprises and consumers.',
-        keywords: ['OSIL', 'about us', 'ICT solutions', 'Kenya', 'technology company', 'IT provider'],
+        title: 'About OSIL Ltd Kenya | Leading ICT Solutions Provider | 15+ Years Experience',
+        description: 'OSIL Ltd is a leading ICT solutions provider in Kenya with 15+ years experience, 1200+ enterprise clients, and partnerships with Dell, HP, Lenovo, Cisco. Serving Nairobi and all Kenyan counties.',
+        keywords: ['OSIL about us', 'ICT company Kenya', 'IT solutions provider Nairobi', 'technology company East Africa', 'OSIL history', 'OSIL team', 'ICT distributor Kenya'],
+        canonicalUrl: getCanonicalUrl('/about'),
+        ogType: 'website',
+        structuredData: organizationSchema,
       }} />
+
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
       {/* Hero */}
       <section className="relative bg-slate-900 overflow-hidden">

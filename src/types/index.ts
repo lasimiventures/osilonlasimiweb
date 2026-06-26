@@ -147,5 +147,25 @@ export interface SeoMeta {
   description: string;
   keywords?: string[];
   ogImage?: string;
-  ogType?: string;
+  ogType?: 'website' | 'product' | 'article' | 'profile';
+  canonicalUrl?: string;
+  noindex?: boolean;
+  structuredData?: object;
+}
+
+export interface ProductSeoData {
+  name: string;
+  description: string;
+  brand: string;
+  sku: string;
+  category: string;
+  image: string;
+  availability: 'InStock' | 'OutOfStock' | 'PreOrder' | 'LimitedAvailability';
+  price?: number;
+  currency?: string;
+}
+
+export interface BreadcrumbItem {
+  name: string;
+  url: string;
 }

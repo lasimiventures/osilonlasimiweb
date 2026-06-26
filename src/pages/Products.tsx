@@ -1,11 +1,14 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { SEO } from '../components/SEO';
+import { SEO, generateBreadcrumbSchema, getCanonicalUrl } from '../components/SEO';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
 import { SearchBar } from '../components/SearchBar';
 import { FilterSidebar } from '../components/FilterSidebar';
-import { products, searchProducts } from '../data/products';
+import { products, searchProducts, getFeaturedProducts, getNewArrivals } from '../data/products';
+import { categories } from '../data/categories';
+import { allBrands } from '../data/brands';
+import { Link, ChevronRight, CheckCircle, Zap, Shield, Truck } from 'lucide-react';
 
 export function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -17,6 +20,11 @@ export function Products() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(initialCategory);
   const [selectedBrands, setSelectedBrands] = useState<string[]>(initialBrand ? [initialBrand] : []);
   const [selectedAvailability, setSelectedAvailability] = useState<string | null>(null);
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: 'https://osil.co.ke' },
+    { name: 'Products', url: 'https://osil.co.ke/products' },
+  ]);
 
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -34,6 +42,9 @@ export function Products() {
     }
     return result;
   }, [query, selectedCategory, selectedBrands, selectedAvailability]);
+
+  const featuredProducts = getFeaturedProducts().slice(0, 4);
+  const newArrivals = getNewArrivals().slice(0, 4);
 
   const handleSearch = (q: string) => {
     setQuery(q);
@@ -60,25 +71,85 @@ export function Products() {
   return (
     <>
       <SEO meta={{
-        title: 'Products | OSIL Ltd - ICT Solutions & Electronics',
-        description: 'Browse our extensive catalog of laptops, desktops, phones, tablets, servers, networking equipment, and IT accessories from leading brands.',
-        keywords: ['laptops', 'desktops', 'phones', 'tablets', 'servers', 'networking', 'IT accessories', 'Kenya'],
+        title: 'Products | ICT Products & Electronics Kenya | OSIL Ltd',
+        description: 'Shop laptops, desktops, phones, tablets, servers, networking equipment, and IT accessories from Dell, HP, Lenovo, Cisco, Samsung, and more at OSIL Ltd Kenya. Genuine products with warranty and fast delivery.',
+        keywords: ['laptops Kenya', 'desktop computers Nairobi', 'phones Kenya', 'tablets', 'servers Kenya', 'networking equipment', 'IT accessories', 'Dell laptops', 'HP computers', 'Lenovo Kenya', 'OSIL products'],
+        canonicalUrl: getCanonicalUrl('/products'),
+        ogType: 'website',
       }} />
 
-      <section className="bg-slate-50 py-8 border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+
+      <section className="relative bg-slate-900 overflow-hidden">
+        <div className="absolute inset-0">
+          <img src="https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1600" alt="OSIL Ltd Products Kenya" className="w-full h-full object-cover opacity-20" loading="eager" />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
           <div className="mb-3">
             <Breadcrumb crumbs={[
               { label: 'Products' },
             ]} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Products</h1>
-          <p className="text-sm text-slate-500">Explore our complete catalog of technology products</p>
+          <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">Technology Products Kenya</h1>
+          <p className="text-lg text-slate-300 max-w-2xl">Browse our extensive catalog of genuine laptops, desktops, phones, servers, networking equipment, and IT accessories from leading global brands.</p>
+          <div className="flex items-center gap-4 mt-4 text-sm text-slate-400">
+            <span>{products.length}+ products</span>
+            <span>|</span>
+            <span>{allBrands.length} brands</span>
+            <span>|</span>
+            <span>{categories.length} categories</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-6 bg-white border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-sm font-semibold text-slate-900 mb-3">Shop by Category</h2>
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <Link
+                key={cat.id}
+                to={`/category/${cat.slug}`}
+                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  selectedCategory === cat.slug
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
+              >
+                {cat.name} <span className="text-slate-400">({cat.productCount})</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {[
+              { title: 'Featured Products', products: featuredProducts, link: '/products' },
+              { title: 'New Arrivals', products: newArrivals, link: '/products' },
+            ].filter(section => section.products.length > 0).map((section, i) => (
+              <div key={i} className="bg-slate-50 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-slate-900">{section.title}</h3>
+                  <Link to={section.link} className="text-xs text-blue-600 hover:underline">View all</Link>
+                </div>
+                <div className="space-y-2">
+                  {section.products.slice(0, 2).map((p) => (
+                    <Link key={p.id} to={`/products/${p.slug}`} className="flex items-center gap-3 p-2 bg-white rounded-lg hover:shadow-sm transition-shadow">
+                      <img src={p.images[0]} alt={p.name} className="w-12 h-12 rounded object-cover" loading="lazy" />
+                      <div className="min-w-0">
+                        <div className="text-xs font-medium text-slate-900 truncate">{p.name}</div>
+                        <div className="text-xs text-slate-500">{p.brand}</div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="mb-6">
             <SearchBar initialValue={query} onSearch={handleSearch} placeholder="Search products by name, brand, or category..." />
           </div>
@@ -101,6 +172,26 @@ export function Products() {
                 emptyMessage="No products match your filters. Try adjusting your search or filters."
               />
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-8 bg-slate-50 border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-lg font-bold text-slate-900 mb-3">Why Shop at OSIL Ltd Kenya?</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { icon: <Shield className="w-5 h-5" />, title: 'Genuine Products', desc: 'Authorized dealer' },
+              { icon: <Truck className="w-5 h-5" />, title: 'Fast Delivery', desc: 'All Kenyan counties' },
+              { icon: <Zap className="w-5 h-5" />, title: 'Local Warranty', desc: 'Kenya coverage' },
+              { icon: <CheckCircle className="w-5 h-5" />, title: 'Expert Support', desc: 'Certified team' },
+            ].map((item, i) => (
+              <div key={i} className="bg-white border border-slate-200 rounded-lg p-4 text-center">
+                <div className="w-10 h-10 mx-auto bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-2">{item.icon}</div>
+                <div className="text-xs font-semibold text-slate-900">{item.title}</div>
+                <div className="text-xs text-slate-500">{item.desc}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -8,7 +8,7 @@ import {
   Lightbulb, Settings, Database, Cloud, Wrench, ChevronDown,
   CheckCircle, BadgeCheck, ArrowUpRight, Play
 } from 'lucide-react';
-import { SEO } from '../components/SEO';
+import { SEO, generateOrganizationSchema, getCanonicalUrl } from '../components/SEO';
 import { ProductGrid } from '../components/ProductGrid';
 import { getFeaturedProducts, getNewArrivals, getBestSellers } from '../data/products';
 import { categories } from '../data/categories';
@@ -108,9 +108,18 @@ export function Home() {
   const bestSellers = getBestSellers().slice(0, 4);
   const [expandedService, setExpandedService] = useState<string | null>(null);
 
+  const organizationSchema = useMemo(() => generateOrganizationSchema(), []);
+
   return (
     <>
-      <SEO meta={{ title: 'OSIL Ltd - ICT Solutions & Electronics | Kenya', description: 'OSIL Ltd is a leading ICT solutions provider in Kenya, offering laptops, desktops, phones, servers, networking, and professional IT services for enterprises and consumers.', keywords: ['OSIL', 'ICT solutions', 'Kenya', 'laptops', 'phones', 'servers', 'networking', 'IT services'] }} />
+      <SEO meta={{
+        title: 'OSIL Ltd - ICT Solutions & Electronics | Kenya',
+        description: 'OSIL Ltd is a leading ICT solutions provider in Kenya, offering laptops, desktops, phones, servers, networking equipment, and professional IT services for enterprises and consumers across East Africa.',
+        keywords: ['OSIL', 'ICT solutions', 'Kenya', 'laptops', 'phones', 'servers', 'networking', 'IT services', 'Nairobi', 'Dell', 'HP', 'Lenovo', 'Cisco', 'electronics', 'enterprise solutions'],
+        canonicalUrl: getCanonicalUrl('/'),
+        ogType: 'website',
+        structuredData: organizationSchema,
+      }} />
 
       {/* Category Quick Bar — small icons, one row, above hero */}
       <section className="bg-slate-50 border-b border-slate-100">

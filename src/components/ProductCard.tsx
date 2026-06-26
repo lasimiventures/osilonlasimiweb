@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { memo } from 'react';
 import { ShoppingCart, ArrowRight } from 'lucide-react';
 import { useQuote } from '../context/QuoteContext';
 import type { Product } from '../types';
@@ -7,7 +8,7 @@ interface ProductCardProps {
   product: Product;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useQuote();
 
   const availabilityLabel = {
@@ -25,12 +26,13 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="group bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300">
-      <div className="relative aspect-[4/3] bg-slate-50 overflow-hidden">
+    <article className="group bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300">
+      <Link to={`/products/${product.slug}`} className="block relative aspect-[4/3] bg-slate-50 overflow-hidden">
         <img
           src={product.images[0]}
-          alt={product.name}
+          alt={`${product.name} - ${product.brand} ${product.category} at OSIL Ltd Kenya`}
           loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute top-3 left-3 flex flex-col gap-1">
@@ -49,7 +51,7 @@ export function ProductCard({ product }: ProductCardProps) {
             {availabilityLabel[product.availability]}
           </span>
         </div>
-      </div>
+      </Link>
       <div className="p-4">
         <div className="text-xs text-slate-500 mb-1">{product.brand}</div>
         <h3 className="text-sm font-semibold text-slate-900 mb-2 line-clamp-2 leading-snug">
@@ -68,12 +70,12 @@ export function ProductCard({ product }: ProductCardProps) {
           <Link
             to={`/products/${product.slug}`}
             className="flex items-center justify-center w-9 h-9 text-slate-500 border border-slate-200 rounded-lg hover:text-brand-blue hover:border-brand-blue/20 transition-colors"
-            aria-label="View product details"
+            aria-label={`View ${product.name} details`}
           >
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
-    </div>
+    </article>
   );
-}
+});

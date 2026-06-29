@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
+import { CheckCircle, Zap, Shield, Truck } from 'lucide-react';
 import { SEO, generateBreadcrumbSchema, getCanonicalUrl } from '../components/SEO';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
@@ -8,7 +9,6 @@ import { FilterSidebar } from '../components/FilterSidebar';
 import { products, searchProducts, getFeaturedProducts, getNewArrivals } from '../data/products';
 import { categories } from '../data/categories';
 import { allBrands } from '../data/brands';
-import { Link, ChevronRight, CheckCircle, Zap, Shield, Truck } from 'lucide-react';
 
 export function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -116,7 +116,7 @@ export function Products() {
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
-                {cat.name} <span className="text-slate-400">({cat.productCount})</span>
+                {cat.name} <span className="text-slate-400 text-xs">({cat.productCount})</span>
               </Link>
             ))}
           </div>
@@ -125,30 +125,48 @@ export function Products() {
 
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            {[
-              { title: 'Featured Products', products: featuredProducts, link: '/products' },
-              { title: 'New Arrivals', products: newArrivals, link: '/products' },
-            ].filter(section => section.products.length > 0).map((section, i) => (
-              <div key={i} className="bg-slate-50 rounded-xl p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-slate-900">{section.title}</h3>
-                  <Link to={section.link} className="text-xs text-blue-600 hover:underline">View all</Link>
+          {(featuredProducts.length > 0 || newArrivals.length > 0) && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {featuredProducts.length > 0 && (
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-slate-900">Featured Products</h3>
+                    <Link to="/products" className="text-xs text-blue-600 hover:underline">View all</Link>
+                  </div>
+                  <div className="space-y-2">
+                    {featuredProducts.slice(0, 2).map((p) => (
+                      <Link key={p.id} to={`/products/${p.slug}`} className="flex items-center gap-3 p-2 bg-white rounded-lg hover:shadow-sm transition-shadow">
+                        <img src={p.images[0]} alt={p.name} className="w-12 h-12 rounded object-cover" loading="lazy" />
+                        <div className="min-w-0">
+                          <div className="text-xs font-medium text-slate-900 truncate">{p.name}</div>
+                          <div className="text-xs text-slate-500">{p.brand}</div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  {section.products.slice(0, 2).map((p) => (
-                    <Link key={p.id} to={`/products/${p.slug}`} className="flex items-center gap-3 p-2 bg-white rounded-lg hover:shadow-sm transition-shadow">
-                      <img src={p.images[0]} alt={p.name} className="w-12 h-12 rounded object-cover" loading="lazy" />
-                      <div className="min-w-0">
-                        <div className="text-xs font-medium text-slate-900 truncate">{p.name}</div>
-                        <div className="text-xs text-slate-500">{p.brand}</div>
-                      </div>
-                    </Link>
-                  ))}
+              )}
+              {newArrivals.length > 0 && (
+                <div className="bg-slate-50 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold text-slate-900">New Arrivals</h3>
+                    <Link to="/products" className="text-xs text-blue-600 hover:underline">View all</Link>
+                  </div>
+                  <div className="space-y-2">
+                    {newArrivals.slice(0, 2).map((p) => (
+                      <Link key={p.id} to={`/products/${p.slug}`} className="flex items-center gap-3 p-2 bg-white rounded-lg hover:shadow-sm transition-shadow">
+                        <img src={p.images[0]} alt={p.name} className="w-12 h-12 rounded object-cover" loading="lazy" />
+                        <div className="min-w-0">
+                          <div className="text-xs font-medium text-slate-900 truncate">{p.name}</div>
+                          <div className="text-xs text-slate-500">{p.brand}</div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              )}
+            </div>
+          )}
 
           <div className="mb-6">
             <SearchBar initialValue={query} onSearch={handleSearch} placeholder="Search products by name, brand, or category..." />

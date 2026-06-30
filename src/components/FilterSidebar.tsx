@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp, Filter } from 'lucide-react';
 import { categories } from '../data/categories';
 import { allBrands } from '../data/brands';
+import { products } from '../data/products';
 
 interface FilterSidebarProps {
   selectedCategory: string | null;
@@ -32,6 +33,18 @@ export function FilterSidebar({
   const toggleSection = (key: keyof typeof sections) => {
     setSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const filteredBrands = useMemo(() => {
+    if (!selectedCategory) {
+      return allBrands;
+    }
+    const brandSlugsInCategory = new Set(
+      products
+        .filter((p) => p.categorySlug === selectedCategory)
+        .map((p) => p.brandSlug)
+    );
+    return allBrands.filter((brand) => brandSlugsInCategory.has(brand.slug));
+  }, [selectedCategory]);
 
   const availabilityOptions = [
     { value: 'in-stock', label: 'In Stock' },
@@ -92,7 +105,7 @@ export function FilterSidebar({
         </button>
         {sections.brands && (
           <div className="space-y-1 max-h-60 overflow-y-auto">
-            {allBrands.map((brand) => (
+            {filteredBrands.map((brand) => (
               <label key={brand.id} className="flex items-center gap-2 cursor-pointer group">
                 <input
                   type="checkbox"

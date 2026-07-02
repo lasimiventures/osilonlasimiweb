@@ -120,6 +120,7 @@ export function generateOrganizationSchema(): object {
     },
     address: {
       '@type': 'PostalAddress',
+      streetAddress: '1st Floor, Jethalal Chambers, Tubman Rd, Suite 103',
       addressLocality: 'Nairobi',
       addressCountry: 'KE',
     },

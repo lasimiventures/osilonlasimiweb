@@ -231,7 +231,7 @@ export function Navbar() {
             </div>
             <div className="hidden md:flex items-center gap-1.5">
               <MapPin className="w-3 h-3 text-blue-400" />
-              <span>1st Flr, Ring Road Westlands, Nairobi, Kenya</span>
+              <span>1st Floor, Jethalal Chambers, Tubman Rd, Suite 103, Nairobi, Kenya</span>
             </div>
           </div>
         </div>

@@ -1,13 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Menu, X, ChevronDown, ShoppingCart, Search, MapPin, Phone, Mail,
-  Laptop, Monitor, Cpu, Server, Smartphone, Tablet, Printer, Wifi,
-  HardDrive, Projector, Video, Plug, Code, Shield, Settings, Cloud,
-  Database, Wrench, Lightbulb, LayoutGrid, Globe, Users, Info,
+  Laptop, Monitor, Smartphone, Tablet, Printer, Wifi,
+  Shield, Settings, Cloud, Database, Wrench, Lightbulb, LayoutGrid, Globe, Info, Plug, Code,
 } from 'lucide-react';
 import { useQuote } from '../context/QuoteContext';
 import { services } from '../data/services';
+import { products } from '../data/products';
+import { categories } from '../data/categories';
+import { allBrands } from '../data/brands';
 
 /* ─── nav structure ─────────────────────────────────────────────────── */
 
@@ -128,14 +130,14 @@ const navCategories = [
 
 const serviceIconMap: Record<string, React.ReactNode> = {
   Lightbulb: <Lightbulb className="w-3.5 h-3.5" />,
-  Server: <Server className="w-3.5 h-3.5" />,
+  Server: <Monitor className="w-3.5 h-3.5" />,
   Settings: <Settings className="w-3.5 h-3.5" />,
   Wifi: <Wifi className="w-3.5 h-3.5" />,
   Database: <Database className="w-3.5 h-3.5" />,
   Cloud: <Cloud className="w-3.5 h-3.5" />,
   Shield: <Shield className="w-3.5 h-3.5" />,
   Monitor: <Monitor className="w-3.5 h-3.5" />,
-  Video: <Video className="w-3.5 h-3.5" />,
+  Video: <Monitor className="w-3.5 h-3.5" />,
   Wrench: <Wrench className="w-3.5 h-3.5" />,
 };
 
@@ -145,18 +147,52 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { itemCount } = useQuote();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setIsOpen(false);
     setOpenDropdown(null);
     setMobileSearchOpen(false);
+    setShowSuggestions(false);
+    setSearchQuery('');
   }, [location.pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const searchSuggestions = useMemo(() => {
+    if (!searchQuery.trim() || searchQuery.length < 2) return { products: [], categories: [], brands: [] };
+
+    const query = searchQuery.toLowerCase();
+
+    const matchingProducts = products
+      .filter(p => p.name.toLowerCase().includes(query) || p.brand.toLowerCase().includes(query))
+      .slice(0, 4);
+
+    const matchingCategories = categories
+      .filter(c => c.name.toLowerCase().includes(query))
+      .slice(0, 3);
+
+    const matchingBrands = allBrands
+      .filter(b => b.name.toLowerCase().includes(query))
+      .slice(0, 3);
+
+    return { products: matchingProducts, categories: matchingCategories, brands: matchingBrands };
+  }, [searchQuery]);
 
   const handleMouseEnter = (key: string) => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -172,13 +208,16 @@ export function Navbar() {
     if (searchQuery.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
+      setShowSuggestions(false);
       setMobileSearchOpen(false);
     }
   };
 
+  const hasSuggestions = searchSuggestions.products.length > 0 || searchSuggestions.categories.length > 0 || searchSuggestions.brands.length > 0;
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
-      {/* ── Top contact bar ──────────────────────────────── */}
+      {/* Top contact bar */}
       <div className="bg-slate-800 text-slate-300 text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-9">
@@ -198,7 +237,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* ── Logo + Search + Cart ──────────────────────────── */}
+      {/* Logo + Search + Cart */}
       <div className="bg-white border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4 h-16 lg:h-[70px]">
@@ -207,16 +246,22 @@ export function Navbar() {
               <img src="/Osil_Logo.jpg" alt="OSIL Ltd" className="h-10 w-auto" />
             </Link>
 
-            {/* Search bar — desktop */}
-            <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-2xl mx-auto items-center">
+            {/* Search bar - desktop with autocomplete */}
+            <form onSubmit={handleSearch} className="hidden lg:flex flex-1 max-w-2xl mx-auto items-center relative" ref={searchRef}>
               <div className="flex w-full rounded-lg overflow-hidden border border-slate-200 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search laptops, phones, CCTV, routers, printers..."
-                  className="flex-1 px-4 py-2.5 text-sm text-slate-700 outline-none bg-white"
-                />
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onFocus={() => setShowSuggestions(true)}
+                    placeholder="Search laptops, phones, CCTV, routers, printers..."
+                    className="w-full px-4 py-2.5 text-sm text-slate-700 outline-none bg-white"
+                  />
+                </div>
                 <button
                   type="submit"
                   className="px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors shrink-0"
@@ -224,6 +269,83 @@ export function Navbar() {
                   Search
                 </button>
               </div>
+
+              {/* Autocomplete Dropdown */}
+              {showSuggestions && searchQuery.length >= 2 && hasSuggestions && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-slate-200 z-50 max-h-[400px] overflow-y-auto">
+                  {searchSuggestions.products.length > 0 && (
+                    <div className="p-2">
+                      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2 py-1">Products</div>
+                      {searchSuggestions.products.map((p) => (
+                        <Link
+                          key={p.id}
+                          to={`/products/${p.slug}`}
+                          className="flex items-center gap-3 px-2 py-2 hover:bg-slate-50 rounded-lg transition-colors"
+                          onClick={() => setShowSuggestions(false)}
+                        >
+                          <img src={p.images[0]} alt={p.name} className="w-10 h-10 object-cover rounded" />
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-slate-900 truncate">{p.name}</div>
+                            <div className="text-xs text-slate-500">{p.brand} - {p.category}</div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  {searchSuggestions.categories.length > 0 && (
+                    <div className="p-2 border-t border-slate-100">
+                      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2 py-1">Categories</div>
+                      {searchSuggestions.categories.map((c) => (
+                        <Link
+                          key={c.id}
+                          to={`/category/${c.slug}`}
+                          className="flex items-center gap-2 px-2 py-2 hover:bg-slate-50 rounded-lg transition-colors"
+                          onClick={() => setShowSuggestions(false)}
+                        >
+                          <div className="w-8 h-8 bg-blue-50 rounded flex items-center justify-center text-blue-600">
+                            <Laptop className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium text-slate-900">{c.name}</div>
+                            <div className="text-xs text-slate-500">{c.productCount} products</div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  {searchSuggestions.brands.length > 0 && (
+                    <div className="p-2 border-t border-slate-100">
+                      <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2 py-1">Brands</div>
+                      {searchSuggestions.brands.map((b) => (
+                        <Link
+                          key={b.id}
+                          to={`/brand/${b.slug}`}
+                          className="flex items-center gap-2 px-2 py-2 hover:bg-slate-50 rounded-lg transition-colors"
+                          onClick={() => setShowSuggestions(false)}
+                        >
+                          <img src={b.logo} alt={b.name} className="w-8 h-8 object-cover rounded" />
+                          <div>
+                            <div className="text-sm font-medium text-slate-900">{b.name}</div>
+                            <div className="text-xs text-slate-500">{b.productCount} products</div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="p-2 border-t border-slate-100">
+                    <Link
+                      to={`/products?search=${encodeURIComponent(searchQuery)}`}
+                      className="block px-2 py-2 text-sm text-blue-600 font-semibold hover:bg-blue-50 rounded-lg transition-colors"
+                      onClick={() => setShowSuggestions(false)}
+                    >
+                      View all results for "{searchQuery}"
+                    </Link>
+                  </div>
+                </div>
+              )}
             </form>
 
             {/* Right actions */}
@@ -290,11 +412,10 @@ export function Navbar() {
         )}
       </div>
 
-      {/* ── Category nav row ─────────────────────────────── */}
+      {/* Category nav row */}
       <div className="hidden lg:block bg-white border-b border-slate-200" ref={dropdownRef}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex items-center">
-            {/* Category items */}
             {navCategories.map((cat) => (
               <div
                 key={cat.label}
@@ -424,7 +545,7 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* ── Mobile slide-down menu ───────────────────────── */}
+      {/* Mobile slide-down menu */}
       {isOpen && (
         <div className="lg:hidden bg-white border-t border-slate-100 max-h-[75vh] overflow-y-auto shadow-lg">
           <div className="px-4 py-3 space-y-0.5">
@@ -453,7 +574,7 @@ export function Navbar() {
                 </Link>
               ))}
               <Link to="/services" className="block px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg ml-2">
-                View All Services →
+                View All Services
               </Link>
             </div>
 

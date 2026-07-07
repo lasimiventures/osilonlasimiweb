@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AppRoutes } from './routes';
 import { QuoteProvider } from './context/QuoteContext';
+import { RecentlyViewedProvider } from './context/RecentlyViewedContext';
+import { CompareProvider } from './context/CompareContext';
 import { trackPageView, trackEvent } from './utils/analytics';
 
 function PageTracker() {
@@ -20,8 +22,12 @@ function App() {
   return (
     <BrowserRouter>
       <QuoteProvider>
-        <PageTracker />
-        <AppRoutes />
+        <RecentlyViewedProvider>
+          <CompareProvider>
+            <PageTracker />
+            <AppRoutes />
+          </CompareProvider>
+        </RecentlyViewedProvider>
       </QuoteProvider>
     </BrowserRouter>
   );

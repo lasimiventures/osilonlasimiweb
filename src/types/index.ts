@@ -18,6 +18,7 @@ export interface Product {
   isBestSeller: boolean;
   relatedProducts: string[];
   tags: string[];
+  datasheetUrl?: string;
 }
 
 export interface Category {
@@ -168,4 +169,22 @@ export interface ProductSeoData {
 export interface BreadcrumbItem {
   name: string;
   url: string;
+}
+
+export interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+  category: 'products' | 'services' | 'quotations' | 'delivery' | 'warranty';
+}
+
+export interface Promotion {
+  id: string;
+  title: string;
+  subtitle: string;
+  badge?: string;
+  ctaLabel: string;
+  ctaPath: string;
+  image: string;
+  highlight?: string;
 }

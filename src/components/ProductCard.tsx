@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { memo } from 'react';
-import { ShoppingCart, ArrowRight } from 'lucide-react';
+import { ShoppingCart, ArrowRight, BarChart2 } from 'lucide-react';
 import { useQuote } from '../context/QuoteContext';
+import { useCompare } from '../context/CompareContext';
 import type { Product } from '../types';
 
 interface ProductCardProps {
@@ -10,6 +11,9 @@ interface ProductCardProps {
 
 export const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useQuote();
+  const { addToCompare, removeFromCompare, isInCompare } = useCompare();
+
+  const inCompare = isInCompare(product.id);
 
   const availabilityLabel = {
     'in-stock': 'In Stock',
@@ -23,6 +27,15 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
     'low-stock': 'bg-amber-100 text-amber-700',
     'out-of-stock': 'bg-red-100 text-red-700',
     'pre-order': 'bg-blue-100 text-brand-blue',
+  };
+
+  const handleCompare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (inCompare) {
+      removeFromCompare(product.id);
+    } else {
+      addToCompare(product);
+    }
   };
 
   return (
@@ -51,6 +64,14 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             {availabilityLabel[product.availability]}
           </span>
         </div>
+        {/* Compare toggle */}
+        <button
+          onClick={handleCompare}
+          title={inCompare ? 'Remove from compare' : 'Add to compare'}
+          className={`absolute top-3 right-3 w-7 h-7 flex items-center justify-center rounded-lg border transition-all duration-200 ${inCompare ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white/90 border-slate-200 text-slate-500 opacity-0 group-hover:opacity-100 hover:border-blue-300 hover:text-blue-600'}`}
+        >
+          <BarChart2 className="w-3.5 h-3.5" />
+        </button>
       </Link>
       <div className="p-4">
         <div className="text-xs text-slate-500 mb-1">{product.brand}</div>

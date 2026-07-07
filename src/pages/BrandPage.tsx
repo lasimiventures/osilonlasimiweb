@@ -24,46 +24,62 @@ const brandBannerImages: Record<string, string> = {
   brother: 'https://images.pexels.com/photos/4792717/pexels-photo-4792717.jpeg?auto=compress&cs=tinysrgb&w=1600',
 };
 
-const brandSeoContent: Record<string, { overview: string; strengths: string[]; keywords: string[] }> = {
+const brandSeoContent: Record<string, { tagline: string; overview: string; strengths: string[]; productLines: string[]; keywords: string[] }> = {
   dell: {
-    overview: 'Dell laptops, desktops, and servers. Latitude, OptiPlex, PowerEdge, XPS with warranty.',
-    strengths: ['Enterprise reliability', 'Business laptops', 'Server solutions', 'XPS premium line', 'Global support', 'Sustainability'],
-    keywords: ['Dell Kenya', 'Dell laptops Nairobi', 'Dell Latitude', 'Dell OptiPlex', 'Dell PowerEdge', 'Dell XPS Kenya'],
+    tagline: 'Authorized Dell dealer — Latitude, OptiPlex, PowerEdge & XPS with local warranty.',
+    overview: 'Founded in 1984 by Michael Dell, Dell Technologies is one of the world\'s largest technology companies, renowned for building purpose-built business PCs, enterprise servers, and storage solutions. In Kenya, OSIL Ltd is an authorized Dell partner — the only way to guarantee genuine Dell hardware backed by manufacturer warranty honored locally. The Dell Latitude series is widely adopted by Kenya\'s banking, telecom, and government sectors for its MIL-STD durability and enterprise security chipset. Dell OptiPlex desktops dominate corporate office deployments for their tool-free serviceability and long product lifecycle. For high-performance creative and data workloads, Dell XPS and Precision workstations deliver exceptional processing power. Dell PowerEdge servers underpin data centers across the region, offering scalable compute from entry-level tower units to full rack configurations.',
+    strengths: ['MIL-STD Certified Durability', 'Enterprise Security (TPM 2.0)', 'AI-powered Dell Optimizer', 'Extensive local service network', 'Configurable to order', 'Sustainable packaging & parts'],
+    productLines: ['Latitude (Business Laptops)', 'XPS (Premium Laptops)', 'OptiPlex (Business Desktops)', 'Precision (Workstations)', 'PowerEdge (Servers)', 'PowerVault (Storage)'],
+    keywords: ['Dell Kenya', 'Dell laptops Nairobi', 'Dell Latitude Kenya', 'Dell OptiPlex', 'Dell PowerEdge server', 'Dell XPS Kenya'],
   },
   hp: {
-    overview: 'HP laptops, desktops, printers. EliteBook, ProDesk, HP printers with warranty.',
-    strengths: ['Industry printers', 'Enterprise security', 'Product range', 'Reliable devices', 'Strong presence', 'Innovation'],
-    keywords: ['HP Kenya', 'HP laptops Nairobi', 'HP EliteBook', 'HP ProDesk', 'HP printers Kenya', 'HP servers'],
+    tagline: 'Authorized HP dealer — EliteBook, ProBook, LaserJet & ProDesk with local warranty.',
+    overview: 'Hewlett-Packard (HP) is a global technology leader with a 85-year heritage of innovation spanning personal computing, enterprise printing, and business infrastructure. In Kenya, HP holds one of the strongest brand recognition scores in the ICT sector, particularly for its printer and multifunction device range. OSIL Ltd carries the full HP business product portfolio: the ultra-secure HP EliteBook series (featuring HP Sure Start and HP Sure Click security features) for senior enterprise staff; the cost-effective HP ProBook range for SME deployments; and HP ProDesk desktops for call-centre and office productivity workloads. HP\'s printing division — LaserJet Pro and OfficeJet Pro — remains the preferred choice for Nairobi law firms, accounting practices, and government offices. HP also offers Z-series workstations for engineering and creative agencies needing ISV-certified graphics performance.',
+    strengths: ['HP Sure Start BIOS security', 'HP Wolf Security platform', 'Full SMB-to-enterprise range', 'Industry-leading printer share', 'HP Amplify partner ecosystem', 'Long-lifecycle product support'],
+    productLines: ['EliteBook (Enterprise Laptops)', 'ProBook (SMB Laptops)', 'ZBook (Mobile Workstations)', 'ProDesk (Business Desktops)', 'LaserJet Pro (Printers)', 'HP Z Workstations'],
+    keywords: ['HP Kenya', 'HP laptops Nairobi', 'HP EliteBook Kenya', 'HP ProBook', 'HP printers Kenya', 'HP LaserJet Nairobi'],
   },
   lenovo: {
-    overview: 'Lenovo ThinkPad, ThinkCentre, Legion. World\'s #1 PC maker with genuine products.',
-    strengths: ['#1 PC manufacturer', 'ThinkPad durability', 'Legion gaming', 'Business focus', 'Keyboards', 'Warranties'],
-    keywords: ['Lenovo Kenya', 'ThinkPad Nairobi', 'Lenovo laptops', 'ThinkCentre', 'Lenovo Legion'],
+    tagline: "World's #1 PC maker — ThinkPad, ThinkCentre & Legion with genuine warranty.",
+    overview: "Lenovo is the world's largest PC manufacturer by unit volume, shipping over 70 million PCs annually to more than 180 markets. Founded in Beijing in 1984, Lenovo acquired IBM's PC division in 2005 — inheriting the legendary ThinkPad brand and its reputation for keyboard quality, durability, and business reliability. In Kenya, Lenovo's ThinkPad line is a fixture in the country's NGO, UN agency, and financial sector laptop fleets, prized for its seven-point durability testing standard and industry-leading keyboard travel. The ThinkCentre desktop family provides long-lifecycle, highly expandable office workstations at competitive price points. For the gaming and content creator segment, Lenovo's Legion Pro series delivers class-leading performance with advanced thermal engineering. IdeaPad and IdeaCentre round out the consumer range for students and home users seeking reliability at an accessible price.",
+    strengths: ["World's #1 PC brand by volume", 'ThinkPad 7-point durability testing', 'Industry-best keyboard design', 'Legion gaming performance', 'Wide accessory ecosystem', 'Strong SME to enterprise portfolio'],
+    productLines: ['ThinkPad (Business Laptops)', 'IdeaPad (Consumer Laptops)', 'Legion (Gaming Laptops)', 'ThinkCentre (Business Desktops)', 'ThinkStation (Workstations)', 'ThinkServer (Servers)'],
+    keywords: ['Lenovo Kenya', 'ThinkPad Nairobi', 'Lenovo laptops Kenya', 'Lenovo ThinkCentre', 'Lenovo Legion Kenya', 'IdeaPad Kenya'],
   },
   cisco: {
-    overview: 'Cisco enterprise networking, security, collaboration. Routers, switches, firewalls.',
-    strengths: ['Industry networking', 'Security solutions', 'Webex collaboration', 'Meraki cloud', 'Certifications', 'Reliability'],
-    keywords: ['Cisco Kenya', 'Cisco routers Nairobi', 'Cisco switches', 'Cisco firewalls', 'Meraki Kenya'],
+    tagline: 'Cisco authorized partner — enterprise routers, switches, firewalls & Meraki cloud.',
+    overview: 'Cisco Systems is the undisputed global leader in enterprise networking, cybersecurity, and collaboration — responsible for routing the majority of the world\'s internet traffic. Founded in 1984 at Stanford University, Cisco\'s hardware, software, and services portfolio spans LAN/WAN infrastructure, cloud-managed networking (Meraki), video conferencing (Webex), and enterprise security (Umbrella, Firepower). In East Africa, Cisco equipment underpins the backbone networks of Kenya\'s major banks, telcos, hospitals, and government ministries. OSIL Ltd is an authorized Cisco reseller, enabling Kenyan businesses to acquire genuine Cisco equipment with Smart Net support contracts and CCNA/CCNP-certified pre-sales and post-sales technical guidance. The Cisco Catalyst switch family and ISR router series are the most widely deployed in Kenyan enterprise networks, while Cisco Meraki is rapidly gaining adoption for its zero-touch provisioning and cloud-based network management.',
+    strengths: ['Global #1 enterprise networking brand', 'Cisco Meraki cloud management', 'Webex collaboration platform', 'Firepower & Umbrella security', 'CCNA/CCNP-certified support team', 'Smart Net maintenance contracts'],
+    productLines: ['Catalyst (Switches)', 'ISR (Routers)', 'Firepower (Firewalls)', 'Meraki (Cloud Networking)', 'Webex (Collaboration)', 'Umbrella (Security)'],
+    keywords: ['Cisco Kenya', 'Cisco switches Nairobi', 'Cisco routers Kenya', 'Cisco Meraki Kenya', 'Cisco firewall Nairobi', 'Cisco Webex Kenya'],
   },
   microsoft: {
-    overview: 'Microsoft Surface, Windows, Office 365. Authorized Microsoft partner with genuine licenses.',
-    strengths: ['Windows & Office', 'Azure cloud', 'Surface devices', 'Enterprise solutions', 'Developer tools', 'Gaming Xbox'],
-    keywords: ['Microsoft Kenya', 'Surface Kenya', 'Windows 11 Nairobi', 'Office 365 Kenya', 'Microsoft licenses'],
+    tagline: 'Authorized Microsoft partner — Surface, Windows 11 & Microsoft 365 licenses.',
+    overview: 'Microsoft Corporation is one of the most valuable technology companies in the world, transforming global business with Windows, Office, Azure cloud, and the Surface device family. As a Microsoft Cloud Solutions Partner, OSIL Ltd is authorized to supply and activate genuine Microsoft 365 (formerly Office 365) subscriptions, Windows OEM and Volume Licensing, Azure services, and the full Microsoft Surface hardware range. In Kenya, Microsoft 365 is rapidly replacing standalone Office installations across corporate, NGO, and government sectors due to its integrated Teams collaboration, SharePoint document management, and cloud backup capabilities. The Surface Pro and Surface Laptop series offer premium Windows experiences — particularly valued by executives, architects, and creative professionals who require a sleek, ultraportable device with enterprise-grade security and stylus support.',
+    strengths: ['Microsoft Cloud Solutions Partner', 'Windows 11 & Microsoft 365', 'Azure cloud expertise', 'Surface premium devices', 'Teams & SharePoint integration', 'Volume licensing for enterprises'],
+    productLines: ['Surface Pro (2-in-1)', 'Surface Laptop (Ultrabooks)', 'Surface Studio (Desktops)', 'Microsoft 365 (SaaS)', 'Windows 11 (OS)', 'Azure (Cloud)'],
+    keywords: ['Microsoft Kenya', 'Surface laptop Kenya', 'Microsoft 365 Nairobi', 'Windows 11 Kenya', 'Azure Kenya', 'Office 365 Kenya'],
   },
   samsung: {
-    overview: 'Samsung Galaxy smartphones, tablets, displays. Genuine products with warranty.',
-    strengths: ['#1 smartphone brand', 'Leading displays', 'Galaxy ecosystem', '5G innovation', 'Foldable phones', 'Accessories'],
-    keywords: ['Samsung Kenya', 'Galaxy phones Nairobi', 'Samsung smartphones', 'Galaxy Tab', 'Galaxy S series'],
+    tagline: 'Authorized Samsung dealer — Galaxy smartphones, tablets & displays with warranty.',
+    overview: 'Samsung Electronics is the world\'s largest smartphone manufacturer and a top-three global consumer electronics brand, employing over 270,000 people across 74 countries. Headquartered in Suwon, South Korea, Samsung\'s mobile division produces the Galaxy S flagship, Galaxy A mid-range, and Galaxy Z foldable series — each offering cutting-edge cameras, display technology, and long software support cycles. In Kenya, Samsung Galaxy phones are among the best-selling smartphones across all price tiers. OSIL Ltd stocks genuine Samsung devices sourced through authorized channels, ensuring customers receive valid manufacturer warranty and software updates. Beyond smartphones, Samsung\'s Galaxy Tab series is a popular choice for business productivity and digital signage, while Samsung\'s commercial display panels (used in conference rooms, retail, and hospitality) are available through our enterprise sales team.',
+    strengths: ["World's #1 smartphone brand", 'Galaxy S / A / Z series range', 'AMOLED display leadership', '5G & Wi-Fi 6 connectivity', 'Samsung Knox enterprise security', 'Long software update support'],
+    productLines: ['Galaxy S (Flagship)', 'Galaxy A (Mid-range)', 'Galaxy Z (Foldables)', 'Galaxy Tab (Tablets)', 'Samsung Display (Commercial)', 'Galaxy Buds (Audio)'],
+    keywords: ['Samsung Kenya', 'Galaxy S series Kenya', 'Samsung phones Nairobi', 'Galaxy A series Kenya', 'Samsung Galaxy Tab', 'Samsung foldable Kenya'],
   },
   apple: {
-    overview: 'Apple iPhone, iPad, Mac. Genuine Apple products with warranty for premium quality.',
-    strengths: ['Premium quality', 'iOS ecosystem', 'Leading chips', 'Software support', 'Resale value', 'Privacy'],
-    keywords: ['Apple Kenya', 'iPhone Nairobi', 'iPad Kenya', 'iPhone prices Kenya', 'MacBook'],
+    tagline: 'Genuine Apple products — iPhone, iPad & MacBook with local warranty.',
+    overview: 'Apple Inc. is the world\'s most valuable technology brand, renowned for designing products that seamlessly integrate hardware, software, and services into premium user experiences. From the iPhone — which pioneered the modern smartphone category in 2007 — to the M-series chip-powered MacBook Pro and iPad Pro, Apple consistently delivers class-leading performance, privacy, and longevity. In Kenya, Apple devices command a significant premium but retain their value exceptionally well, making them a preferred choice for executives, media professionals, and digital creatives. OSIL Ltd stocks genuine Apple products sourced through authorized distribution channels, ensuring customers receive valid Apple warranty coverage and access to Apple\'s global support resources. The iPhone 15 series and iPad Pro (M2) are particularly popular among Kenyan professionals seeking seamless cross-device productivity via iCloud, AirDrop, and Handoff.',
+    strengths: ["World's most valuable tech brand", 'Apple Silicon (M-series chips)', 'iOS / macOS / iPadOS integration', 'iCloud ecosystem connectivity', 'Industry-best privacy controls', 'Exceptional resale value'],
+    productLines: ['iPhone (Smartphones)', 'iPad / iPad Pro (Tablets)', 'MacBook Air / Pro (Laptops)', 'Apple Watch (Wearables)', 'AirPods (Audio)', 'Apple TV / HomePod'],
+    keywords: ['Apple Kenya', 'iPhone 15 Kenya', 'iPad Pro Nairobi', 'MacBook Kenya', 'Apple Watch Kenya', 'AirPods Kenya'],
   },
   ubiquiti: {
-    overview: 'Ubiquiti UniFi, EdgeRouter networking. Enterprise features at SMB prices.',
-    strengths: ['Enterprise at SMB prices', 'UniFi ecosystem', 'WiFi performance', 'Easy management', 'Disruptive pricing', 'Community'],
-    keywords: ['Ubiquiti Kenya', 'UniFi Nairobi', 'Ubiquiti routers', 'UniFi access points', 'EdgeRouter Kenya'],
+    tagline: 'Ubiquiti UniFi & EdgeMax networking — enterprise performance at SMB prices.',
+    overview: 'Ubiquiti Inc. disrupted the enterprise networking market by delivering carrier-class hardware at dramatically lower prices than Cisco or HPE, without sacrificing performance. Founded in 2005 by Robert Pera, Ubiquiti\'s flagship UniFi ecosystem — comprising access points, switches, security gateways, and NVR cameras — is managed through a single intuitive cloud controller, making it ideal for Kenyan businesses that want enterprise-grade network management without the cost of dedicated network engineers. The UniFi WiFi 6 and WiFi 6E access points deliver multi-gigabit throughput suitable for high-density office deployments, hotels, schools, and shopping centres. Ubiquiti\'s EdgeRouter series provides advanced routing features (BGP, OSPF, VPN) at a fraction of Cisco ISR pricing. In Kenya, Ubiquiti has seen explosive adoption among SMEs, ISPs, hospitality venues, and healthcare facilities looking to maximize network investment.',
+    strengths: ['Enterprise performance at SMB cost', 'UniFi unified cloud management', 'WiFi 6 / WiFi 6E access points', 'Zero-touch provisioning', 'Active community & documentation', 'EdgeRouter advanced routing'],
+    productLines: ['UniFi WiFi (Access Points)', 'UniFi Switch (PoE Switches)', 'UniFi Gateway (Security)', 'EdgeRouter (Routing)', 'UniFi Protect (Cameras)', 'airMAX (Point-to-Point)'],
+    keywords: ['Ubiquiti Kenya', 'UniFi access points Nairobi', 'Ubiquiti switches Kenya', 'UniFi WiFi 6 Kenya', 'EdgeRouter Kenya', 'Ubiquiti CCTV Kenya'],
   },
 };
 
@@ -145,7 +161,7 @@ export function BrandPage() {
           <div className="flex items-end justify-between gap-4">
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold text-white mb-1">{brand.name} Kenya</h1>
-              <p className="text-sm text-slate-300 max-w-xl">{seoContent.overview}</p>
+              <p className="text-sm text-slate-300 max-w-xl">{seoContent.tagline || seoContent.overview}</p>
               <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
                 <span>{brandProducts.length} products</span>
                 <span className="w-1 h-1 bg-slate-500 rounded-full" />
@@ -185,6 +201,40 @@ export function BrandPage() {
                   </Link>
                 );
               })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Brand Profile */}
+      {seoContent.overview && seoContent.overview.length > 100 && (
+        <section className="py-6 bg-white border-b border-slate-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <h2 className="text-base font-bold text-slate-900 mb-3">About {brand.name}</h2>
+                <p className="text-sm text-slate-600 leading-relaxed">{seoContent.overview}</p>
+                {seoContent.strengths.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {seoContent.strengths.map((s, i) => (
+                      <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-100">{s}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {seoContent.productLines && seoContent.productLines.length > 0 && (
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 mb-3">Product Lines</h3>
+                  <ul className="space-y-2">
+                    {seoContent.productLines.map((line, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         </section>

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { CheckCircle, Zap, Shield, Truck } from 'lucide-react';
+import { CheckCircle, Zap, Shield, Truck, Clock } from 'lucide-react';
 import { SEO, generateBreadcrumbSchema, getCanonicalUrl } from '../components/SEO';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
@@ -9,6 +9,7 @@ import { FilterSidebar } from '../components/FilterSidebar';
 import { products, searchProducts, getFeaturedProducts, getNewArrivals } from '../data/products';
 import { categories } from '../data/categories';
 import { allBrands } from '../data/brands';
+import { useRecentlyViewed } from '../context/RecentlyViewedContext';
 
 export function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -45,6 +46,7 @@ export function Products() {
 
   const featuredProducts = getFeaturedProducts().slice(0, 4);
   const newArrivals = getNewArrivals().slice(0, 4);
+  const { recentlyViewed } = useRecentlyViewed();
 
   const handleSearch = (q: string) => {
     setQuery(q);
@@ -193,6 +195,18 @@ export function Products() {
           </div>
         </div>
       </section>
+
+      {recentlyViewed.length > 0 && (
+        <section className="py-8 bg-white border-t border-slate-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-2 mb-5">
+              <Clock className="w-4 h-4 text-slate-500" />
+              <h2 className="text-lg font-bold text-slate-900">Recently Viewed</h2>
+            </div>
+            <ProductGrid products={recentlyViewed.slice(0, 4)} />
+          </div>
+        </section>
+      )}
 
       <section className="py-8 bg-slate-50 border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -113,7 +113,7 @@ export function Home() {
   return (
     <>
       <SEO meta={{
-        title: 'OSIL Ltd - ICT Solutions & Electronics | Kenya',
+        title: 'ICT Solutions & Electronics | Laptops, Phones, Servers | OSIL Ltd Kenya',
         description: 'OSIL Ltd is a leading ICT solutions provider in Kenya, offering laptops, desktops, phones, servers, networking equipment, and professional IT services for enterprises and consumers across East Africa.',
         keywords: ['OSIL', 'ICT solutions', 'Kenya', 'laptops', 'phones', 'servers', 'networking', 'IT services', 'Nairobi', 'Dell', 'HP', 'Lenovo', 'Cisco', 'electronics', 'enterprise solutions'],
         canonicalUrl: getCanonicalUrl('/'),

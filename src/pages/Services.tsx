@@ -68,7 +68,7 @@ export function Services() {
   return (
     <>
       <SEO meta={{
-        title: 'ICT Services Kenya | IT Support & Professional Services | OSIL Ltd',
+        title: 'ICT Services | IT Support & Professional Services | OSIL Ltd Kenya',
         description: 'Comprehensive ICT services in Kenya including IT consultancy, infrastructure setup, managed services, networking, cloud solutions, cybersecurity, and maintenance support. Expert team serving Nairobi and all counties.',
         keywords: ['ICT services', 'IT consultancy', 'managed services', 'networking', 'cloud solutions', 'cybersecurity', 'IT support', 'Kenya', 'Nairobi', 'OSIL'],
         canonicalUrl: getCanonicalUrl('/services'),

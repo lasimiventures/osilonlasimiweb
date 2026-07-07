@@ -109,7 +109,7 @@ export function CategoryPage() {
     if (!category) return null;
 
     const seoContent = categorySeoContent[slug || ''] || categorySeoContent.laptops;
-    const title = `${category.name} Kenya | Buy ${category.name} Online | OSIL Ltd`;
+    const title = `${category.name} | Buy ${category.name} in Kenya | OSIL Ltd Kenya`;
     const description = `Shop ${category.name.toLowerCase()} in Kenya at OSIL Ltd. ${category.description} Genuine products with warranty, fast delivery Nairobi Kenya-wide.`;
     const canonicalUrl = getCanonicalUrl(`/category/${category.slug}`);
 

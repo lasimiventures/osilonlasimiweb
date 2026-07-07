@@ -146,7 +146,7 @@ export function generateBreadcrumbSchema(items: BreadcrumbItem[]): object {
 }
 
 export function generateProductPageTitle(productName: string, brand: string, category: string): string {
-  return `${productName} | ${brand} ${category} | OSIL Ltd Kenya`;
+  return `${productName} | ${brand} | ${category} | OSIL Ltd Kenya`;
 }
 
 export function generateProductDescription(name: string, brand: string, category: string, features?: string[]): string {

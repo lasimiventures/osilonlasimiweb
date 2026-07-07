@@ -71,7 +71,7 @@ export function Products() {
   return (
     <>
       <SEO meta={{
-        title: 'Products | ICT Products & Electronics Kenya | OSIL Ltd',
+        title: 'ICT Products & Electronics | All Products | OSIL Ltd Kenya',
         description: 'Shop laptops, desktops, phones, tablets, servers, networking equipment, and IT accessories from Dell, HP, Lenovo, Cisco, Samsung, and more at OSIL Ltd Kenya. Genuine products with warranty and fast delivery.',
         keywords: ['laptops Kenya', 'desktop computers Nairobi', 'phones Kenya', 'tablets', 'servers Kenya', 'networking equipment', 'IT accessories', 'Dell laptops', 'HP computers', 'Lenovo Kenya', 'OSIL products'],
         canonicalUrl: getCanonicalUrl('/products'),

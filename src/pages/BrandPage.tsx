@@ -77,7 +77,7 @@ export function BrandPage() {
     if (!brand) return null;
 
     const seoContent = brandSeoContent[slug || ''] || brandSeoContent.dell;
-    const title = `${brand.name} Kenya | Authorized ${brand.name} Dealer | OSIL Ltd`;
+    const title = `${brand.name} | Authorized ${brand.name} Dealer | OSIL Ltd Kenya`;
     const description = `Shop ${brand.name} products in Kenya at OSIL Ltd. ${brand.description} Genuine ${brand.name} products with warranty, fast delivery Nairobi Kenya-wide.`;
     const canonicalUrl = getCanonicalUrl(`/brand/${brand.slug}`);
 

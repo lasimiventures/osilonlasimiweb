@@ -10,7 +10,7 @@ export function QuoteCart() {
   if (itemCount === 0) {
     return (
       <>
-        <SEO meta={{ title: 'Quote Cart | OSIL Ltd', description: 'Your quote request cart is empty.' }} />
+        <SEO meta={{ title: 'Quote Cart | Request a Price Quote | OSIL Ltd Kenya', description: 'Your quote request cart is empty.' }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mx-auto mb-4">
             <ShoppingCart className="w-8 h-8" />
@@ -27,7 +27,7 @@ export function QuoteCart() {
 
   return (
     <>
-      <SEO meta={{ title: 'Quote Cart | OSIL Ltd', description: 'Review your selected products and proceed to request a quotation.' }} />
+      <SEO meta={{ title: 'Quote Cart | Request a Price Quote | OSIL Ltd Kenya', description: 'Review your selected products and proceed to request a quotation.' }} />
 
       <section className="bg-slate-50 py-8 border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

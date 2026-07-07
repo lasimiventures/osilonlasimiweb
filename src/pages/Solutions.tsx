@@ -54,7 +54,7 @@ export function Solutions() {
   return (
     <>
       <SEO meta={{
-        title: 'Industry ICT Solutions Kenya | Enterprise Technology Solutions | OSIL Ltd',
+        title: 'Industry Solutions | Enterprise Technology Kenya | OSIL Ltd Kenya',
         description: 'Tailored ICT solutions for corporates, government, education, healthcare, SMEs, and NGOs across Kenya and East Africa. OSIL Ltd delivers industry-specific technology solutions for digital transformation.',
         keywords: ['IT solutions Kenya', 'industry solutions', 'corporate IT', 'government technology', 'education IT', 'healthcare ICT', 'SME solutions', 'NGO technology', 'Nairobi', 'OSIL'],
         canonicalUrl: getCanonicalUrl('/solutions'),

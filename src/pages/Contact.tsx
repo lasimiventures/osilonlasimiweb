@@ -29,7 +29,7 @@ export function Contact() {
   return (
     <>
       <SEO meta={{
-        title: 'Contact OSIL Ltd Kenya | Nairobi Office | Phone & Email | ICT Sales & Support',
+        title: 'Contact Us | Nairobi Office | ICT Sales & Support | OSIL Ltd Kenya',
         description: 'Contact OSIL Ltd Kenya for product inquiries, quotes, and technical support. Visit our Nairobi office at Jethalal Chambers, Tubman Road, call +254 795 030 476, or email info@osilltd.co.ke. Fast response guaranteed.',
         keywords: ['OSIL contact', 'Nairobi ICT company', 'Kenya IT support', 'laptop sales Nairobi', 'OSIL phone', 'OSIL email', 'Tubman Road Nairobi', 'IT sales Kenya'],
         canonicalUrl: getCanonicalUrl('/contact'),

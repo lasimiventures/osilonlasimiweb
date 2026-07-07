@@ -6,7 +6,7 @@ export function NotFound() {
   return (
     <>
       <SEO meta={{
-        title: 'Page Not Found | OSIL Ltd',
+        title: 'Page Not Found | 404 | OSIL Ltd Kenya',
         description: 'The page you are looking for does not exist. Browse our products or return to the homepage.',
       }} />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">

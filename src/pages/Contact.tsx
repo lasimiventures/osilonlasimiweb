@@ -29,9 +29,9 @@ export function Contact() {
   return (
     <>
       <SEO meta={{
-        title: 'Contact OSIL Ltd Kenya | Nairobi Office | Phone & Email | ICT Sales & Support',
-        description: 'Contact OSIL Ltd Kenya for product inquiries, quotes, and technical support. Visit our Nairobi office in Westlands, call +254 795 030 476, or email info@osilltd.co.ke. Fast response guaranteed.',
-        keywords: ['OSIL contact', 'Nairobi ICT company', 'Kenya IT support', 'laptop sales Nairobi', 'OSIL phone', 'OSIL email', 'Westlands Nairobi', 'IT sales Kenya'],
+        title: 'Contact Us | Nairobi Office | ICT Sales & Support | OSIL Ltd Kenya',
+        description: 'Contact OSIL Ltd Kenya for product inquiries, quotes, and technical support. Visit our Nairobi office at Jethalal Chambers, Tubman Road, call +254 795 030 476, or email info@osilltd.co.ke. Fast response guaranteed.',
+        keywords: ['OSIL contact', 'Nairobi ICT company', 'Kenya IT support', 'laptop sales Nairobi', 'OSIL phone', 'OSIL email', 'Tubman Road Nairobi', 'IT sales Kenya'],
         canonicalUrl: getCanonicalUrl('/contact'),
         ogType: 'website',
       }} />
@@ -93,7 +93,8 @@ export function Contact() {
                   </div>
                   <div>
                     <h3 className="text-sm font-semibold text-slate-900">Office Address</h3>
-                    <p className="text-sm text-slate-500">Ring Road, Westlands</p>
+                    <p className="text-sm text-slate-500">1st Floor, Jethalal Chambers</p>
+                    <p className="text-sm text-slate-500">Tubman Rd, Suite 103</p>
                     <p className="text-sm text-slate-500">Nairobi, Kenya</p>
                   </div>
                 </div>

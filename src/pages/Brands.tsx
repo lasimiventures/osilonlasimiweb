@@ -20,7 +20,7 @@ export function Brands() {
   return (
     <>
       <SEO meta={{
-        title: 'Technology Brands Kenya | Authorized Dealer | Dell, HP, Lenovo, Cisco | OSIL Ltd',
+        title: 'Technology Brands | Authorized Dealer | Dell, HP, Lenovo & More | OSIL Ltd Kenya',
         description: 'OSIL Ltd is an authorized dealer for Dell, HP, Lenovo, Cisco, Samsung, Apple, Microsoft, and other leading technology brands in Kenya. Genuine products with manufacturer warranty.',
         keywords: ['Dell Kenya', 'HP Kenya', 'Lenovo Kenya', 'Cisco Kenya', 'Samsung Kenya', 'Apple Kenya', 'authorized dealer', 'technology brands Nairobi', 'OSIL brands'],
         canonicalUrl: getCanonicalUrl('/brands'),

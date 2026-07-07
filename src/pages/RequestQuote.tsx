@@ -15,7 +15,7 @@ export function RequestQuote() {
   if (itemCount === 0 && !submitted) {
     return (
       <>
-        <SEO meta={{ title: 'Request Quote | OSIL Ltd', description: 'Request a quotation for your technology needs.' }} />
+        <SEO meta={{ title: 'Request a Quote | Add Products First | OSIL Ltd Kenya', description: 'Request a quotation for your technology needs.' }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mx-auto mb-4">
             <ShoppingCart className="w-8 h-8" />
@@ -33,7 +33,7 @@ export function RequestQuote() {
   if (submitted) {
     return (
       <>
-        <SEO meta={{ title: 'Quote Submitted | OSIL Ltd', description: 'Your quotation request has been submitted successfully.' }} />
+        <SEO meta={{ title: 'Quote Submitted | Thank You | OSIL Ltd Kenya', description: 'Your quotation request has been submitted successfully.' }} />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
           <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center text-green-600 mx-auto mb-6">
             <CheckCircle className="w-10 h-10" />
@@ -63,7 +63,7 @@ export function RequestQuote() {
   return (
     <>
       <SEO meta={{
-        title: 'Request Quote | OSIL Ltd - ICT Solutions Kenya',
+        title: 'Request a Quote | ICT Products & Services | OSIL Ltd Kenya',
         description: 'Request a customized quotation for laptops, desktops, phones, servers, networking equipment, and IT services.',
         keywords: ['quote', 'quotation', 'request', 'OSIL', 'Kenya', 'IT pricing'],
       }} />

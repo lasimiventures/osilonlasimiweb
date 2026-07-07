@@ -4,24 +4,24 @@ export const products: Product[] = [
   // Laptops
   {
     id: 'p-1', name: 'Dell Latitude 5540', slug: 'dell-latitude-5540', sku: 'DL-LAT-5540-001', brand: 'Dell', brandSlug: 'dell', category: 'Laptops', categorySlug: 'laptops',
-    description: 'The Dell Latitude 5540 is a 15.6-inch business laptop powered by Intel Core i7-1370P with 16GB RAM and 512GB SSD. Features include FHD+ display, backlit keyboard, TPM 2.0, and Dell Optimizer AI.', shortDescription: '15.6" business laptop with Intel i7, 16GB RAM, 512GB SSD.',
-    images: ['https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=800'],
+    description: "Engineered for Kenya's enterprise and government sector, the Dell Latitude 5540 combines 13th Gen Intel Core i7-1370P performance with MIL-STD-810H-certified durability you can depend on in the field. Its 16GB DDR5 RAM and 512GB NVMe SSD ensure rapid application loading and smooth multitasking for finance, legal, and field operations. The FHD+ anti-glare display and backlit keyboard enable productive work in any lighting — from a dimly lit boardroom to an outdoor client site. Dell Optimizer AI learns your work patterns to automatically prioritise applications and extend battery life, while TPM 2.0 and optional fingerprint reader deliver the security posture required by corporate IT policies across Kenya.", shortDescription: '15.6" MIL-STD business laptop with Intel i7-1370P, 16GB DDR5, 512GB SSD.',
+    images: ['https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=800'],
     specifications: { 'Processor': 'Intel Core i7-1370P', 'RAM': '16GB DDR5', 'Storage': '512GB NVMe SSD', 'Display': '15.6" FHD+ (1920x1080)', 'Graphics': 'Intel Iris Xe', 'OS': 'Windows 11 Pro', 'Battery': '54Wh', 'Weight': '1.79 kg' },
     price: null, availability: 'in-stock', isFeatured: true, isNew: false, isBestSeller: true,
     relatedProducts: ['p-2', 'p-3', 'p-9'], tags: ['business', 'intel', 'ssd', 'windows']
   },
   {
     id: 'p-2', name: 'HP EliteBook 840 G9', slug: 'hp-elitebook-840-g9', sku: 'HP-EB-840G9-002', brand: 'HP', brandSlug: 'hp', category: 'Laptops', categorySlug: 'laptops',
-    description: 'The HP EliteBook 840 G9 delivers enterprise security and performance with Intel Core i5-1245U, 16GB RAM, 256GB SSD, and a 14" FHD anti-glare display. Built for hybrid work.', shortDescription: '14" enterprise laptop with Intel i5, 16GB RAM, 256GB SSD.',
-    images: ['https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=800'],
+    description: "The HP EliteBook 840 G9 is HP's flagship 14-inch business ultrabook, purpose-built for Kenya's hybrid-working professional. Intel Core i5-1245U (12th Gen) delivers consistent performance for Teams video calls, spreadsheet modelling, and document-intensive workflows, while 16GB DDR4 RAM ensures smooth multitasking without compromise. HP Sure Start Gen 7 and HP Wolf Security protect against firmware attacks and phishing — critical for organisations handling sensitive financial or client data in Nairobi's fast-paced business environment. At just 1.36 kg with a 51Wh battery rated for all-day use, it slips easily into a briefcase for commutes between Westlands and Upperhill.", shortDescription: '14" HP Wolf Security enterprise laptop with Intel i5-1245U, 16GB RAM.',
+    images: ['https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=800'],
     specifications: { 'Processor': 'Intel Core i5-1245U', 'RAM': '16GB DDR4', 'Storage': '256GB NVMe SSD', 'Display': '14" FHD (1920x1080)', 'Graphics': 'Intel UHD', 'OS': 'Windows 11 Pro', 'Battery': '51Wh', 'Weight': '1.36 kg' },
     price: null, availability: 'in-stock', isFeatured: true, isNew: true, isBestSeller: false,
     relatedProducts: ['p-1', 'p-4', 'p-10'], tags: ['enterprise', 'hp', 'lightweight', 'security']
   },
   {
     id: 'p-3', name: 'Lenovo ThinkPad X1 Carbon Gen 11', slug: 'lenovo-thinkpad-x1-carbon-gen11', sku: 'LN-X1C-G11-003', brand: 'Lenovo', brandSlug: 'lenovo', category: 'Laptops', categorySlug: 'laptops',
-    description: 'The Lenovo ThinkPad X1 Carbon Gen 11 is an ultra-light 14" business laptop with Intel Core i7-1365U, 32GB RAM, 1TB SSD, and a stunning 2.8K OLED display. Weighs just 1.12 kg.', shortDescription: 'Ultra-light 14" business laptop with i7, 32GB RAM, 1TB SSD.',
-    images: ['https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=800'],
+    description: "The Lenovo ThinkPad X1 Carbon Gen 11 represents the pinnacle of business ultrabook engineering — a 14-inch powerhouse that weighs just 1.12 kg yet passes 12 categories of MIL-STD-810H environmental testing. Intel Core i7-1365U (13th Gen) paired with 32GB LPDDR5 RAM and a 1TB NVMe SSD handles everything from complex financial models to multi-window research workflows without compromise. The 2.8K OLED display with 100% DCI-P3 colour coverage makes it indispensable for architects, designers, and senior executives who demand colour accuracy alongside raw computing power. Lenovo's renowned ThinkPad keyboard — with 1.5mm key travel and precise tactile feedback — remains the benchmark for business laptop typing comfort, making it ideal for East Africa's most demanding knowledge workers.", shortDescription: 'Ultra-light 1.12 kg 14" ThinkPad with 2.8K OLED, i7-1365U, 32GB RAM.',
+    images: ['https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/1334597/pexels-photo-1334597.jpeg?auto=compress&cs=tinysrgb&w=800'],
     specifications: { 'Processor': 'Intel Core i7-1365U', 'RAM': '32GB LPDDR5', 'Storage': '1TB NVMe SSD', 'Display': '14" 2.8K OLED', 'Graphics': 'Intel Iris Xe', 'OS': 'Windows 11 Pro', 'Battery': '57Wh', 'Weight': '1.12 kg' },
     price: null, availability: 'in-stock', isFeatured: true, isNew: true, isBestSeller: true,
     relatedProducts: ['p-1', 'p-2', 'p-5'], tags: ['ultrabook', 'oled', 'thinkpad', 'premium']
@@ -29,14 +29,14 @@ export const products: Product[] = [
   {
     id: 'p-4', name: 'HP ProBook 450 G9', slug: 'hp-probook-450-g9', sku: 'HP-PB-450G9-004', brand: 'HP', brandSlug: 'hp', category: 'Laptops', categorySlug: 'laptops',
     description: 'The HP ProBook 450 G9 is a reliable 15.6" business notebook with Intel Core i5-1235U, 8GB RAM, 512GB SSD, and essential security features for SMBs.', shortDescription: '15.6" SMB laptop with Intel i5, 8GB RAM, 512GB SSD.',
-    images: ['https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=800'],
+    images: ['https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=800'],
     specifications: { 'Processor': 'Intel Core i5-1235U', 'RAM': '8GB DDR4', 'Storage': '512GB NVMe SSD', 'Display': '15.6" FHD', 'Graphics': 'Intel UHD', 'OS': 'Windows 11 Pro', 'Battery': '51Wh', 'Weight': '1.74 kg' },
     price: null, availability: 'in-stock', isFeatured: false, isNew: false, isBestSeller: false,
     relatedProducts: ['p-2', 'p-1', 'p-6'], tags: ['smb', 'hp', 'budget', 'reliable']
   },
   {
     id: 'p-5', name: 'Dell XPS 15 9530', slug: 'dell-xps-15-9530', sku: 'DL-XPS-9530-005', brand: 'Dell', brandSlug: 'dell', category: 'Laptops', categorySlug: 'laptops',
-    description: 'The Dell XPS 15 9530 is a premium creator laptop with Intel Core i7-13700H, 32GB RAM, 1TB SSD, NVIDIA RTX 4050, and a 3.5K OLED display. Perfect for content creation.', shortDescription: '15.6" creator laptop with i7, RTX 4050, 3.5K OLED.',
+    description: "The Dell XPS 15 9530 redefines the premium creator laptop — blending Intel Core i7-13700H performance with NVIDIA RTX 4050 discrete graphics in a precision-machined aluminium chassis that commands attention in any Nairobi creative studio or media house. The breathtaking 3.5K OLED InfinityEdge display covers 100% of the DCI-P3 colour space and achieves 400 nits of brightness, making colour-critical work — photo retouching, video grading, and architectural visualisation — genuinely accurate on-screen. With 32GB DDR5 RAM and a 1TB NVMe SSD, 4K video exports, large Photoshop composites, and multi-track audio sessions complete in record time. The 86Wh battery and Thunderbolt 4 with USB-C charging make it equally capable as a desktop replacement and an on-location production tool.", shortDescription: '15.6" OLED creator laptop: i7-13700H, RTX 4050, 32GB DDR5.',
     images: ['https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=800'],
     specifications: { 'Processor': 'Intel Core i7-13700H', 'RAM': '32GB DDR5', 'Storage': '1TB NVMe SSD', 'Display': '15.6" 3.5K OLED', 'Graphics': 'NVIDIA RTX 4050', 'OS': 'Windows 11 Pro', 'Battery': '86Wh', 'Weight': '1.86 kg' },
     price: null, availability: 'low-stock', isFeatured: true, isNew: true, isBestSeller: false,
@@ -45,14 +45,14 @@ export const products: Product[] = [
   {
     id: 'p-6', name: 'Lenovo IdeaPad Slim 5', slug: 'lenovo-ideapad-slim-5', sku: 'LN-IPS-5-006', brand: 'Lenovo', brandSlug: 'lenovo', category: 'Laptops', categorySlug: 'laptops',
     description: 'The Lenovo IdeaPad Slim 5 is an affordable 15.6" everyday laptop with AMD Ryzen 5 7530U, 8GB RAM, 512GB SSD, and a FHD IPS display. Great value for students and home users.', shortDescription: '15.6" everyday laptop with Ryzen 5, 8GB RAM, 512GB SSD.',
-    images: ['https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=800'],
+    images: ['https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=800'],
     specifications: { 'Processor': 'AMD Ryzen 5 7530U', 'RAM': '8GB DDR4', 'Storage': '512GB NVMe SSD', 'Display': '15.6" FHD IPS', 'Graphics': 'AMD Radeon', 'OS': 'Windows 11 Home', 'Battery': '56.5Wh', 'Weight': '1.63 kg' },
     price: null, availability: 'in-stock', isFeatured: false, isNew: false, isBestSeller: true,
     relatedProducts: ['p-4', 'p-3', 'p-7'], tags: ['budget', 'student', 'amd', 'value']
   },
   {
     id: 'p-7', name: 'Microsoft Surface Laptop 5', slug: 'microsoft-surface-laptop-5', sku: 'MS-SL-5-007', brand: 'Microsoft', brandSlug: 'microsoft', category: 'Laptops', categorySlug: 'laptops',
-    description: 'The Microsoft Surface Laptop 5 features a sleek 13.5" PixelSense touchscreen, Intel Core i5-1235U, 8GB RAM, 256GB SSD, and all-day battery life. Elegant design meets productivity.', shortDescription: '13.5" touchscreen laptop with Intel i5, 8GB RAM, PixelSense.',
+    description: "The Microsoft Surface Laptop 5 is Microsoft's most refined personal computer — a statement device that pairs an Alcantara-wrapped keyboard deck with a 13.5-inch PixelSense touch display in a chassis that feels as premium as it looks. Intel Core i5-1235U (12th Gen) with Intel Iris Xe graphics handles business productivity, light creative work, and video conferencing with ease, while up to 18 hours of battery life means you can present to clients, attend back-to-back meetings, and travel across Kenya without reaching for a charger. With Windows 11 pre-activated and seamless Microsoft 365 integration, this Surface is ready to work the moment you open the lid. Ideal for executives, consultants, and professionals across Nairobi who value premium craftsmanship alongside world-class performance.", shortDescription: '13.5" PixelSense touch laptop with 18-hour battery, Intel i5-1235U.',
     images: ['https://images.pexels.com/photos/1334597/pexels-photo-1334597.jpeg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=800'],
     specifications: { 'Processor': 'Intel Core i5-1235U', 'RAM': '8GB LPDDR5x', 'Storage': '256GB SSD', 'Display': '13.5" PixelSense Touch', 'Graphics': 'Intel Iris Xe', 'OS': 'Windows 11', 'Battery': 'Up to 18 hours', 'Weight': '1.27 kg' },
     price: null, availability: 'in-stock', isFeatured: true, isNew: false, isBestSeller: false,
@@ -61,7 +61,7 @@ export const products: Product[] = [
   {
     id: 'p-8', name: 'HP ZBook Power G9', slug: 'hp-zbook-power-g9', sku: 'HP-ZB-PG9-008', brand: 'HP', brandSlug: 'hp', category: 'Laptops', categorySlug: 'laptops',
     description: 'The HP ZBook Power G9 is a mobile workstation with Intel Core i7-12700H, 16GB RAM, 512GB SSD, and NVIDIA RTX A1000 graphics. ISV-certified for professional applications.', shortDescription: '15.6" mobile workstation with i7, RTX A1000, ISV certified.',
-    images: ['https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&w=800'],
+    images: ['https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=800'],
     specifications: { 'Processor': 'Intel Core i7-12700H', 'RAM': '16GB DDR5', 'Storage': '512GB NVMe SSD', 'Display': '15.6" FHD', 'Graphics': 'NVIDIA RTX A1000', 'OS': 'Windows 11 Pro', 'Battery': '83Wh', 'Weight': '1.89 kg' },
     price: null, availability: 'pre-order', isFeatured: false, isNew: false, isBestSeller: false,
     relatedProducts: ['p-5', 'p-3', 'p-1'], tags: ['workstation', 'nvidia', 'cad', 'engineering']
@@ -69,14 +69,14 @@ export const products: Product[] = [
   {
     id: 'p-9', name: 'Dell Inspiron 16 5630', slug: 'dell-inspiron-16-5630', sku: 'DL-INS-5630-009', brand: 'Dell', brandSlug: 'dell', category: 'Laptops', categorySlug: 'laptops',
     description: 'The Dell Inspiron 16 5630 is a versatile 16-inch laptop with Intel Core i5-1335U, 16GB RAM, 512GB SSD, and a FHD+ display. Ideal for home and productivity.', shortDescription: '16" versatile laptop with Intel i5, 16GB RAM, 512GB SSD.',
-    images: ['https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=800'],
+    images: ['https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=800'],
     specifications: { 'Processor': 'Intel Core i5-1335U', 'RAM': '16GB DDR5', 'Storage': '512GB NVMe SSD', 'Display': '16" FHD+', 'Graphics': 'Intel Iris Xe', 'OS': 'Windows 11 Home', 'Battery': '54Wh', 'Weight': '1.88 kg' },
     price: null, availability: 'in-stock', isFeatured: false, isNew: true, isBestSeller: false,
     relatedProducts: ['p-1', 'p-6', 'p-7'], tags: ['home', 'productivity', '16-inch', 'fhd']
   },
   {
     id: 'p-10', name: 'Lenovo Legion Pro 7i', slug: 'lenovo-legion-pro-7i', sku: 'LN-LG-P7I-010', brand: 'Lenovo', brandSlug: 'lenovo', category: 'Laptops', categorySlug: 'laptops',
-    description: 'The Lenovo Legion Pro 7i is a gaming powerhouse with Intel Core i9-13900HX, 32GB RAM, 1TB SSD, and NVIDIA RTX 4080. Features a 16" WQXGA 240Hz display.', shortDescription: '16" gaming laptop with i9, RTX 4080, 240Hz display.',
+    description: "The Lenovo Legion Pro 7i is Lenovo's uncompromising gaming flagship — delivering desktop-class compute in a portable chassis for Kenya's most demanding gamers, 3D artists, and power users. The Intel Core i9-13900HX (24-core) paired with NVIDIA GeForce RTX 4080 at 175W TGP eliminates every performance bottleneck, whether you're playing AAA titles at max settings, running real-time 3D renders, or executing AI-accelerated creative workflows. The 16-inch WQXGA (2560×1600) IPS display with 240Hz refresh and 3ms response time delivers the smooth, tear-free experience competitive gamers demand. Lenovo's Coldfront 5.0 thermal management system with Phase-Change Material keeps thermals in check during sustained marathon sessions — ensuring peak clock speeds hold under pressure.", shortDescription: '16" WQXGA 240Hz gaming powerhouse: i9-13900HX, RTX 4080, 32GB DDR5.',
     images: ['https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=800'],
     specifications: { 'Processor': 'Intel Core i9-13900HX', 'RAM': '32GB DDR5', 'Storage': '1TB NVMe SSD', 'Display': '16" WQXGA 240Hz', 'Graphics': 'NVIDIA RTX 4080', 'OS': 'Windows 11 Home', 'Battery': '80Wh', 'Weight': '2.8 kg' },
     price: null, availability: 'low-stock', isFeatured: true, isNew: true, isBestSeller: true,
@@ -85,8 +85,8 @@ export const products: Product[] = [
   // Desktops
   {
     id: 'p-11', name: 'Dell OptiPlex 7010 Tower', slug: 'dell-optiplex-7010-tower', sku: 'DL-OP-7010T-011', brand: 'Dell', brandSlug: 'dell', category: 'Desktops', categorySlug: 'desktops',
-    description: 'The Dell OptiPlex 7010 Tower is a reliable business desktop with Intel Core i5-13500, 16GB RAM, 512GB SSD, and integrated graphics. Expandable and easy to service.', shortDescription: 'Business tower desktop with Intel i5, 16GB RAM, 512GB SSD.',
-    images: ['https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=800'],
+    description: "The Dell OptiPlex 7010 Tower is the cornerstone business desktop powering Kenya's corporate offices, government ministries, and call-centre environments. The Intel Core i5-13500 (13th Gen, 14 cores) handles ERP applications, multi-monitor setups, and parallel productivity workflows with effortless efficiency, while 16GB DDR4 RAM and a 512GB NVMe SSD ensure responsive day-to-day performance. Dell's tool-free chassis design simplifies RAM, SSD, and graphics upgrades — an advantage for IT administrators managing large deployments across multiple sites. TPM 2.0, optional smart card reader, and Dell Trusted Device security meet the stringent data protection requirements of banks, insurers, and public institutions. Its standardised platform across three consecutive product generations dramatically reduces spare parts inventory and fleet management complexity.", shortDescription: 'Business tower desktop: Intel i5-13500, 16GB DDR4, 512GB SSD, tool-free chassis.',
+    images: ['https://images.pexels.com/photos/374074/pexels-photo-374074.jpeg?auto=compress&cs=tinysrgb&w=800', 'https://images.pexels.com/photos/1181467/pexels-photo-1181467.jpeg?auto=compress&cs=tinysrgb&w=800'],
     specifications: { 'Processor': 'Intel Core i5-13500', 'RAM': '16GB DDR4', 'Storage': '512GB NVMe SSD', 'Graphics': 'Intel UHD 770', 'OS': 'Windows 11 Pro', 'Form Factor': 'Mini Tower', 'Ports': 'USB-C, USB-A, HDMI, DP' },
     price: null, availability: 'in-stock', isFeatured: true, isNew: false, isBestSeller: true,
     relatedProducts: ['p-12', 'p-13', 'p-14'], tags: ['business', 'tower', 'expandable', 'dell']

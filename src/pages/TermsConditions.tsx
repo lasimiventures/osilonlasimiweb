@@ -4,7 +4,7 @@ export function TermsConditions() {
   return (
     <>
       <SEO meta={{
-        title: 'Terms & Conditions | OSIL Ltd',
+        title: 'Terms & Conditions | OSIL Ltd Kenya',
         description: 'OSIL Ltd terms and conditions of use, sale, and service.',
       }} />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

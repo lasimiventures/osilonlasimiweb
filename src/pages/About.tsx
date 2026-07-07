@@ -15,7 +15,7 @@ export function About() {
   return (
     <>
       <SEO meta={{
-        title: 'About OSIL Ltd Kenya | Leading ICT Solutions Provider | 15+ Years Experience',
+        title: 'About Us | ICT Solutions Provider | 15+ Years Experience | OSIL Ltd Kenya',
         description: 'OSIL Ltd is a leading ICT solutions provider in Kenya with 15+ years experience, 1200+ enterprise clients, and partnerships with Dell, HP, Lenovo, Cisco. Serving Nairobi and all Kenyan counties.',
         keywords: ['OSIL about us', 'ICT company Kenya', 'IT solutions provider Nairobi', 'technology company East Africa', 'OSIL history', 'OSIL team', 'ICT distributor Kenya'],
         canonicalUrl: getCanonicalUrl('/about'),

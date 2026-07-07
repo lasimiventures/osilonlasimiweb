@@ -1,13 +1,17 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ShoppingCart, Check, Package, Shield, Truck, Headphones, Zap, Award, Building2, Users, ChevronRight, Cpu, HardDrive, Monitor, Wifi, Battery } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Check, Package, Shield, Truck, Headphones, Zap, Award, Building2, Users, ChevronRight, Download, Users2 } from 'lucide-react';
 import { SEO, generateProductSchema, generateBreadcrumbSchema, generateProductPageTitle, generateProductDescription, getCanonicalUrl, AVAILABILITY_SCHEMA_MAP } from '../components/SEO';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
+import { FAQAccordion } from '../components/FAQAccordion';
+import { BulkPricingModal } from '../components/BulkPricingModal';
 import { getProductBySlug, getRelatedProducts, getProductsByBrand } from '../data/products';
 import { getCategoryBySlug } from '../data/categories';
+import { productFaqs } from '../data/faqs';
 import { useQuote } from '../context/QuoteContext';
+import { useRecentlyViewed } from '../context/RecentlyViewedContext';
 
 const benefitIcons = [Package, Shield, Truck, Headphones, Zap, Award];
 
@@ -52,7 +56,17 @@ export function ProductDetail() {
   const product = getProductBySlug(slug || '');
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [showBulkModal, setShowBulkModal] = useState(false);
   const { addItem } = useQuote();
+  const { trackProduct, recentlyViewed } = useRecentlyViewed();
+
+  useEffect(() => {
+    if (product) trackProduct(product.id);
+  }, [product?.id]);
+
+  const recentlyViewedFiltered = product
+    ? recentlyViewed.filter(p => p.id !== product.id).slice(0, 4)
+    : [];
 
   const seoData = useMemo(() => {
     if (!product) return null;
@@ -230,6 +244,23 @@ export function ProductDetail() {
                   <Check className="w-4 h-4 text-green-500" />
                   <span>Genuine product with manufacturer warranty. Authorized {product.brand} dealer in Kenya.</span>
                 </div>
+
+                <div className="flex flex-wrap gap-3 mt-5 pt-5 border-t border-slate-100">
+                  <a
+                    href={product.datasheetUrl || '#'}
+                    onClick={e => { if (!product.datasheetUrl) { e.preventDefault(); alert('Datasheet available on request. Please contact our sales team.'); } }}
+                    className="flex items-center gap-2 px-4 py-2.5 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                    download={!!product.datasheetUrl}
+                  >
+                    <Download className="w-4 h-4" /> Download Datasheet
+                  </a>
+                  <button
+                    onClick={() => setShowBulkModal(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 border border-blue-200 bg-blue-50 rounded-lg text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                  >
+                    <Users2 className="w-4 h-4" /> Request Bulk Pricing
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -356,8 +387,21 @@ export function ProductDetail() {
               </div>
             )}
 
+            {/* FAQ Section */}
+            <div className="mb-12">
+              <FAQAccordion faqs={productFaqs} title="Frequently Asked Questions" />
+            </div>
+
+            {/* Recently Viewed */}
+            {recentlyViewedFiltered.length > 0 && (
+              <div className="mb-12">
+                <h2 className="text-xl font-bold text-slate-900 mb-4">Recently Viewed</h2>
+                <ProductGrid products={recentlyViewedFiltered} />
+              </div>
+            )}
+
             <div className="bg-slate-50 border border-slate-100 rounded-xl p-6">
-              <h2 className="text-lg font-bold text-slate-900 mb-4">Internal Links</h2>
+              <h2 className="text-lg font-bold text-slate-900 mb-4">Explore More</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <Link to={`/category/${product.categorySlug}`} className="flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 hover:border-blue-300 hover:text-blue-600 transition-colors">
                   {product.category} <ChevronRight className="w-3 h-3" />
@@ -376,6 +420,10 @@ export function ProductDetail() {
           </motion.div>
         </div>
       </section>
+
+      {showBulkModal && (
+        <BulkPricingModal productName={product.name} onClose={() => setShowBulkModal(false)} />
+      )}
     </>
   );
 }

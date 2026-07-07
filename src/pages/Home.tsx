@@ -9,6 +9,7 @@ import {
   CheckCircle, BadgeCheck, ArrowUpRight, Play
 } from 'lucide-react';
 import { SEO, generateOrganizationSchema, getCanonicalUrl } from '../components/SEO';
+import { promotions } from '../data/promotions';
 import { ProductGrid } from '../components/ProductGrid';
 import { getFeaturedProducts, getNewArrivals, getBestSellers } from '../data/products';
 import { categories } from '../data/categories';
@@ -113,7 +114,7 @@ export function Home() {
   return (
     <>
       <SEO meta={{
-        title: 'OSIL Ltd - ICT Solutions & Electronics | Kenya',
+        title: 'ICT Solutions & Electronics | Laptops, Phones, Servers | OSIL Ltd Kenya',
         description: 'OSIL Ltd is a leading ICT solutions provider in Kenya, offering laptops, desktops, phones, servers, networking equipment, and professional IT services for enterprises and consumers across East Africa.',
         keywords: ['OSIL', 'ICT solutions', 'Kenya', 'laptops', 'phones', 'servers', 'networking', 'IT services', 'Nairobi', 'Dell', 'HP', 'Lenovo', 'Cisco', 'electronics', 'enterprise solutions'],
         canonicalUrl: getCanonicalUrl('/'),
@@ -199,6 +200,41 @@ export function Home() {
                 <div className="text-xl lg:text-2xl font-bold text-brand-blue">{stat.value}{stat.suffix}</div>
                 <div className="text-xs text-slate-400 mt-0.5">{stat.label}</div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Deals / Promotions */}
+      <section className="py-10 bg-slate-50 border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Featured Deals</h2>
+              <p className="text-xs text-slate-400 mt-0.5">Current promotions & category highlights</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {promotions.map((promo) => (
+              <Link key={promo.id} to={promo.ctaPath} className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white hover:shadow-lg hover:shadow-slate-200/60 transition-all duration-300">
+                <div className="relative h-40 overflow-hidden">
+                  <img src={promo.image} alt={promo.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/20 to-transparent" />
+                  {promo.badge && (
+                    <span className="absolute top-3 left-3 px-2.5 py-1 bg-blue-600 text-white text-xs font-semibold rounded-md">{promo.badge}</span>
+                  )}
+                  {promo.highlight && (
+                    <span className="absolute top-3 right-3 px-2.5 py-1 bg-amber-500 text-white text-xs font-semibold rounded-md">{promo.highlight}</span>
+                  )}
+                </div>
+                <div className="p-4">
+                  <h3 className="text-sm font-bold text-slate-900 mb-1 group-hover:text-blue-600 transition-colors">{promo.title}</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-3">{promo.subtitle}</p>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600">
+                    {promo.ctaLabel} <ArrowRight className="w-3 h-3" />
+                  </span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>

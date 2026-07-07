@@ -4,7 +4,7 @@ export function PrivacyPolicy() {
   return (
     <>
       <SEO meta={{
-        title: 'Privacy Policy | OSIL Ltd',
+        title: 'Privacy Policy | OSIL Ltd Kenya',
         description: 'OSIL Ltd privacy policy. Learn how we collect, use, and protect your personal information.',
       }} />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

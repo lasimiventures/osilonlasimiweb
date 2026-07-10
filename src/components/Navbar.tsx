@@ -7,9 +7,7 @@ import {
 } from 'lucide-react';
 import { useQuote } from '../context/QuoteContext';
 import { services } from '../data/services';
-import { products } from '../data/products';
-import { categories } from '../data/categories';
-import { allBrands } from '../data/brands';
+import { useCatalog } from '../context/CatalogContext';
 
 /* ─── nav structure ─────────────────────────────────────────────────── */
 
@@ -144,6 +142,7 @@ const serviceIconMap: Record<string, React.ReactNode> = {
 /* ─── component ─────────────────────────────────────────────────────── */
 
 export function Navbar() {
+  const { products, categories, brands: allBrands } = useCatalog();
   const [isOpen, setIsOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');

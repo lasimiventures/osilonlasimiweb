@@ -1,8 +1,6 @@
 import { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp, Filter } from 'lucide-react';
-import { categories } from '../data/categories';
-import { allBrands } from '../data/brands';
-import { products } from '../data/products';
+import { useCatalog } from '../context/CatalogContext';
 
 interface FilterSidebarProps {
   selectedCategory: string | null;
@@ -29,6 +27,7 @@ export function FilterSidebar({
   hideBrandFilter = false,
   filterCategoriesByBrand,
 }: FilterSidebarProps) {
+  const { categories, brands: allBrands, products } = useCatalog();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sections, setSections] = useState({
     categories: true,

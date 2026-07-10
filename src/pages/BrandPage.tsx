@@ -5,9 +5,7 @@ import { SEO, generateBreadcrumbSchema, getCanonicalUrl } from '../components/SE
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
 import { FilterSidebar } from '../components/FilterSidebar';
-import { getBrandBySlug, allBrands } from '../data/brands';
-import { getProductsByBrand, products } from '../data/products';
-import { categories } from '../data/categories';
+import { useCatalog } from '../context/CatalogContext';
 
 const brandBannerImages: Record<string, string> = {
   dell: 'https://images.pexels.com/photos/18105/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1600',
@@ -85,6 +83,7 @@ const brandSeoContent: Record<string, { tagline: string; overview: string; stren
 
 export function BrandPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { getBrandBySlug, getProductsByBrand, categories, brands, loading } = useCatalog();
   const brand = getBrandBySlug(slug || '');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedAvailability, setSelectedAvailability] = useState<string | null>(null);
@@ -117,6 +116,15 @@ export function BrandPage() {
     return result;
   }, [slug, selectedCategory, selectedAvailability]);
 
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <div className="inline-block w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-500">Loading brand...</p>
+      </div>
+    );
+  }
+
   if (!brand) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
@@ -129,7 +137,7 @@ export function BrandPage() {
     );
   }
 
-  const relatedBrands = allBrands.filter(b => b.categorySlug === brand.categorySlug && b.slug !== brand.slug).slice(0, 6);
+  const relatedBrands = brands.filter(b => b.categorySlug === brand.categorySlug && b.slug !== brand.slug).slice(0, 6);
   const seoContent = seoData?.seoContent || brandSeoContent.dell;
   const bannerImage = brandBannerImages[slug || ''] || brandBannerImages.dell;
   const brandCategories = [...new Set(brandProducts.map(p => p.category))];

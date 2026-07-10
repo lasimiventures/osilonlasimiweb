@@ -6,12 +6,11 @@ import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
 import { SearchBar } from '../components/SearchBar';
 import { FilterSidebar } from '../components/FilterSidebar';
-import { products, searchProducts, getFeaturedProducts, getNewArrivals } from '../data/products';
-import { categories } from '../data/categories';
-import { allBrands } from '../data/brands';
+import { useCatalog } from '../context/CatalogContext';
 import { useRecentlyViewed } from '../context/RecentlyViewedContext';
 
 export function Products() {
+  const { products, categories, brands, searchProducts, getFeaturedProducts, getNewArrivals } = useCatalog();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSearch = searchParams.get('search') || '';
   const initialCategory = searchParams.get('category') || null;
@@ -97,7 +96,7 @@ export function Products() {
           <div className="flex items-center gap-4 mt-4 text-sm text-slate-400">
             <span>{products.length}+ products</span>
             <span>|</span>
-            <span>{allBrands.length} brands</span>
+            <span>{brands.length} brands</span>
             <span>|</span>
             <span>{categories.length} categories</span>
           </div>

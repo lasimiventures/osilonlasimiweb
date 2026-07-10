@@ -5,6 +5,7 @@ import { AppRoutes } from './routes';
 import { QuoteProvider } from './context/QuoteContext';
 import { RecentlyViewedProvider } from './context/RecentlyViewedContext';
 import { CompareProvider } from './context/CompareContext';
+import { CatalogProvider } from './context/CatalogContext';
 import { trackPageView, trackEvent } from './utils/analytics';
 
 function PageTracker() {
@@ -21,6 +22,7 @@ function PageTracker() {
 function App() {
   return (
     <BrowserRouter>
+      <CatalogProvider>
       <QuoteProvider>
         <RecentlyViewedProvider>
           <CompareProvider>
@@ -29,6 +31,7 @@ function App() {
           </CompareProvider>
         </RecentlyViewedProvider>
       </QuoteProvider>
+      </CatalogProvider>
     </BrowserRouter>
   );
 }

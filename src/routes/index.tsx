@@ -25,6 +25,8 @@ import { AdminDashboard } from '../pages/admin/Dashboard';
 import { AdminOrders } from '../pages/admin/Orders';
 import { AdminProducts } from '../pages/admin/Products';
 import { AdminProductForm } from '../pages/admin/ProductForm';
+import { AdminCategories } from '../pages/admin/Categories';
+import { AdminCategoryForm } from '../pages/admin/CategoryForm';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -64,6 +66,9 @@ export function AppRoutes() {
           <Route path="/admin/products" element={<AdminProducts />} />
           <Route path="/admin/products/new" element={<AdminProductForm />} />
           <Route path="/admin/products/:id/edit" element={<AdminProductForm />} />
+          <Route path="/admin/categories" element={<AdminCategories />} />
+          <Route path="/admin/categories/new" element={<AdminCategoryForm />} />
+          <Route path="/admin/categories/:id/edit" element={<AdminCategoryForm />} />
           {/* Further admin routes added in later milestones */}
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>

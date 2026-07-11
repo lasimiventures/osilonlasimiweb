@@ -176,6 +176,73 @@ export async function createQuoteRequest(quote: {
   return quoteRequest;
 }
 
+// Orders API
+export async function createOrder(order: {
+  customer_name: string;
+  company_name?: string;
+  email: string;
+  phone: string;
+  county?: string;
+  delivery_address?: string;
+  notes?: string;
+  order_status?: string;
+  items: Array<{
+    product_id?: string;
+    product_name: string;
+    product_sku?: string;
+    quantity: number;
+    unit_price?: number | null;
+    subtotal?: number | null;
+  }>;
+}) {
+  const { items, ...orderData } = order;
+
+  const { data: createdOrder, error: orderError } = await supabase
+    .from('orders')
+    .insert(orderData)
+    .select()
+    .single();
+
+  if (orderError) throw orderError;
+
+  if (items.length > 0) {
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(items.map(item => ({ ...item, order_id: createdOrder.id })));
+    if (itemsError) throw itemsError;
+  }
+
+  return createdOrder;
+}
+
+export async function getOrders(options?: { status?: string; limit?: number }) {
+  let query = supabase
+    .from('orders')
+    .select('*, order_items(*)');
+
+  if (options?.status) {
+    query = query.eq('order_status', options.status);
+  }
+  if (options?.limit) {
+    query = query.limit(options.limit);
+  }
+
+  const { data, error } = await query.order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function updateOrderStatus(orderId: string, status: string) {
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ order_status: status })
+    .eq('id', orderId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 // Bulk pricing request (simplified - stores as a quote request with notes)
 export async function createBulkPricingRequest(request: {
   product_name: string;

@@ -14,11 +14,15 @@ import { Solutions } from '../pages/Solutions';
 import { Contact } from '../pages/Contact';
 import { QuoteCart } from '../pages/QuoteCart';
 import { RequestQuote } from '../pages/RequestQuote';
+import { ShoppingCart } from '../pages/ShoppingCart';
+import { Checkout } from '../pages/Checkout';
+import { OrderConfirmation } from '../pages/OrderConfirmation';
 import { PrivacyPolicy } from '../pages/PrivacyPolicy';
 import { TermsConditions } from '../pages/TermsConditions';
 import { NotFound } from '../pages/NotFound';
 import { AdminLogin } from '../pages/admin/Login';
 import { AdminDashboard } from '../pages/admin/Dashboard';
+import { AdminOrders } from '../pages/admin/Orders';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -38,6 +42,9 @@ export function AppRoutes() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/quote-cart" element={<QuoteCart />} />
         <Route path="/request-quote" element={<RequestQuote />} />
+        <Route path="/cart" element={<ShoppingCart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-confirmation/:orderNumber" element={<OrderConfirmation />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsConditions />} />
         <Route path="*" element={<NotFound />} />
@@ -51,6 +58,7 @@ export function AppRoutes() {
       <Route element={<AdminRoute />}>
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/orders" element={<AdminOrders />} />
           {/* Further admin routes added in later milestones */}
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>

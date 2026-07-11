@@ -19,6 +19,13 @@ export interface Product {
   relatedProducts: string[];
   tags: string[];
   datasheetUrl?: string;
+  // B2C commerce fields
+  buyNowEnabled: boolean;
+  callForPrice: boolean;
+  displayPrice: number | null;
+  priceVisible: boolean;
+  minimumOrderQuantity: number;
+  maximumOrderQuantity: number | null;
 }
 
 export interface Category {
@@ -31,6 +38,9 @@ export interface Category {
   productCount: number;
   parentCategory?: string;
   relatedCategories: string[];
+  allowBuyNow: boolean;
+  allowQuote: boolean;
+  allowBulkQuote: boolean;
 }
 
 export interface Brand {
@@ -43,6 +53,55 @@ export interface Brand {
   categorySlug: string;
   productCount: number;
   website?: string;
+  allowBuyNow: boolean;
+  allowQuote: boolean;
+  allowBulkQuote: boolean;
+}
+
+export interface CartItem {
+  productId: string;
+  productName: string;
+  productSku: string;
+  productSlug: string;
+  brand: string;
+  image: string;
+  quantity: number;
+  unitPrice: number | null;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  companyName: string | null;
+  email: string;
+  phone: string;
+  county: string | null;
+  deliveryAddress: string | null;
+  notes: string | null;
+  orderStatus: OrderStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type OrderStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'awaiting_customer_confirmation'
+  | 'processing'
+  | 'ready_for_delivery'
+  | 'delivered'
+  | 'cancelled';
+
+export interface OrderItem {
+  id: string;
+  orderId: string;
+  productId: string | null;
+  productName: string;
+  productSku: string | null;
+  quantity: number;
+  unitPrice: number | null;
+  subtotal: number | null;
 }
 
 export interface Testimonial {

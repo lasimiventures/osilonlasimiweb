@@ -1,11 +1,29 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart, Send } from 'lucide-react';
+import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart, Send, MoveRight, ShoppingBag } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { useQuote } from '../context/QuoteContext';
+import { useShoppingCart } from '../context/ShoppingCartContext';
 
 export function QuoteCart() {
   const { items, removeItem, updateQuantity, clearQuote, itemCount } = useQuote();
+  const { addItem: addToCart, items: cartItems } = useShoppingCart();
   const navigate = useNavigate();
+
+  function moveToCart(item: typeof items[0]) {
+    const alreadyInCart = cartItems.find(c => c.productId === item.productId);
+    if (!alreadyInCart) {
+      addToCart(item.product, item.quantity);
+    } else {
+      // Just increment quantity without duplicating
+      addToCart(item.product, item.quantity);
+    }
+    removeItem(item.productId);
+  }
+
+  function moveAllToCart() {
+    items.forEach(item => addToCart(item.product, item.quantity));
+    clearQuote();
+  }
 
   if (itemCount === 0) {
     return (
@@ -59,26 +77,41 @@ export function QuoteCart() {
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                    <div className="flex items-center gap-3 mt-3">
-                      <div className="flex items-center gap-1 border border-slate-200 rounded-lg">
-                        <button onClick={() => updateQuantity(item.productId, item.quantity - 1)} className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-50 rounded-l-lg">
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.productId, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-50 rounded-r-lg">
-                          <Plus className="w-3 h-3" />
-                        </button>
+                    <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1 border border-slate-200 rounded-lg">
+                          <button onClick={() => updateQuantity(item.productId, item.quantity - 1)} className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-50 rounded-l-lg">
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                          <button onClick={() => updateQuantity(item.productId, item.quantity + 1)} className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-50 rounded-r-lg">
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                        <span className="text-xs text-slate-400">Request pricing</span>
                       </div>
-                      <span className="text-xs text-slate-400">Request pricing</span>
+                      {item.product.buyNowEnabled && (
+                        <button
+                          onClick={() => moveToCart(item)}
+                          className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium"
+                        >
+                          <MoveRight className="w-3.5 h-3.5" /> Move to Cart
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
               ))}
 
-              <div className="flex items-center justify-between pt-4">
-                <button onClick={clearQuote} className="text-sm text-red-500 hover:text-red-600 font-medium">
-                  Clear all items
-                </button>
+              <div className="flex items-center justify-between pt-4 flex-wrap gap-3">
+                <div className="flex items-center gap-4">
+                  <button onClick={clearQuote} className="text-sm text-red-500 hover:text-red-600 font-medium">
+                    Clear all items
+                  </button>
+                  <button onClick={moveAllToCart} className="flex items-center gap-1.5 text-sm text-green-600 hover:text-green-700 font-medium">
+                    <ShoppingBag className="w-3.5 h-3.5" /> Move all to Cart
+                  </button>
+                </div>
                 <Link to="/products" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
                   <ArrowLeft className="w-3 h-3" /> Continue Shopping
                 </Link>
@@ -104,10 +137,16 @@ export function QuoteCart() {
                 </div>
                 <button
                   onClick={() => navigate('/request-quote')}
-                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors mb-3"
                 >
                   <Send className="w-4 h-4" /> Proceed to Quote
                 </button>
+                <Link
+                  to="/cart"
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-slate-200 text-slate-700 font-medium rounded-lg hover:border-green-300 hover:text-green-700 transition-colors text-sm"
+                >
+                  <ShoppingBag className="w-4 h-4" /> View Shopping Cart
+                </Link>
               </div>
             </div>
           </div>

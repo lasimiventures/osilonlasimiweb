@@ -23,6 +23,8 @@ import { NotFound } from '../pages/NotFound';
 import { AdminLogin } from '../pages/admin/Login';
 import { AdminDashboard } from '../pages/admin/Dashboard';
 import { AdminOrders } from '../pages/admin/Orders';
+import { AdminProducts } from '../pages/admin/Products';
+import { AdminProductForm } from '../pages/admin/ProductForm';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -59,6 +61,9 @@ export function AppRoutes() {
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/orders" element={<AdminOrders />} />
+          <Route path="/admin/products" element={<AdminProducts />} />
+          <Route path="/admin/products/new" element={<AdminProductForm />} />
+          <Route path="/admin/products/:id/edit" element={<AdminProductForm />} />
           {/* Further admin routes added in later milestones */}
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>

@@ -1,0 +1,591 @@
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import {
+  ArrowLeft, Save, Plus, Trash2, AlertCircle,
+  Loader2, ImagePlus, Tag, Package, Info,
+} from 'lucide-react';
+import { adminCreateProduct, adminUpdateProduct, adminGetProductById, getCategories, getBrands } from '../../lib/database';
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+function slugify(str: string): string {
+  return str.toLowerCase().trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+// ─── types ────────────────────────────────────────────────────────────────────
+
+interface SpecRow { key: string; value: string }
+
+interface FormState {
+  name: string;
+  slug: string;
+  sku: string;
+  brand: string;
+  brand_slug: string;
+  category: string;
+  category_slug: string;
+  description: string;
+  short_description: string;
+  images: string[];
+  specifications: SpecRow[];
+  price: string;
+  availability: string;
+  is_featured: boolean;
+  is_new: boolean;
+  is_best_seller: boolean;
+  tags: string;
+  datasheet_url: string;
+  buy_now_enabled: boolean;
+  call_for_price: boolean;
+  display_price: string;
+  price_visible: boolean;
+  minimum_order_quantity: string;
+  maximum_order_quantity: string;
+}
+
+const EMPTY_FORM: FormState = {
+  name: '', slug: '', sku: '', brand: '', brand_slug: '',
+  category: '', category_slug: '',
+  description: '', short_description: '',
+  images: [''],
+  specifications: [],
+  price: '', availability: 'in-stock',
+  is_featured: false, is_new: false, is_best_seller: false,
+  tags: '', datasheet_url: '',
+  buy_now_enabled: true, call_for_price: false,
+  display_price: '', price_visible: false,
+  minimum_order_quantity: '1', maximum_order_quantity: '',
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function dbToForm(raw: any): FormState {
+  const specs: SpecRow[] = Object.entries(raw.specifications ?? {}).map(([key, value]) => ({ key, value: String(value) }));
+  return {
+    name: raw.name ?? '',
+    slug: raw.slug ?? '',
+    sku: raw.sku ?? '',
+    brand: raw.brand ?? '',
+    brand_slug: raw.brand_slug ?? '',
+    category: raw.category ?? '',
+    category_slug: raw.category_slug ?? '',
+    description: raw.description ?? '',
+    short_description: raw.short_description ?? '',
+    images: raw.images?.length ? raw.images : [''],
+    specifications: specs.length ? specs : [],
+    price: raw.price != null ? String(raw.price) : '',
+    availability: raw.availability ?? 'in-stock',
+    is_featured: raw.is_featured ?? false,
+    is_new: raw.is_new ?? false,
+    is_best_seller: raw.is_best_seller ?? false,
+    tags: (raw.tags ?? []).join(', '),
+    datasheet_url: raw.datasheet_url ?? '',
+    buy_now_enabled: raw.buy_now_enabled ?? true,
+    call_for_price: raw.call_for_price ?? false,
+    display_price: raw.display_price != null ? String(raw.display_price) : '',
+    price_visible: raw.price_visible ?? false,
+    minimum_order_quantity: String(raw.minimum_order_quantity ?? 1),
+    maximum_order_quantity: raw.maximum_order_quantity != null ? String(raw.maximum_order_quantity) : '',
+  };
+}
+
+function formToDb(form: FormState) {
+  return {
+    name: form.name.trim(),
+    slug: form.slug.trim(),
+    sku: form.sku.trim(),
+    brand: form.brand.trim(),
+    brand_slug: form.brand_slug.trim() || slugify(form.brand),
+    category: form.category.trim(),
+    category_slug: form.category_slug.trim() || slugify(form.category),
+    description: form.description.trim(),
+    short_description: form.short_description.trim(),
+    images: form.images.map(u => u.trim()).filter(Boolean),
+    specifications: Object.fromEntries(
+      form.specifications.filter(s => s.key.trim()).map(s => [s.key.trim(), s.value.trim()])
+    ),
+    price: form.price ? parseFloat(form.price) : null,
+    availability: form.availability,
+    is_featured: form.is_featured,
+    is_new: form.is_new,
+    is_best_seller: form.is_best_seller,
+    tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
+    datasheet_url: form.datasheet_url.trim() || null,
+    buy_now_enabled: form.buy_now_enabled,
+    call_for_price: form.call_for_price,
+    display_price: form.display_price ? parseFloat(form.display_price) : null,
+    price_visible: form.price_visible,
+    minimum_order_quantity: parseInt(form.minimum_order_quantity) || 1,
+    maximum_order_quantity: form.maximum_order_quantity ? parseInt(form.maximum_order_quantity) : null,
+  };
+}
+
+// ─── shared input styles ──────────────────────────────────────────────────────
+
+const inputCls = 'w-full px-3 py-2.5 bg-slate-800 border border-slate-700 text-white placeholder-slate-500 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all';
+const labelCls = 'block text-sm font-medium text-slate-300 mb-1.5';
+
+// ─── sub-components ───────────────────────────────────────────────────────────
+
+function SectionCard({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <h2 className="text-sm font-semibold text-white mb-5 flex items-center gap-2">
+        <Icon className="w-4 h-4 text-blue-400" /> {title}
+      </h2>
+      {children}
+    </div>
+  );
+}
+
+// ─── main component ───────────────────────────────────────────────────────────
+
+export function AdminProductForm() {
+  const { id } = useParams<{ id?: string }>();
+  const navigate = useNavigate();
+  const isEdit = Boolean(id);
+
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const [loading, setLoading] = useState(isEdit);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [slugManual, setSlugManual] = useState(false);
+
+  // Options for datalists
+  const [categoryOptions, setCategoryOptions] = useState<{ name: string; slug: string }[]>([]);
+  const [brandOptions, setBrandOptions] = useState<{ name: string; slug: string }[]>([]);
+
+  useEffect(() => {
+    getCategories().then(data => setCategoryOptions((data ?? []).map(c => ({ name: c.name, slug: c.slug }))));
+    getBrands().then(data => setBrandOptions((data ?? []).map(b => ({ name: b.name, slug: b.slug }))));
+  }, []);
+
+  useEffect(() => {
+    if (isEdit && id) {
+      adminGetProductById(id).then(raw => {
+        if (raw) { setForm(dbToForm(raw)); setSlugManual(true); }
+        setLoading(false);
+      });
+    }
+  }, [id, isEdit]);
+
+  const set = useCallback(<K extends keyof FormState>(key: K, value: FormState[K]) => {
+    setForm(prev => ({ ...prev, [key]: value }));
+  }, []);
+
+  function handleNameChange(value: string) {
+    set('name', value);
+    if (!slugManual) set('slug', slugify(value));
+  }
+
+  function handleSlugChange(value: string) {
+    set('slug', value);
+    setSlugManual(true);
+  }
+
+  function handleBrandSelect(name: string) {
+    const match = brandOptions.find(b => b.name === name);
+    setForm(prev => ({ ...prev, brand: name, brand_slug: match?.slug ?? slugify(name) }));
+  }
+
+  function handleCategorySelect(name: string) {
+    const match = categoryOptions.find(c => c.name === name);
+    setForm(prev => ({ ...prev, category: name, category_slug: match?.slug ?? slugify(name) }));
+  }
+
+  // Images
+  function setImage(i: number, val: string) {
+    const next = [...form.images];
+    next[i] = val;
+    set('images', next);
+  }
+  function addImage() { set('images', [...form.images, '']); }
+  function removeImage(i: number) { set('images', form.images.filter((_, idx) => idx !== i)); }
+
+  // Specs
+  function setSpec(i: number, field: 'key' | 'value', val: string) {
+    const next = form.specifications.map((s, idx) => idx === i ? { ...s, [field]: val } : s);
+    set('specifications', next);
+  }
+  function addSpec() { set('specifications', [...form.specifications, { key: '', value: '' }]); }
+  function removeSpec(i: number) { set('specifications', form.specifications.filter((_, idx) => idx !== i)); }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.name.trim() || !form.sku.trim() || !form.brand.trim() || !form.category.trim()) {
+      setError('Name, SKU, Brand, and Category are required.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    if (!form.slug.trim()) {
+      setError('Slug is required. It will be auto-generated from the name if left empty.');
+      return;
+    }
+    setError(null);
+    setSaving(true);
+    try {
+      const payload = formToDb(form);
+      if (isEdit && id) {
+        await adminUpdateProduct(id, payload);
+      } else {
+        await adminCreateProduct(payload);
+      }
+      navigate('/admin/products');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to save product.';
+      setError(msg.includes('duplicate') || msg.includes('unique') ? 'A product with this slug or SKU already exists.' : msg);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="p-8 flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 lg:p-8 max-w-4xl mx-auto">
+
+      {/* Header */}
+      <div className="flex items-center gap-4 mb-7">
+        <Link
+          to="/admin/products"
+          className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 rounded-xl transition-all"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </Link>
+        <div>
+          <h1 className="text-xl font-bold text-white">{isEdit ? 'Edit Product' : 'Add Product'}</h1>
+          <p className="text-slate-400 text-sm">{isEdit ? `ID: ${id}` : 'Fill in the details below'}</p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="flex items-start gap-3 bg-red-950/50 border border-red-800/40 rounded-xl p-4 text-red-300 text-sm mb-6">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" /> {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-5">
+
+        {/* Basic Info */}
+        <SectionCard title="Basic Information" icon={Package}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className={labelCls}>Product Name <span className="text-red-400">*</span></label>
+              <input
+                value={form.name}
+                onChange={e => handleNameChange(e.target.value)}
+                className={inputCls}
+                placeholder="e.g. Dell Latitude 5540 Business Laptop"
+                required
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Slug <span className="text-red-400">*</span></label>
+              <input
+                value={form.slug}
+                onChange={e => handleSlugChange(e.target.value)}
+                className={inputCls}
+                placeholder="dell-latitude-5540-business-laptop"
+              />
+              <p className="text-xs text-slate-500 mt-1">URL identifier. Auto-generated from name.</p>
+            </div>
+            <div>
+              <label className={labelCls}>SKU <span className="text-red-400">*</span></label>
+              <input
+                value={form.sku}
+                onChange={e => set('sku', e.target.value)}
+                className={inputCls}
+                placeholder="DELL-LAT-5540-I7-256"
+                required
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Brand <span className="text-red-400">*</span></label>
+              <input
+                value={form.brand}
+                onChange={e => handleBrandSelect(e.target.value)}
+                list="brand-options"
+                className={inputCls}
+                placeholder="Dell"
+                required
+              />
+              <datalist id="brand-options">
+                {brandOptions.map(b => <option key={b.slug} value={b.name} />)}
+              </datalist>
+            </div>
+            <div>
+              <label className={labelCls}>Category <span className="text-red-400">*</span></label>
+              <input
+                value={form.category}
+                onChange={e => handleCategorySelect(e.target.value)}
+                list="category-options"
+                className={inputCls}
+                placeholder="Laptops"
+                required
+              />
+              <datalist id="category-options">
+                {categoryOptions.map(c => <option key={c.slug} value={c.name} />)}
+              </datalist>
+            </div>
+          </div>
+        </SectionCard>
+
+        {/* Descriptions */}
+        <SectionCard title="Descriptions" icon={Info}>
+          <div className="space-y-4">
+            <div>
+              <label className={labelCls}>Short Description</label>
+              <input
+                value={form.short_description}
+                onChange={e => set('short_description', e.target.value)}
+                className={inputCls}
+                placeholder="One-line summary shown in product cards"
+                maxLength={200}
+              />
+              <p className="text-xs text-slate-500 mt-1">{form.short_description.length}/200 characters</p>
+            </div>
+            <div>
+              <label className={labelCls}>Full Description</label>
+              <textarea
+                value={form.description}
+                onChange={e => set('description', e.target.value)}
+                className={`${inputCls} resize-none`}
+                rows={5}
+                placeholder="Detailed product description for the product detail page…"
+              />
+            </div>
+          </div>
+        </SectionCard>
+
+        {/* Availability & Flags */}
+        <SectionCard title="Availability & Status" icon={Package}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+            <div>
+              <label className={labelCls}>Availability <span className="text-red-400">*</span></label>
+              <select
+                value={form.availability}
+                onChange={e => set('availability', e.target.value)}
+                className={`${inputCls} appearance-none`}
+              >
+                <option value="in-stock">In Stock</option>
+                <option value="low-stock">Low Stock</option>
+                <option value="out-of-stock">Out of Stock</option>
+                <option value="pre-order">Pre-Order</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { key: 'is_featured', label: 'Featured' },
+              { key: 'is_new', label: 'New Arrival' },
+              { key: 'is_best_seller', label: 'Best Seller' },
+            ].map(({ key, label }) => (
+              <label key={key} className="flex items-center gap-3 p-3 bg-slate-800 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={form[key as keyof FormState] as boolean}
+                  onChange={e => set(key as keyof FormState, e.target.checked as never)}
+                  className="w-4 h-4 rounded accent-blue-500"
+                />
+                <span className="text-sm text-slate-300">{label}</span>
+              </label>
+            ))}
+          </div>
+        </SectionCard>
+
+        {/* Images */}
+        <SectionCard title="Product Images" icon={ImagePlus}>
+          <div className="space-y-2.5 mb-3">
+            {form.images.map((url, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-slate-800 rounded-lg overflow-hidden ring-1 ring-slate-700 flex-shrink-0">
+                  {url && <img src={url} alt="" className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />}
+                </div>
+                <input
+                  value={url}
+                  onChange={e => setImage(i, e.target.value)}
+                  className={`${inputCls} flex-1`}
+                  placeholder="https://images.pexels.com/photos/…"
+                />
+                {form.images.length > 1 && (
+                  <button type="button" onClick={() => removeImage(i)} className="text-slate-500 hover:text-red-400 flex-shrink-0 transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={addImage}
+            className="flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            <Plus className="w-4 h-4" /> Add Image URL
+          </button>
+          <p className="text-xs text-slate-500 mt-2">Use Pexels stock photo URLs or your own hosted images.</p>
+        </SectionCard>
+
+        {/* Specifications */}
+        <SectionCard title="Technical Specifications" icon={Package}>
+          {form.specifications.length > 0 && (
+            <div className="space-y-2 mb-3">
+              {form.specifications.map((spec, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    value={spec.key}
+                    onChange={e => setSpec(i, 'key', e.target.value)}
+                    className={`${inputCls} flex-1`}
+                    placeholder="Spec name (e.g. Processor)"
+                  />
+                  <input
+                    value={spec.value}
+                    onChange={e => setSpec(i, 'value', e.target.value)}
+                    className={`${inputCls} flex-1`}
+                    placeholder="Value (e.g. Intel Core i7-1365U)"
+                  />
+                  <button type="button" onClick={() => removeSpec(i)} className="text-slate-500 hover:text-red-400 flex-shrink-0 transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          {form.specifications.length === 0 && (
+            <p className="text-sm text-slate-500 mb-3">No specifications added yet.</p>
+          )}
+          <button
+            type="button"
+            onClick={addSpec}
+            className="flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            <Plus className="w-4 h-4" /> Add Specification
+          </button>
+        </SectionCard>
+
+        {/* Tags */}
+        <SectionCard title="Tags" icon={Tag}>
+          <label className={labelCls}>Tags <span className="text-slate-500 font-normal">(comma-separated)</span></label>
+          <input
+            value={form.tags}
+            onChange={e => set('tags', e.target.value)}
+            className={inputCls}
+            placeholder="laptop, business, dell, i7, 16gb"
+          />
+          <p className="text-xs text-slate-500 mt-2">Tags improve search visibility and product discovery.</p>
+        </SectionCard>
+
+        {/* Pricing & Commerce */}
+        <SectionCard title="Pricing & Commerce" icon={Tag}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+            <div>
+              <label className={labelCls}>Base Price (KES) <span className="text-slate-500 font-normal">(optional)</span></label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.price}
+                onChange={e => set('price', e.target.value)}
+                className={inputCls}
+                placeholder="85000"
+              />
+              <p className="text-xs text-slate-500 mt-1">Internal reference price. Not shown publicly unless price_visible is on.</p>
+            </div>
+            <div>
+              <label className={labelCls}>Display Price (KES) <span className="text-slate-500 font-normal">(optional)</span></label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.display_price}
+                onChange={e => set('display_price', e.target.value)}
+                className={inputCls}
+                placeholder="89000"
+              />
+              <p className="text-xs text-slate-500 mt-1">Price shown to customers if price_visible is enabled.</p>
+            </div>
+            <div>
+              <label className={labelCls}>Minimum Order Quantity</label>
+              <input
+                type="number"
+                min="1"
+                value={form.minimum_order_quantity}
+                onChange={e => set('minimum_order_quantity', e.target.value)}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className={labelCls}>Maximum Order Quantity <span className="text-slate-500 font-normal">(leave blank for no limit)</span></label>
+              <input
+                type="number"
+                min="1"
+                value={form.maximum_order_quantity}
+                onChange={e => set('maximum_order_quantity', e.target.value)}
+                className={inputCls}
+                placeholder="No limit"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { key: 'buy_now_enabled', label: 'Buy Now Enabled', desc: 'Show Buy Now button' },
+              { key: 'call_for_price', label: 'Call for Price', desc: 'Show call button instead' },
+              { key: 'price_visible', label: 'Show Price', desc: 'Display price publicly' },
+            ].map(({ key, label, desc }) => (
+              <label key={key} className="flex items-start gap-3 p-3 bg-slate-800 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={form[key as keyof FormState] as boolean}
+                  onChange={e => set(key as keyof FormState, e.target.checked as never)}
+                  className="w-4 h-4 rounded accent-blue-500 mt-0.5"
+                />
+                <div>
+                  <p className="text-sm text-slate-300 font-medium">{label}</p>
+                  <p className="text-xs text-slate-500">{desc}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+        </SectionCard>
+
+        {/* Datasheet */}
+        <SectionCard title="Documentation" icon={Info}>
+          <label className={labelCls}>Datasheet URL <span className="text-slate-500 font-normal">(optional)</span></label>
+          <input
+            type="url"
+            value={form.datasheet_url}
+            onChange={e => set('datasheet_url', e.target.value)}
+            className={inputCls}
+            placeholder="https://…/datasheet.pdf"
+          />
+        </SectionCard>
+
+        {/* Save bar */}
+        <div className="sticky bottom-0 bg-slate-950/95 backdrop-blur border-t border-slate-800 -mx-6 lg:-mx-8 px-6 lg:px-8 py-4 flex items-center justify-between gap-4">
+          <Link to="/admin/products" className="text-sm text-slate-400 hover:text-white transition-colors">
+            Cancel
+          </Link>
+          <button
+            type="submit"
+            disabled={saving}
+            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold rounded-xl text-sm transition-all shadow-lg shadow-blue-600/20 disabled:shadow-none"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Create Product'}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  );
+}

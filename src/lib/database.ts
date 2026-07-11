@@ -243,6 +243,44 @@ export async function updateOrderStatus(orderId: string, status: string) {
   return data;
 }
 
+// Admin — Product CRUD
+
+export async function adminGetProductById(id: string) {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function adminCreateProduct(data: Record<string, unknown>) {
+  const { data: created, error } = await supabase
+    .from('products')
+    .insert(data)
+    .select()
+    .single();
+  if (error) throw error;
+  return created;
+}
+
+export async function adminUpdateProduct(id: string, data: Record<string, unknown>) {
+  const { data: updated, error } = await supabase
+    .from('products')
+    .update(data)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return updated;
+}
+
+export async function adminDeleteProduct(id: string) {
+  const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) throw error;
+}
+
 // Bulk pricing request (simplified - stores as a quote request with notes)
 export async function createBulkPricingRequest(request: {
   product_name: string;

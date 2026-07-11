@@ -4,9 +4,7 @@ import { SEO, generateBreadcrumbSchema, getCanonicalUrl } from '../components/SE
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
 import { FilterSidebar } from '../components/FilterSidebar';
-import { getCategoryBySlug, getRelatedCategories } from '../data/categories';
-import { products, getProductsByCategory } from '../data/products';
-import { getBrandsByCategory } from '../data/brands';
+import { useCatalog } from '../context/CatalogContext';
 import { ChevronRight, Package, Shield, Truck, Headphones, Zap, Award, CheckCircle } from 'lucide-react';
 
 const categoryBannerImages: Record<string, string> = {
@@ -101,6 +99,7 @@ const categorySeoContent: Record<string, { overview: string; features: string[];
 
 export function CategoryPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { getCategoryBySlug, getRelatedCategories, getProductsByCategory, getBrandsByCategory, loading } = useCatalog();
   const category = getCategoryBySlug(slug || '');
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedAvailability, setSelectedAvailability] = useState<string | null>(null);
@@ -134,6 +133,15 @@ export function CategoryPage() {
   }, [slug, selectedBrands, selectedAvailability]);
 
   const brands = getBrandsByCategory(slug || '');
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <div className="inline-block w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-500">Loading category...</p>
+      </div>
+    );
+  }
 
   if (!category) {
     return (

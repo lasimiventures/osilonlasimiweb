@@ -2,15 +2,16 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, Shield, CheckCircle, Award, Globe } from 'lucide-react';
 import { SEO, generateBreadcrumbSchema, getCanonicalUrl } from '../components/SEO';
 import { Breadcrumb } from '../components/Breadcrumb';
-import { allBrands } from '../data/brands';
+import { useCatalog } from '../context/CatalogContext';
 
 export function Brands() {
-  const grouped = allBrands.reduce((acc, brand) => {
+  const { brands } = useCatalog();
+  const grouped = brands.reduce((acc, brand) => {
     const key = brand.category;
     if (!acc[key]) acc[key] = [];
     acc[key].push(brand);
     return acc;
-  }, {} as Record<string, typeof allBrands>);
+  }, {} as Record<string, typeof brands>);
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: 'https://osil.co.ke' },
@@ -42,7 +43,7 @@ export function Brands() {
           <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">Our Technology Brands</h1>
           <p className="text-lg text-slate-300 max-w-2xl">OSIL Ltd partners with the world\'s leading technology brands to bring genuine products to Kenya and East Africa.</p>
           <div className="flex items-center gap-4 mt-4 text-sm text-slate-400">
-            <span>{allBrands.length} brands</span>
+            <span>{brands.length} brands</span>
             <span>|</span>
             <span className="flex items-center gap-1"><Shield className="w-4 h-4 text-green-400" /> Authorized Dealer</span>
             <span>|</span>

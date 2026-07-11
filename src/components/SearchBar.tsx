@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X, ArrowRight } from 'lucide-react';
-import { searchProducts } from '../data/products';
+import { useCatalog } from '../context/CatalogContext';
 import type { Product } from '../types';
 
 interface SearchBarProps {
@@ -12,6 +12,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({ initialValue = '', onSearch, placeholder = 'Search laptops, phones, servers...', className = '' }: SearchBarProps) {
+  const { searchProducts } = useCatalog();
   const [query, setQuery] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<Product[]>([]);
   const [isOpen, setIsOpen] = useState(false);

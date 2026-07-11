@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Facebook, Linkedin, Instagram, ArrowRight } from 'lucide-react';
-import { categories } from '../data/categories';
+import { useCatalog } from '../context/CatalogContext';
 import { services } from '../data/services';
 
 export function Footer() {
+  const { categories } = useCatalog();
   return (
     <footer className="bg-slate-900 text-slate-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

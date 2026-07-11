@@ -7,8 +7,7 @@ import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
 import { FAQAccordion } from '../components/FAQAccordion';
 import { BulkPricingModal } from '../components/BulkPricingModal';
-import { getProductBySlug, getRelatedProducts, getProductsByBrand } from '../data/products';
-import { getCategoryBySlug } from '../data/categories';
+import { useCatalog } from '../context/CatalogContext';
 import { productFaqs } from '../data/faqs';
 import { useQuote } from '../context/QuoteContext';
 import { useRecentlyViewed } from '../context/RecentlyViewedContext';
@@ -52,6 +51,7 @@ const categoryDescriptionContent: Record<string, { overview: string; features: s
 };
 
 export function ProductDetail() {
+  const { getProductBySlug, getRelatedProducts, getProductsByBrand, getCategoryBySlug, loading } = useCatalog();
   const { slug } = useParams<{ slug: string }>();
   const product = getProductBySlug(slug || '');
   const [activeImage, setActiveImage] = useState(0);
@@ -95,6 +95,15 @@ export function ProductDetail() {
 
     return { title, description, canonicalUrl, productSchema, breadcrumbSchema };
   }, [product]);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <div className="inline-block w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-500">Loading product...</p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (

@@ -11,9 +11,7 @@ import {
 import { SEO, generateOrganizationSchema, getCanonicalUrl } from '../components/SEO';
 import { promotions } from '../data/promotions';
 import { ProductGrid } from '../components/ProductGrid';
-import { getFeaturedProducts, getNewArrivals, getBestSellers } from '../data/products';
-import { categories } from '../data/categories';
-import { allBrands } from '../data/brands';
+import { useCatalog } from '../context/CatalogContext';
 import { services } from '../data/services';
 import { solutions } from '../data/solutions';
 import { testimonials } from '../data/testimonials';
@@ -104,6 +102,7 @@ const brandColorMap: Record<string, string> = {
 };
 
 export function Home() {
+  const { getFeaturedProducts, getNewArrivals, getBestSellers, categories, brands } = useCatalog();
   const featuredProducts = getFeaturedProducts().slice(0, 4);
   const newArrivals = getNewArrivals().slice(0, 4);
   const bestSellers = getBestSellers().slice(0, 4);
@@ -296,7 +295,7 @@ export function Home() {
             <p className="text-xs text-slate-400 mt-1">Authorized dealer for leading brands</p>
           </div>
           <div className="flex items-center justify-center flex-wrap gap-3 lg:gap-4">
-            {allBrands.slice(0, 16).map((brand) => {
+            {brands.slice(0, 16).map((brand) => {
               const colorClass = brandColorMap[brand.slug] || 'bg-slate-500';
               return (
                 <Link

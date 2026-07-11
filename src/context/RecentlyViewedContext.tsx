@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback } from 'react';
 import type { Product } from '../types';
-import { products as allProducts } from '../data/products';
+import { useCatalog } from './CatalogContext';
 
 interface RecentlyViewedContextType {
   recentlyViewed: Product[];
@@ -24,6 +24,7 @@ const RecentlyViewedContext = createContext<RecentlyViewedContextType>({
 });
 
 export function RecentlyViewedProvider({ children }: { children: React.ReactNode }) {
+  const { getProductById } = useCatalog();
   const [viewedIds, setViewedIds] = useState<string[]>(loadIds);
 
   const trackProduct = useCallback((productId: string) => {
@@ -36,7 +37,7 @@ export function RecentlyViewedProvider({ children }: { children: React.ReactNode
   }, []);
 
   const recentlyViewed = viewedIds
-    .map(id => allProducts.find(p => p.id === id))
+    .map(id => getProductById(id))
     .filter((p): p is Product => p !== undefined);
 
   return (

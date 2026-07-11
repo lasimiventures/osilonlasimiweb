@@ -1,5 +1,7 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from '../layouts/MainLayout';
+import { AdminLayout } from '../layouts/AdminLayout';
+import { AdminRoute } from '../components/admin/AdminRoute';
 import { Home } from '../pages/Home';
 import { About } from '../pages/About';
 import { Products } from '../pages/Products';
@@ -15,10 +17,13 @@ import { RequestQuote } from '../pages/RequestQuote';
 import { PrivacyPolicy } from '../pages/PrivacyPolicy';
 import { TermsConditions } from '../pages/TermsConditions';
 import { NotFound } from '../pages/NotFound';
+import { AdminLogin } from '../pages/admin/Login';
+import { AdminDashboard } from '../pages/admin/Dashboard';
 
 export function AppRoutes() {
   return (
     <Routes>
+      {/* Public storefront */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -35,6 +40,18 @@ export function AppRoutes() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsConditions />} />
         <Route path="*" element={<NotFound />} />
+      </Route>
+
+      {/* Admin — unauthenticated */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+
+      {/* Admin — authenticated */}
+      <Route element={<AdminRoute />}>
+        <Route element={<AdminLayout />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          {/* Further admin routes added in later milestones */}
+        </Route>
       </Route>
     </Routes>
   );

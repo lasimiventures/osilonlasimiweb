@@ -6,6 +6,7 @@ import { QuoteProvider } from './context/QuoteContext';
 import { RecentlyViewedProvider } from './context/RecentlyViewedContext';
 import { CompareProvider } from './context/CompareContext';
 import { CatalogProvider } from './context/CatalogContext';
+import { AdminAuthProvider } from './context/AdminAuthContext';
 import { trackPageView, trackEvent } from './utils/analytics';
 
 function PageTracker() {
@@ -22,16 +23,18 @@ function PageTracker() {
 function App() {
   return (
     <BrowserRouter>
-      <CatalogProvider>
-      <QuoteProvider>
-        <RecentlyViewedProvider>
-          <CompareProvider>
-            <PageTracker />
-            <AppRoutes />
-          </CompareProvider>
-        </RecentlyViewedProvider>
-      </QuoteProvider>
-      </CatalogProvider>
+      <AdminAuthProvider>
+        <CatalogProvider>
+          <QuoteProvider>
+            <RecentlyViewedProvider>
+              <CompareProvider>
+                <PageTracker />
+                <AppRoutes />
+              </CompareProvider>
+            </RecentlyViewedProvider>
+          </QuoteProvider>
+        </CatalogProvider>
+      </AdminAuthProvider>
     </BrowserRouter>
   );
 }

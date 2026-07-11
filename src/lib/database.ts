@@ -243,6 +243,44 @@ export async function updateOrderStatus(orderId: string, status: string) {
   return data;
 }
 
+// Admin — Category CRUD
+
+export async function adminGetCategoryById(id: string) {
+  const { data, error } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function adminCreateCategory(data: Record<string, unknown>) {
+  const { data: created, error } = await supabase
+    .from('categories')
+    .insert(data)
+    .select()
+    .single();
+  if (error) throw error;
+  return created;
+}
+
+export async function adminUpdateCategory(id: string, data: Record<string, unknown>) {
+  const { data: updated, error } = await supabase
+    .from('categories')
+    .update(data)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return updated;
+}
+
+export async function adminDeleteCategory(id: string) {
+  const { error } = await supabase.from('categories').delete().eq('id', id);
+  if (error) throw error;
+}
+
 // Admin — Product CRUD
 
 export async function adminGetProductById(id: string) {

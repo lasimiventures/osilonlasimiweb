@@ -1,9 +1,10 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import { Loader2 } from 'lucide-react';
 
 export function AdminRoute() {
   const { session, loading } = useAdminAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -14,7 +15,8 @@ export function AdminRoute() {
   }
 
   if (!session) {
-    return <Navigate to="/admin/login" replace />;
+    const next = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/admin/login?next=${next}`} replace />;
   }
 
   return <Outlet />;

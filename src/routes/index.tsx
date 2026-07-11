@@ -19,6 +19,7 @@ import { TermsConditions } from '../pages/TermsConditions';
 import { NotFound } from '../pages/NotFound';
 import { AdminLogin } from '../pages/admin/Login';
 import { AdminDashboard } from '../pages/admin/Dashboard';
+import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
   return (
@@ -51,6 +52,7 @@ export function AppRoutes() {
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           {/* Further admin routes added in later milestones */}
+          <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>
       </Route>
     </Routes>

@@ -1,33 +1,40 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail, AlertCircle, Loader2 } from 'lucide-react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 
 export function AdminLogin() {
-  const { signIn, session } = useAdminAuth();
+  const { signIn, session, loading } = useAdminAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  if (session) {
-    navigate('/admin/dashboard', { replace: true });
+  function getRedirect() {
+    const next = searchParams.get('next');
+    if (next && next.startsWith('/admin/')) return next;
+    return '/admin/dashboard';
+  }
+
+  if (!loading && session) {
+    navigate(getRedirect(), { replace: true });
     return null;
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    setLoading(true);
+    setSubmitting(true);
     const { error } = await signIn(email, password);
-    setLoading(false);
+    setSubmitting(false);
     if (error) {
       setError(error);
     } else {
-      navigate('/admin/dashboard', { replace: true });
+      navigate(getRedirect(), { replace: true });
     }
   }
 
@@ -106,10 +113,10 @@ export function AdminLogin() {
 
             <button
               type="submit"
-              disabled={loading || !email || !password}
+              disabled={submitting || !email || !password}
               className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold py-3 rounded-xl text-sm transition-all duration-200 shadow-lg shadow-blue-600/20 disabled:shadow-none mt-2"
             >
-              {loading ? (
+              {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
                   Signing in…

@@ -21,6 +21,12 @@ type RawProduct = {
   related_products: string[];
   tags: string[];
   datasheet_url?: string;
+  buy_now_enabled?: boolean;
+  call_for_price?: boolean;
+  display_price?: number | null;
+  price_visible?: boolean;
+  minimum_order_quantity?: number;
+  maximum_order_quantity?: number | null;
 };
 
 type RawCategory = {
@@ -31,6 +37,9 @@ type RawCategory = {
   image: string;
   icon: string;
   product_count: number;
+  allow_buy_now?: boolean;
+  allow_quote?: boolean;
+  allow_bulk_quote?: boolean;
 };
 
 type RawBrand = {
@@ -43,6 +52,9 @@ type RawBrand = {
   category_slug: string;
   product_count: number;
   website?: string;
+  allow_buy_now?: boolean;
+  allow_quote?: boolean;
+  allow_bulk_quote?: boolean;
 };
 
 const RELATED_CATEGORIES: Record<string, string[]> = {
@@ -84,6 +96,12 @@ export function mapProduct(raw: RawProduct): Product {
     relatedProducts: raw.related_products ?? [],
     tags: raw.tags ?? [],
     datasheetUrl: raw.datasheet_url,
+    buyNowEnabled: raw.buy_now_enabled ?? true,
+    callForPrice: raw.call_for_price ?? false,
+    displayPrice: raw.display_price ?? null,
+    priceVisible: raw.price_visible ?? false,
+    minimumOrderQuantity: raw.minimum_order_quantity ?? 1,
+    maximumOrderQuantity: raw.maximum_order_quantity ?? null,
   };
 }
 
@@ -97,6 +115,9 @@ export function mapCategory(raw: RawCategory): Category {
     icon: raw.icon,
     productCount: raw.product_count,
     relatedCategories: RELATED_CATEGORIES[raw.slug] ?? [],
+    allowBuyNow: raw.allow_buy_now ?? true,
+    allowQuote: raw.allow_quote ?? true,
+    allowBulkQuote: raw.allow_bulk_quote ?? true,
   };
 }
 
@@ -111,5 +132,8 @@ export function mapBrand(raw: RawBrand): Brand {
     categorySlug: raw.category_slug,
     productCount: raw.product_count,
     website: raw.website,
+    allowBuyNow: raw.allow_buy_now ?? true,
+    allowQuote: raw.allow_quote ?? true,
+    allowBulkQuote: raw.allow_bulk_quote ?? true,
   };
 }

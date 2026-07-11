@@ -4,8 +4,10 @@ import {
   Menu, X, ChevronDown, ShoppingCart, Search, MapPin, Phone, Mail,
   Laptop, Monitor, Smartphone, Tablet, Printer, Wifi,
   Shield, Settings, Cloud, Database, Wrench, Lightbulb, LayoutGrid, Globe, Info, Plug, Code,
+  ShoppingBag,
 } from 'lucide-react';
 import { useQuote } from '../context/QuoteContext';
+import { useShoppingCart } from '../context/ShoppingCartContext';
 import { services } from '../data/services';
 import { useCatalog } from '../context/CatalogContext';
 
@@ -150,7 +152,8 @@ export function Navbar() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { itemCount } = useQuote();
+  const { itemCount: quoteCount } = useQuote();
+  const { itemCount: cartCount } = useShoppingCart();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -357,16 +360,30 @@ export function Navbar() {
                 <Search className="w-5 h-5" />
               </button>
 
-              {/* Cart */}
+              {/* Shopping Cart */}
+              <Link
+                to="/cart"
+                className="relative flex items-center justify-center w-9 h-9 text-slate-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                aria-label="Shopping Cart"
+              >
+                <ShoppingBag className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-green-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* Quote Cart */}
               <Link
                 to="/quote-cart"
                 className="relative flex items-center justify-center w-9 h-9 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                 aria-label="Quote Cart"
               >
                 <ShoppingCart className="w-5 h-5" />
-                {itemCount > 0 && (
+                {quoteCount > 0 && (
                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                    {itemCount > 9 ? '9+' : itemCount}
+                    {quoteCount > 9 ? '9+' : quoteCount}
                   </span>
                 )}
               </Link>

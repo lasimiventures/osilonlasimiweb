@@ -1,7 +1,7 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ShoppingCart, Check, Package, Shield, Truck, Headphones, Zap, Award, Building2, Users, ChevronRight, Download, Users2 } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Check, Package, Shield, Truck, Headphones, Zap, Award, Building2, Users, ChevronRight, Download, Users2, PhoneCall, MessageSquare, Phone } from 'lucide-react';
 import { SEO, generateProductSchema, generateBreadcrumbSchema, generateProductPageTitle, generateProductDescription, getCanonicalUrl, AVAILABILITY_SCHEMA_MAP } from '../components/SEO';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
@@ -11,6 +11,7 @@ import { useCatalog } from '../context/CatalogContext';
 import { productFaqs } from '../data/faqs';
 import { useQuote } from '../context/QuoteContext';
 import { useRecentlyViewed } from '../context/RecentlyViewedContext';
+import { useShoppingCart } from '../context/ShoppingCartContext';
 
 const benefitIcons = [Package, Shield, Truck, Headphones, Zap, Award];
 
@@ -58,7 +59,9 @@ export function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [showBulkModal, setShowBulkModal] = useState(false);
   const { addItem } = useQuote();
+  const { addItem: addToCart } = useShoppingCart();
   const { trackProduct, recentlyViewed } = useRecentlyViewed();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (product) trackProduct(product.id);
@@ -237,24 +240,71 @@ export function ProductDetail() {
 
                 <div className="flex items-center gap-4 mb-6">
                   <div className="flex items-center gap-2">
-                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-10 border border-slate-200 rounded-lg flex items-center justify-center text-slate-600 hover:bg-slate-50">-</button>
+                    <button onClick={() => setQuantity(Math.max(product.minimumOrderQuantity ?? 1, quantity - 1))} className="w-10 h-10 border border-slate-200 rounded-lg flex items-center justify-center text-slate-600 hover:bg-slate-50">-</button>
                     <span className="w-12 text-center font-semibold">{quantity}</span>
-                    <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-10 border border-slate-200 rounded-lg flex items-center justify-center text-slate-600 hover:bg-slate-50">+</button>
+                    <button onClick={() => setQuantity(product.maximumOrderQuantity ? Math.min(product.maximumOrderQuantity, quantity + 1) : quantity + 1)} className="w-10 h-10 border border-slate-200 rounded-lg flex items-center justify-center text-slate-600 hover:bg-slate-50">+</button>
                   </div>
-                  <button
-                    onClick={() => addItem(product, quantity)}
-                    className="flex-1 max-w-xs flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <ShoppingCart className="w-4 h-4" /> Add to Quote
-                  </button>
+                  {product.priceVisible && product.displayPrice != null && (
+                    <div>
+                      <p className="text-2xl font-bold text-slate-900">KES {(product.displayPrice * quantity).toLocaleString()}</p>
+                      <p className="text-xs text-slate-400">KES {product.displayPrice.toLocaleString()} each</p>
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-slate-500">
+                {/* Purchase action buttons */}
+                <div className="space-y-3 mb-6">
+                  {product.buyNowEnabled && !product.callForPrice && (
+                    <button
+                      onClick={() => { addToCart(product, quantity); navigate('/cart'); }}
+                      className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      <Zap className="w-4 h-4" /> Buy Now
+                    </button>
+                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => addItem(product, quantity)}
+                      className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <ShoppingCart className="w-4 h-4" /> Add to Quote
+                    </button>
+                    <button
+                      onClick={() => setShowBulkModal(true)}
+                      className="flex items-center justify-center gap-2 px-4 py-3 border border-blue-200 bg-blue-50 rounded-lg text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                    >
+                      <Users2 className="w-4 h-4" /> Bulk Quote
+                    </button>
+                  </div>
+                </div>
+
+                {/* Call for Price panel */}
+                {product.callForPrice && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+                    <h3 className="text-sm font-semibold text-amber-900 mb-1 flex items-center gap-2">
+                      <PhoneCall className="w-4 h-4" /> Call for Price
+                    </h3>
+                    <p className="text-sm text-amber-800 mb-3">Contact OSIL Ltd Sales Team for the latest pricing, availability, and delivery timelines.</p>
+                    <div className="flex flex-wrap gap-3">
+                      <a href="tel:+254795030476" className="flex items-center gap-1.5 px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-medium text-amber-900 hover:bg-amber-50 transition-colors">
+                        <Phone className="w-3.5 h-3.5" /> Call Sales
+                      </a>
+                      <a href="https://wa.me/254795030476" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 bg-white border border-green-200 rounded-lg text-sm font-medium text-green-700 hover:bg-green-50 transition-colors">
+                        <MessageSquare className="w-3.5 h-3.5" /> WhatsApp Sales
+                      </a>
+                      <a href="tel:+254795030476" className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
+                        <PhoneCall className="w-3.5 h-3.5" /> Request Callback
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-2 text-sm text-slate-500 mb-5">
                   <Check className="w-4 h-4 text-green-500" />
                   <span>Genuine product with manufacturer warranty. Authorized {product.brand} dealer in Kenya.</span>
                 </div>
 
-                <div className="flex flex-wrap gap-3 mt-5 pt-5 border-t border-slate-100">
+                <div className="flex flex-wrap gap-3 pt-5 border-t border-slate-100">
                   <a
                     href={product.datasheetUrl || '#'}
                     onClick={e => { if (!product.datasheetUrl) { e.preventDefault(); alert('Datasheet available on request. Please contact our sales team.'); } }}
@@ -263,12 +313,6 @@ export function ProductDetail() {
                   >
                     <Download className="w-4 h-4" /> Download Datasheet
                   </a>
-                  <button
-                    onClick={() => setShowBulkModal(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 border border-blue-200 bg-blue-50 rounded-lg text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
-                  >
-                    <Users2 className="w-4 h-4" /> Request Bulk Pricing
-                  </button>
                 </div>
               </div>
             </div>

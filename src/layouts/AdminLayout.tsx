@@ -11,11 +11,13 @@ import {
   X,
   ChevronRight,
   Settings,
+  ShoppingBag,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 
 const navItems = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
   { to: '/admin/products', icon: Package, label: 'Products' },
   { to: '/admin/categories', icon: Layers, label: 'Categories' },
   { to: '/admin/brands', icon: Tag, label: 'Brands' },

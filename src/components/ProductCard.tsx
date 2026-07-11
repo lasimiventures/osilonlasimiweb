@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import { memo } from 'react';
-import { ShoppingCart, ArrowRight, BarChart2 } from 'lucide-react';
+import { ShoppingCart, ArrowRight, BarChart2, Zap, PhoneCall } from 'lucide-react';
 import { useQuote } from '../context/QuoteContext';
 import { useCompare } from '../context/CompareContext';
+import { useShoppingCart } from '../context/ShoppingCartContext';
 import type { Product } from '../types';
 
 interface ProductCardProps {
@@ -11,6 +12,7 @@ interface ProductCardProps {
 
 export const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useQuote();
+  const { addItem: addToCart } = useShoppingCart();
   const { addToCompare, removeFromCompare, isInCompare } = useCompare();
 
   const inCompare = isInCompare(product.id);
@@ -38,6 +40,8 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
     }
   };
 
+  const showBuyNow = product.buyNowEnabled && !product.callForPrice;
+
   return (
     <article className="group bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-lg hover:shadow-slate-200/50 transition-all duration-300">
       <Link to={`/products/${product.slug}`} className="block relative aspect-[4/3] bg-slate-50 overflow-hidden">
@@ -59,10 +63,15 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             <span className="px-2 py-1 bg-slate-800 text-white text-xs font-semibold rounded-md">Featured</span>
           )}
         </div>
-        <div className="absolute bottom-3 left-3">
+        <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
           <span className={`px-2 py-1 text-xs font-medium rounded-md ${availabilityColor[product.availability]}`}>
             {availabilityLabel[product.availability]}
           </span>
+          {product.callForPrice && (
+            <span className="px-2 py-1 text-xs font-medium rounded-md bg-amber-100 text-amber-700 flex items-center gap-1">
+              <PhoneCall className="w-3 h-3" /> Call for Price
+            </span>
+          )}
         </div>
         {/* Compare toggle */}
         <button
@@ -80,21 +89,42 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
             {product.name}
           </Link>
         </h3>
+        {product.priceVisible && product.displayPrice != null && (
+          <p className="text-sm font-bold text-slate-900 mb-2">KES {product.displayPrice.toLocaleString()}</p>
+        )}
         <p className="text-xs text-slate-500 mb-3 line-clamp-2">{product.shortDescription}</p>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => addItem(product)}
-            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-brand-blue rounded-lg hover:bg-brand-blue-dark transition-colors"
-          >
-            <ShoppingCart className="w-3.5 h-3.5" /> Add to Quote
-          </button>
-          <Link
-            to={`/products/${product.slug}`}
-            className="flex items-center justify-center w-9 h-9 text-slate-500 border border-slate-200 rounded-lg hover:text-brand-blue hover:border-brand-blue/20 transition-colors"
-            aria-label={`View ${product.name} details`}
-          >
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+        <div className="space-y-2">
+          {showBuyNow && (
+            <button
+              onClick={() => addToCart(product)}
+              className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              <Zap className="w-3.5 h-3.5" /> Buy Now
+            </button>
+          )}
+          {product.callForPrice && (
+            <a
+              href="tel:+254795030476"
+              className="w-full flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors"
+            >
+              <PhoneCall className="w-3.5 h-3.5" /> Call for Price
+            </a>
+          )}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => addItem(product)}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-white bg-brand-blue rounded-lg hover:bg-brand-blue-dark transition-colors"
+            >
+              <ShoppingCart className="w-3.5 h-3.5" /> Add to Quote
+            </button>
+            <Link
+              to={`/products/${product.slug}`}
+              className="flex items-center justify-center w-9 h-9 text-slate-500 border border-slate-200 rounded-lg hover:text-brand-blue hover:border-brand-blue/20 transition-colors"
+              aria-label={`View ${product.name} details`}
+            >
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </div>
     </article>

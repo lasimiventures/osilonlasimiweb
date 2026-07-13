@@ -31,6 +31,7 @@ import { AdminBrands } from '../pages/admin/Brands';
 import { AdminBrandForm } from '../pages/admin/BrandForm';
 import { AdminMedia } from '../pages/admin/Media';
 import { AdminQuotes } from '../pages/admin/Quotes';
+import { AdminQuoteBuilder } from '../pages/admin/QuoteBuilder';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -78,6 +79,7 @@ export function AppRoutes() {
           <Route path="/admin/brands/:id/edit" element={<AdminBrandForm />} />
           <Route path="/admin/media" element={<AdminMedia />} />
           <Route path="/admin/quotes" element={<AdminQuotes />} />
+          <Route path="/admin/quotes/:id/build" element={<AdminQuoteBuilder />} />
           {/* Further admin routes added in later milestones */}
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>

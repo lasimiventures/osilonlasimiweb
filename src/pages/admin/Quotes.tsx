@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   FileText, Search, RefreshCcw, Plus, X, ChevronDown, AlertCircle,
   Loader2, Save, User, Building2, Mail, Phone, MapPin,
   Calendar, UserCheck, DollarSign, StickyNote, Package,
   ArrowRight, CheckCircle2, Clock, Ban, Hourglass, RotateCcw,
   Send, Eye, Trash2, Copy, Archive, ArchiveRestore, MoreHorizontal,
+  Hammer,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
@@ -18,6 +20,10 @@ interface QuoteItem {
   unit_price: number | null;
   subtotal: number | null;
   notes: string | null;
+  discount_pct: number;
+  discount_amount: number;
+  is_optional: boolean;
+  item_type: string;
   isNew?: boolean;
   toDelete?: boolean;
 }
@@ -47,6 +53,13 @@ interface QuoteRow {
   submitted_at: string;
   created_at: string;
   is_archived: boolean;
+  discount_pct: number;
+  discount_amount: number;
+  vat_pct: number;
+  delivery_charge: number;
+  installation_charge: number;
+  warranty_charge: number;
+  customer_notes: string | null;
   quote_items: QuoteItem[];
 }
 
@@ -155,11 +168,12 @@ interface SlideOverProps {
   onDuplicate: () => void;
   onArchive: () => void;
   onDelete: () => void;
+  onBuild: () => void;
   duplicating: boolean;
   archiving: boolean;
 }
 
-function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDelete, duplicating, archiving }: SlideOverProps) {
+function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDelete, onBuild, duplicating, archiving }: SlideOverProps) {
   const [salesPerson, setSalesPerson] = useState(quote.sales_person ?? '');
   const [expiryDate, setExpiryDate] = useState(quote.expiry_date ?? '');
   const [totalValue, setTotalValue] = useState(quote.total_value?.toString() ?? '');
@@ -554,6 +568,12 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
           {/* Secondary actions */}
           <div className="flex items-center gap-2 pt-1 border-t border-slate-800/60">
             <button
+              onClick={onBuild}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-blue-400 hover:text-blue-300 border border-blue-500/30 hover:border-blue-400/50 transition-all"
+            >
+              <Hammer className="w-3.5 h-3.5" /> Build Quote
+            </button>
+            <button
               onClick={onDuplicate}
               disabled={duplicating}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white border border-slate-800 hover:border-slate-600 transition-all disabled:opacity-40"
@@ -704,6 +724,7 @@ function NewQuoteModal({ onClose, onCreate }: NewQuoteModalProps) {
 // ─── main page ────────────────────────────────────────────────────────────────
 
 export function AdminQuotes() {
+  const navigate = useNavigate();
   const [quotes, setQuotes] = useState<QuoteRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1014,6 +1035,13 @@ export function AdminQuotes() {
                       >
                         <Eye className="w-3.5 h-3.5" /> View
                       </button>
+                      {/* Build */}
+                      <button
+                        onClick={() => navigate(`/admin/quotes/${quote.id}/build`)}
+                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 border border-blue-500/30 hover:border-blue-400/50 px-2.5 py-1.5 rounded-lg transition-all"
+                      >
+                        <Hammer className="w-3.5 h-3.5" /> Build
+                      </button>
 
                       {/* Quick status dropdown */}
                       <div className="relative" ref={statusMenuId === quote.id ? menuRef : undefined}>
@@ -1120,6 +1148,7 @@ export function AdminQuotes() {
           onDuplicate={() => handleDuplicate(slideOver)}
           onArchive={() => handleArchive(slideOver.id, !slideOver.is_archived)}
           onDelete={() => setConfirmDelete(slideOver)}
+          onBuild={() => navigate(`/admin/quotes/${slideOver.id}/build`)}
           duplicating={duplicatingId === slideOver.id}
           archiving={archivingId === slideOver.id}
         />

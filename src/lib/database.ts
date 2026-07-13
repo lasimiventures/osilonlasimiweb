@@ -383,3 +383,94 @@ export async function createBulkPricingRequest(request: {
   if (error) throw error;
   return data;
 }
+
+// ─── Banners API ──────────────────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapBanner(raw: any) {
+  return {
+    id: raw.id,
+    title: raw.title,
+    subtitle: raw.subtitle,
+    badgeText: raw.badge_text,
+    ctaPrimaryText: raw.cta_primary_text,
+    ctaPrimaryLink: raw.cta_primary_link,
+    ctaSecondaryText: raw.cta_secondary_text,
+    ctaSecondaryLink: raw.cta_secondary_link,
+    imageUrl: raw.image_url,
+    isActive: raw.is_active,
+    sortOrder: raw.sort_order,
+    bannerType: raw.banner_type as 'hero' | 'promo',
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+  };
+}
+
+export async function getActiveBanners(type?: 'hero' | 'promo') {
+  let query = supabase
+    .from('banners')
+    .select('*')
+    .eq('is_active', true)
+    .order('sort_order');
+  if (type) query = query.eq('banner_type', type);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []).map(mapBanner);
+}
+
+export async function adminGetBanners() {
+  const { data, error } = await supabase
+    .from('banners')
+    .select('*')
+    .order('banner_type')
+    .order('sort_order');
+  if (error) throw error;
+  return (data ?? []).map(mapBanner);
+}
+
+export async function adminGetBannerById(id: string) {
+  const { data, error } = await supabase
+    .from('banners')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data ? mapBanner(data) : null;
+}
+
+export async function adminCreateBanner(payload: Record<string, unknown>) {
+  const { data, error } = await supabase
+    .from('banners')
+    .insert(payload)
+    .select()
+    .single();
+  if (error) throw error;
+  return mapBanner(data);
+}
+
+export async function adminUpdateBanner(id: string, payload: Record<string, unknown>) {
+  const { data, error } = await supabase
+    .from('banners')
+    .update({ ...payload, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return mapBanner(data);
+}
+
+export async function adminDeleteBanner(id: string) {
+  const { error } = await supabase.from('banners').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function adminToggleBannerActive(id: string, isActive: boolean) {
+  const { data, error } = await supabase
+    .from('banners')
+    .update({ is_active: isActive, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return mapBanner(data);
+}

@@ -1,12 +1,17 @@
 import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   FileText, Search, RefreshCcw, Plus, X, ChevronDown, AlertCircle,
   Loader2, Save, User, Building2, Mail, Phone, MapPin,
   Calendar, UserCheck, DollarSign, StickyNote, Package,
   ArrowRight, CheckCircle2, Clock, Ban, Hourglass, RotateCcw,
-  Send, Eye, Trash2,
+  Send, Eye, Trash2, Copy, Archive, ArchiveRestore, MoreHorizontal,
+  Hammer, Download,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { generateQuotePdf } from '../../lib/quotePdf';
+import type { PdfQuoteData } from '../../lib/quotePdf';
+import { SendQuoteModal } from '../../components/admin/SendQuoteModal';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -18,6 +23,10 @@ interface QuoteItem {
   unit_price: number | null;
   subtotal: number | null;
   notes: string | null;
+  discount_pct: number;
+  discount_amount: number;
+  is_optional: boolean;
+  item_type: string;
   isNew?: boolean;
   toDelete?: boolean;
 }
@@ -46,6 +55,14 @@ interface QuoteRow {
   converted_at: string | null;
   submitted_at: string;
   created_at: string;
+  is_archived: boolean;
+  discount_pct: number;
+  discount_amount: number;
+  vat_pct: number;
+  delivery_charge: number;
+  installation_charge: number;
+  warranty_charge: number;
+  customer_notes: string | null;
   quote_items: QuoteItem[];
 }
 
@@ -67,22 +84,23 @@ const STATUS_CONFIG: Record<string, {
 };
 
 const STATUS_TRANSITIONS: Record<string, { label: string; to: string; variant: 'primary' | 'danger' | 'neutral' }[]> = {
-  draft:             [{ label: 'Submit Quote',    to: 'submitted',         variant: 'primary'  }],
-  submitted:         [{ label: 'Start Review',    to: 'under_review',      variant: 'primary'  }, { label: 'Reject',        to: 'rejected',   variant: 'danger' }],
-  under_review:      [{ label: 'Issue Quote',     to: 'quoted',            variant: 'primary'  }, { label: 'Reject',        to: 'rejected',   variant: 'danger' }],
-  quoted:            [{ label: 'Mark Awaiting',   to: 'awaiting_customer', variant: 'primary'  }, { label: 'Accept',        to: 'accepted',   variant: 'primary'}, { label: 'Reject', to: 'rejected', variant: 'danger' }],
-  awaiting_customer: [{ label: 'Accept',          to: 'accepted',          variant: 'primary'  }, { label: 'Reject',        to: 'rejected',   variant: 'danger' }, { label: 'Expire', to: 'expired', variant: 'neutral' }],
-  accepted:          [{ label: 'Convert to Order',to: 'converted_to_order',variant: 'primary'  }],
+  draft:             [{ label: 'Submit Quote',     to: 'submitted',         variant: 'primary' }],
+  submitted:         [{ label: 'Start Review',     to: 'under_review',      variant: 'primary' }, { label: 'Reject', to: 'rejected', variant: 'danger' }],
+  under_review:      [{ label: 'Issue Quote',      to: 'quoted',            variant: 'primary' }, { label: 'Reject', to: 'rejected', variant: 'danger' }],
+  quoted:            [{ label: 'Mark Awaiting',    to: 'awaiting_customer', variant: 'primary' }, { label: 'Accept', to: 'accepted', variant: 'primary' }, { label: 'Reject', to: 'rejected', variant: 'danger' }],
+  awaiting_customer: [{ label: 'Accept',           to: 'accepted',          variant: 'primary' }, { label: 'Reject', to: 'rejected', variant: 'danger' }, { label: 'Expire', to: 'expired', variant: 'neutral' }],
+  accepted:          [{ label: 'Convert to Order', to: 'converted_to_order', variant: 'primary' }],
   rejected:          [],
   expired:           [],
   converted_to_order:[],
 };
 
 const GROUP_FILTERS = [
-  { key: 'all',    label: 'All' },
-  { key: 'active', label: 'Active' },
-  { key: 'draft',  label: 'Drafts' },
-  { key: 'closed', label: 'Closed' },
+  { key: 'all',      label: 'All' },
+  { key: 'active',   label: 'Active' },
+  { key: 'draft',    label: 'Drafts' },
+  { key: 'closed',   label: 'Closed' },
+  { key: 'archived', label: 'Archived' },
 ] as const;
 
 type GroupKey = typeof GROUP_FILTERS[number]['key'];
@@ -116,15 +134,52 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+function ConfirmDialog({ title, message, confirmLabel = 'Delete', onConfirm, onCancel, loading }: {
+  title: string; message: string; confirmLabel?: string;
+  onConfirm: () => void; onCancel: () => void; loading: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70" onClick={onCancel} />
+      <div className="relative bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm shadow-2xl z-10 p-6">
+        <h2 className="text-sm font-semibold text-white mb-2">{title}</h2>
+        <p className="text-sm text-slate-400 mb-5">{message}</p>
+        <div className="flex gap-2">
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 disabled:opacity-40 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            {loading ? 'Deleting…' : confirmLabel}
+          </button>
+          <button onClick={onCancel} className="px-4 text-sm text-slate-400 hover:text-white transition-colors">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── slide-over panel ────────────────────────────────────────────────────────
 
 interface SlideOverProps {
   quote: QuoteRow;
   onClose: () => void;
   onSaved: (updated: QuoteRow) => void;
+  onDuplicate: () => void;
+  onArchive: () => void;
+  onDelete: () => void;
+  onBuild: () => void;
+  onSend: () => void;
+  onDownloadPdf: () => void;
+  duplicating: boolean;
+  archiving: boolean;
+  downloadingPdf: boolean;
 }
 
-function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
+function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDelete, onBuild, onSend, onDownloadPdf, duplicating, archiving, downloadingPdf }: SlideOverProps) {
   const [salesPerson, setSalesPerson] = useState(quote.sales_person ?? '');
   const [expiryDate, setExpiryDate] = useState(quote.expiry_date ?? '');
   const [totalValue, setTotalValue] = useState(quote.total_value?.toString() ?? '');
@@ -156,9 +211,7 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
   }
 
   function removeItem(idx: number) {
-    setItems(prev => prev.map((item, i) =>
-      i === idx ? { ...item, toDelete: true } : item
-    ));
+    setItems(prev => prev.map((item, i) => i === idx ? { ...item, toDelete: true } : item));
   }
 
   async function handleSave() {
@@ -176,7 +229,6 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
         .eq('id', quote.id);
       if (upErr) throw upErr;
 
-      // Batch item changes
       const toDelete = items.filter(i => i.toDelete && !i.isNew).map(i => i.id);
       if (toDelete.length) {
         const { error: delErr } = await supabase.from('quote_items').delete().in('id', toDelete);
@@ -199,8 +251,7 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
         if (insErr) throw insErr;
       }
 
-      const toUpdate = items.filter(i => !i.isNew && !i.toDelete);
-      for (const item of toUpdate) {
+      for (const item of items.filter(i => !i.isNew && !i.toDelete)) {
         await supabase.from('quote_items').update({
           unit_price: item.unit_price,
           subtotal: item.subtotal,
@@ -238,11 +289,8 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
       .update({ status: toStatus, ...extras })
       .eq('id', quote.id);
 
-    if (tErr) {
-      setError(tErr.message);
-    } else {
-      onSaved({ ...quote, status: toStatus, ...extras });
-    }
+    if (tErr) { setError(tErr.message); }
+    else { onSaved({ ...quote, status: toStatus, ...extras }); }
     setTransitioning(false);
   }
 
@@ -252,17 +300,20 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
 
   return (
     <div className="fixed inset-0 z-40 flex">
-      {/* Backdrop */}
       <div className="flex-1 bg-black/60" onClick={onClose} />
-
-      {/* Panel */}
       <div className="w-full sm:w-[560px] bg-slate-950 border-l border-slate-800 flex flex-col shadow-2xl overflow-hidden">
+
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 flex-shrink-0">
           <div className="min-w-0">
             <div className="flex items-center gap-2.5 flex-wrap">
               <span className="text-base font-bold text-white font-mono">{quote.quote_number}</span>
               <StatusBadge status={quote.status} />
+              {quote.is_archived && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium bg-slate-700/50 text-slate-400">
+                  <Archive className="w-3 h-3" /> Archived
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-500 mt-0.5">{quote.customer_name}{quote.company ? ` · ${quote.company}` : ''}</p>
           </div>
@@ -277,10 +328,8 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-1 py-3 mr-6 text-sm font-medium border-b-2 transition-colors capitalize ${
-                activeTab === tab
-                  ? 'border-blue-500 text-white'
-                  : 'border-transparent text-slate-500 hover:text-slate-300'
+              className={`px-1 py-3 mr-6 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab ? 'border-blue-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'
               }`}
             >
               {tab === 'items' ? `Line Items (${visibleItems.length})` : 'Overview'}
@@ -299,7 +348,6 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
 
           {activeTab === 'overview' && (
             <>
-              {/* Customer */}
               <section>
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Customer</h3>
                 <div className="space-y-2">
@@ -324,7 +372,6 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
                 </div>
               </section>
 
-              {/* Quote details */}
               <section>
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Quote Details</h3>
                 <div className="space-y-3">
@@ -379,16 +426,15 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
                 </div>
               </section>
 
-              {/* Timestamps */}
               <section>
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Timeline</h3>
                 <div className="space-y-1.5 text-xs">
                   {[
-                    { label: 'Submitted',   value: fmtDate(quote.submitted_at) },
-                    { label: 'Quoted',      value: fmtDate(quote.quoted_at) },
-                    { label: 'Accepted',    value: fmtDate(quote.accepted_at) },
-                    { label: 'Converted',   value: fmtDate(quote.converted_at) },
-                    { label: 'Expires',     value: fmtDate(quote.expiry_date) },
+                    { label: 'Submitted', value: fmtDate(quote.submitted_at) },
+                    { label: 'Quoted',    value: fmtDate(quote.quoted_at) },
+                    { label: 'Accepted',  value: fmtDate(quote.accepted_at) },
+                    { label: 'Converted', value: fmtDate(quote.converted_at) },
+                    { label: 'Expires',   value: fmtDate(quote.expiry_date) },
                   ].filter(r => r.value !== '—').map(({ label, value }) => (
                     <div key={label} className="flex justify-between">
                       <span className="text-slate-500">{label}</span>
@@ -408,10 +454,7 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
             <section>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Line Items</h3>
-                <button
-                  onClick={addItem}
-                  className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors"
-                >
+                <button onClick={addItem} className="flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors">
                   <Plus className="w-3.5 h-3.5" /> Add Line
                 </button>
               </div>
@@ -437,10 +480,7 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
                               className="w-full px-2.5 py-1.5 bg-slate-800 border border-slate-700 text-white placeholder-slate-600 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                             />
                           </div>
-                          <button
-                            onClick={() => removeItem(idx)}
-                            className="text-slate-600 hover:text-red-400 transition-colors mt-1 flex-shrink-0"
-                          >
+                          <button onClick={() => removeItem(idx)} className="text-slate-600 hover:text-red-400 transition-colors mt-1 flex-shrink-0">
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -457,9 +497,7 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
                           <div>
                             <label className="block text-xs text-slate-600 mb-1">Qty</label>
                             <input
-                              type="number"
-                              min={1}
-                              value={item.quantity}
+                              type="number" min={1} value={item.quantity}
                               onChange={e => updateItem(idx, 'quantity', Number(e.target.value))}
                               className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 text-white rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
                             />
@@ -467,9 +505,7 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
                           <div>
                             <label className="block text-xs text-slate-600 mb-1">Unit Price</label>
                             <input
-                              type="number"
-                              min={0}
-                              value={item.unit_price ?? ''}
+                              type="number" min={0} value={item.unit_price ?? ''}
                               onChange={e => updateItem(idx, 'unit_price', e.target.value === '' ? 0 : Number(e.target.value))}
                               placeholder="0.00"
                               className="w-full px-2 py-1.5 bg-slate-800 border border-slate-700 text-white placeholder-slate-600 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -484,7 +520,6 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
                       </div>
                     );
                   })}
-
                   {computedTotal > 0 && (
                     <div className="border-t border-slate-800 pt-3 flex justify-between items-center">
                       <span className="text-sm text-slate-400">Computed Total</span>
@@ -521,6 +556,7 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
             </div>
           )}
 
+          {/* Save + Close */}
           <div className="flex items-center gap-2">
             <button
               onClick={handleSave}
@@ -530,11 +566,54 @@ function QuoteSlideOver({ quote, onClose, onSaved }: SlideOverProps) {
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               {saving ? 'Saving…' : 'Save Changes'}
             </button>
-            <button
-              onClick={onClose}
-              className="px-4 py-2.5 text-sm text-slate-400 hover:text-white transition-colors"
-            >
+            <button onClick={onClose} className="px-4 py-2.5 text-sm text-slate-400 hover:text-white transition-colors">
               Close
+            </button>
+          </div>
+
+          {/* Secondary actions */}
+          <div className="flex items-center gap-2 pt-1 border-t border-slate-800/60">
+            <button
+              onClick={onSend}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/50 transition-all"
+            >
+              <Send className="w-3.5 h-3.5" /> Send Quote
+            </button>
+            <button
+              onClick={onBuild}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-blue-400 hover:text-blue-300 border border-blue-500/30 hover:border-blue-400/50 transition-all"
+            >
+              <Hammer className="w-3.5 h-3.5" /> Build Quote
+            </button>
+            <button
+              onClick={onDownloadPdf}
+              disabled={downloadingPdf}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/50 transition-all disabled:opacity-40"
+            >
+              {downloadingPdf ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+              {downloadingPdf ? 'Generating…' : 'Download PDF'}
+            </button>
+            <button
+              onClick={onDuplicate}
+              disabled={duplicating}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white border border-slate-800 hover:border-slate-600 transition-all disabled:opacity-40"
+            >
+              {duplicating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Copy className="w-3.5 h-3.5" />}
+              Duplicate
+            </button>
+            <button
+              onClick={onArchive}
+              disabled={archiving}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white border border-slate-800 hover:border-slate-600 transition-all disabled:opacity-40"
+            >
+              {archiving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : quote.is_archived ? <ArchiveRestore className="w-3.5 h-3.5" /> : <Archive className="w-3.5 h-3.5" />}
+              {quote.is_archived ? 'Unarchive' : 'Archive'}
+            </button>
+            <button
+              onClick={onDelete}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium text-red-400 hover:text-red-300 border border-red-900/40 hover:border-red-700/60 transition-all"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Delete
             </button>
           </div>
         </div>
@@ -558,8 +637,7 @@ function NewQuoteModal({ onClose, onCreate }: NewQuoteModalProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const set = (field: string, value: string) =>
-    setForm(prev => ({ ...prev, [field]: value }));
+  const set = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -577,6 +655,7 @@ function NewQuoteModal({ onClose, onCreate }: NewQuoteModalProps) {
         notes: form.notes || null,
         status: 'draft',
         total_items: 0,
+        is_archived: false,
       })
       .select('*, quote_items(*)')
       .maybeSingle();
@@ -652,8 +731,7 @@ function NewQuoteModal({ onClose, onCreate }: NewQuoteModalProps) {
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
               {saving ? 'Creating…' : 'Create Draft Quote'}
             </button>
-            <button type="button" onClick={onClose}
-              className="px-4 text-sm text-slate-400 hover:text-white transition-colors">
+            <button type="button" onClick={onClose} className="px-4 text-sm text-slate-400 hover:text-white transition-colors">
               Cancel
             </button>
           </div>
@@ -666,6 +744,7 @@ function NewQuoteModal({ onClose, onCreate }: NewQuoteModalProps) {
 // ─── main page ────────────────────────────────────────────────────────────────
 
 export function AdminQuotes() {
+  const navigate = useNavigate();
   const [quotes, setQuotes] = useState<QuoteRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -673,9 +752,16 @@ export function AdminQuotes() {
   const [group, setGroup] = useState<GroupKey>('all');
   const [slideOver, setSlideOver] = useState<QuoteRow | null>(null);
   const [showNewModal, setShowNewModal] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<QuoteRow | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
+  const [downloadingPdfId, setDownloadingPdfId] = useState<string | null>(null);
+  const [sendingQuote, setSendingQuote] = useState<QuoteRow | null>(null);
   const [statusMenuId, setStatusMenuId] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [actionsMenuId, setActionsMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const actionsMenuRef = useRef<HTMLDivElement>(null);
 
   async function fetchQuotes() {
     setLoading(true);
@@ -691,19 +777,17 @@ export function AdminQuotes() {
 
   useEffect(() => { fetchQuotes(); }, []);
 
-  // Close status dropdown on outside click
   useEffect(() => {
     function handle(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setStatusMenuId(null);
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setStatusMenuId(null);
+      if (actionsMenuRef.current && !actionsMenuRef.current.contains(e.target as Node)) setActionsMenuId(null);
     }
     document.addEventListener('mousedown', handle);
     return () => document.removeEventListener('mousedown', handle);
   }, []);
 
   async function quickStatusChange(id: string, newStatus: string) {
-    setUpdatingId(id);
+    setUpdatingStatus(id);
     setStatusMenuId(null);
     const now = new Date().toISOString();
     const extras: Record<string, string> = {};
@@ -713,16 +797,145 @@ export function AdminQuotes() {
 
     const { error: err } = await supabase
       .from('quote_requests').update({ status: newStatus, ...extras }).eq('id', id);
-    if (!err) setQuotes(prev => prev.map(q => q.id === id ? { ...q, status: newStatus, ...extras } : q));
-    setUpdatingId(null);
-    if (slideOver?.id === id) setSlideOver(prev => prev ? { ...prev, status: newStatus } : null);
+    if (!err) {
+      setQuotes(prev => prev.map(q => q.id === id ? { ...q, status: newStatus, ...extras } : q));
+      setSlideOver(prev => prev?.id === id ? { ...prev, status: newStatus, ...extras } : prev);
+    }
+    setUpdatingStatus(null);
   }
+
+  async function handleDuplicate(quote: QuoteRow) {
+    setDuplicatingId(quote.id);
+    const { data: newRow, error: err } = await supabase
+      .from('quote_requests')
+      .insert({
+        customer_name: quote.customer_name,
+        customer_email: quote.customer_email,
+        customer_phone: quote.customer_phone,
+        company: quote.company,
+        position: quote.position,
+        address: quote.address,
+        city: quote.city,
+        country: quote.country,
+        message: quote.message,
+        status: 'draft',
+        total_items: quote.total_items,
+        sales_person: quote.sales_person,
+        notes: quote.notes ? `[Copy] ${quote.notes}` : null,
+        expiry_date: quote.expiry_date,
+        total_value: quote.total_value,
+        is_archived: false,
+      })
+      .select('*')
+      .maybeSingle();
+
+    if (err || !newRow) { setDuplicatingId(null); return; }
+
+    const sourceItems = quote.quote_items ?? [];
+    if (sourceItems.length > 0) {
+      await supabase.from('quote_items').insert(
+        sourceItems.map(item => ({
+          quote_request_id: newRow.id,
+          product_name: item.product_name,
+          product_sku: item.product_sku,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          subtotal: item.subtotal,
+          notes: item.notes,
+        }))
+      );
+    }
+
+    const { data: fullQuote } = await supabase
+      .from('quote_requests')
+      .select('*, quote_items(*)')
+      .eq('id', newRow.id)
+      .maybeSingle();
+
+    if (fullQuote) {
+      const q = fullQuote as QuoteRow;
+      setQuotes(prev => [q, ...prev]);
+      setSlideOver(q);
+    }
+    setDuplicatingId(null);
+  }
+
+  async function handleArchive(id: string, archive: boolean) {
+    setArchivingId(id);
+    const { error: err } = await supabase
+      .from('quote_requests')
+      .update({ is_archived: archive })
+      .eq('id', id);
+    if (!err) {
+      setQuotes(prev => prev.map(q => q.id === id ? { ...q, is_archived: archive } : q));
+      setSlideOver(prev => prev?.id === id ? { ...prev, is_archived: archive } : prev);
+    }
+    setArchivingId(null);
+  }
+
+  async function handleDelete(id: string) {
+    setDeletingId(id);
+    await supabase.from('quote_items').delete().eq('quote_request_id', id);
+    const { error: err } = await supabase.from('quote_requests').delete().eq('id', id);
+    if (!err) {
+      setQuotes(prev => prev.filter(q => q.id !== id));
+      if (slideOver?.id === id) setSlideOver(null);
+    }
+    setDeletingId(null);
+    setConfirmDelete(null);
+  }
+
+  async function handleDownloadPdf(quote: QuoteRow) {
+    setDownloadingPdfId(quote.id);
+    try {
+      const pdfData: PdfQuoteData = {
+        quote_number:       quote.quote_number,
+        customer_name:      quote.customer_name,
+        customer_email:     quote.customer_email,
+        customer_phone:     quote.customer_phone,
+        company:            quote.company,
+        position:           quote.position,
+        address:            quote.address,
+        city:               quote.city,
+        country:            quote.country,
+        status:             quote.status,
+        sales_person:       quote.sales_person,
+        expiry_date:        quote.expiry_date,
+        submitted_at:       quote.submitted_at || quote.created_at,
+        notes:              quote.notes,
+        discount_pct:       quote.discount_pct ?? 0,
+        discount_amount:    quote.discount_amount ?? 0,
+        vat_pct:            quote.vat_pct ?? 16,
+        delivery_charge:    quote.delivery_charge ?? 0,
+        installation_charge: quote.installation_charge ?? 0,
+        warranty_charge:    quote.warranty_charge ?? 0,
+        customer_notes:     quote.customer_notes,
+        quote_items: (quote.quote_items ?? []).map(i => ({
+          product_name:    i.product_name,
+          product_sku:     i.product_sku,
+          quantity:        i.quantity,
+          unit_price:      i.unit_price ?? 0,
+          discount_pct:    i.discount_pct ?? 0,
+          discount_amount: i.discount_amount ?? 0,
+          is_optional:     i.is_optional ?? false,
+          item_type:       i.item_type ?? 'product',
+          notes:           i.notes,
+        })),
+      };
+      await generateQuotePdf(pdfData);
+    } finally {
+      setDownloadingPdfId(null);
+    }
+  }
+
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   // Filtering
   const grouped = quotes.filter(q => {
+    if (group === 'archived') return q.is_archived;
+    if (q.is_archived) return false;
     if (group === 'all') return true;
-    const cfg = STATUS_CONFIG[q.status];
-    return cfg?.group === group;
+    return STATUS_CONFIG[q.status]?.group === group;
   });
   const filtered = grouped.filter(q => {
     if (!search.trim()) return true;
@@ -731,16 +944,17 @@ export function AdminQuotes() {
       (q.quote_number ?? '').toLowerCase().includes(s) ||
       q.customer_name.toLowerCase().includes(s) ||
       (q.company ?? '').toLowerCase().includes(s) ||
-      q.customer_email.toLowerCase().includes(s)
+      q.customer_email.toLowerCase().includes(s) ||
+      (q.sales_person ?? '').toLowerCase().includes(s)
     );
   });
 
-  // Group counts
   const counts = {
-    all: quotes.length,
-    active: quotes.filter(q => STATUS_CONFIG[q.status]?.group === 'active').length,
-    draft: quotes.filter(q => STATUS_CONFIG[q.status]?.group === 'draft').length,
-    closed: quotes.filter(q => STATUS_CONFIG[q.status]?.group === 'closed').length,
+    all:      quotes.filter(q => !q.is_archived).length,
+    active:   quotes.filter(q => !q.is_archived && STATUS_CONFIG[q.status]?.group === 'active').length,
+    draft:    quotes.filter(q => !q.is_archived && STATUS_CONFIG[q.status]?.group === 'draft').length,
+    closed:   quotes.filter(q => !q.is_archived && STATUS_CONFIG[q.status]?.group === 'closed').length,
+    archived: quotes.filter(q => q.is_archived).length,
   };
 
   const statusOptions = Object.entries(STATUS_CONFIG).map(([value, cfg]) => ({ value, label: cfg.label }));
@@ -792,7 +1006,7 @@ export function AdminQuotes() {
         <div className="relative flex-1 min-w-48 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
           <input value={search} onChange={e => setSearch(e.target.value)}
-            placeholder="Search quote #, customer, company..."
+            placeholder="Search quote #, customer, company, rep..."
             className="w-full pl-9 pr-3 py-2.5 bg-slate-900 border border-slate-700 text-white placeholder-slate-500 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
         </div>
       </div>
@@ -824,7 +1038,7 @@ export function AdminQuotes() {
                     <td className="px-5 py-4 hidden sm:table-cell"><Skeleton className="h-3.5 w-6" /></td>
                     <td className="px-5 py-4 hidden lg:table-cell"><Skeleton className="h-3.5 w-20" /></td>
                     <td className="px-5 py-4 hidden lg:table-cell"><Skeleton className="h-3.5 w-20" /></td>
-                    <td className="px-5 py-4"><Skeleton className="h-7 w-20 rounded-lg" /></td>
+                    <td className="px-5 py-4"><Skeleton className="h-7 w-24 rounded-lg" /></td>
                   </tr>
                 ))
               ) : filtered.length === 0 ? (
@@ -843,9 +1057,14 @@ export function AdminQuotes() {
                   </td>
                 </tr>
               ) : filtered.map(quote => (
-                <tr key={quote.id} className="border-b border-slate-800/50 hover:bg-slate-800/20 transition-colors">
+                <tr key={quote.id} className={`border-b border-slate-800/50 transition-colors ${
+                  quote.is_archived ? 'opacity-60 hover:opacity-80' : 'hover:bg-slate-800/20'
+                }`}>
                   <td className="px-5 py-4">
-                    <span className="text-sm font-mono font-semibold text-white">{quote.quote_number}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-mono font-semibold text-white">{quote.quote_number}</span>
+                      {quote.is_archived && <Archive className="w-3 h-3 text-slate-600" />}
+                    </div>
                   </td>
                   <td className="px-5 py-4">
                     <p className="text-sm font-medium text-white">{quote.customer_name}</p>
@@ -853,7 +1072,10 @@ export function AdminQuotes() {
                     <p className="text-xs text-slate-600">{quote.customer_email}</p>
                   </td>
                   <td className="px-5 py-4 hidden md:table-cell">
-                    <span className="text-sm text-slate-300">{quote.sales_person ?? <span className="text-slate-600 text-xs">—</span>}</span>
+                    {quote.sales_person
+                      ? <span className="text-sm text-slate-300">{quote.sales_person}</span>
+                      : <span className="text-slate-600 text-xs">—</span>
+                    }
                   </td>
                   <td className="px-5 py-4">
                     <StatusBadge status={quote.status} />
@@ -866,30 +1088,36 @@ export function AdminQuotes() {
                   </td>
                   <td className="px-5 py-4 hidden lg:table-cell">
                     <span className={`text-xs ${
-                      quote.expiry_date && new Date(quote.expiry_date) < new Date()
-                        ? 'text-red-400'
-                        : 'text-slate-400'
+                      quote.expiry_date && new Date(quote.expiry_date) < new Date() ? 'text-red-400' : 'text-slate-400'
                     }`}>{fmtDate(quote.expiry_date)}</span>
                   </td>
                   <td className="px-5 py-4">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      {/* View */}
                       <button
                         onClick={() => setSlideOver(quote)}
                         className="text-xs text-slate-400 hover:text-white flex items-center gap-1 border border-slate-700 hover:border-slate-500 px-2.5 py-1.5 rounded-lg transition-all"
                       >
                         <Eye className="w-3.5 h-3.5" /> View
                       </button>
+                      {/* Build */}
+                      <button
+                        onClick={() => navigate(`/admin/quotes/${quote.id}/build`)}
+                        className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 border border-blue-500/30 hover:border-blue-400/50 px-2.5 py-1.5 rounded-lg transition-all"
+                      >
+                        <Hammer className="w-3.5 h-3.5" /> Build
+                      </button>
+
                       {/* Quick status dropdown */}
                       <div className="relative" ref={statusMenuId === quote.id ? menuRef : undefined}>
                         <button
-                          onClick={() => setStatusMenuId(statusMenuId === quote.id ? null : quote.id)}
-                          disabled={updatingId === quote.id}
-                          className="flex items-center gap-1 text-xs text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 px-2.5 py-1.5 rounded-lg transition-all disabled:opacity-40"
+                          onClick={() => { setStatusMenuId(statusMenuId === quote.id ? null : quote.id); setActionsMenuId(null); }}
+                          disabled={updatingStatus === quote.id}
+                          className="flex items-center gap-1 text-xs text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 px-2 py-1.5 rounded-lg transition-all disabled:opacity-40"
                         >
-                          {updatingId === quote.id
+                          {updatingStatus === quote.id
                             ? <Loader2 className="w-3 h-3 animate-spin" />
-                            : <ChevronDown className="w-3 h-3" />
-                          }
+                            : <ChevronDown className="w-3 h-3" />}
                         </button>
                         {statusMenuId === quote.id && (
                           <div className="absolute right-0 top-full mt-1 w-52 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-20 py-1 overflow-hidden">
@@ -901,6 +1129,47 @@ export function AdminQuotes() {
                                 {opt.label}
                               </button>
                             ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* More actions */}
+                      <div className="relative" ref={actionsMenuId === quote.id ? actionsMenuRef : undefined}>
+                        <button
+                          onClick={() => { setActionsMenuId(actionsMenuId === quote.id ? null : quote.id); setStatusMenuId(null); }}
+                          className="flex items-center text-slate-400 hover:text-white border border-slate-700 hover:border-slate-500 px-2 py-1.5 rounded-lg transition-all"
+                        >
+                          <MoreHorizontal className="w-3.5 h-3.5" />
+                        </button>
+                        {actionsMenuId === quote.id && (
+                          <div className="absolute right-0 top-full mt-1 w-44 bg-slate-800 border border-slate-700 rounded-xl shadow-xl z-20 py-1 overflow-hidden">
+                            <button
+                              onClick={() => { setActionsMenuId(null); handleDuplicate(quote); }}
+                              disabled={duplicatingId === quote.id}
+                              className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 transition-colors flex items-center gap-2 disabled:opacity-40"
+                            >
+                              {duplicatingId === quote.id
+                                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                : <Copy className="w-3.5 h-3.5" />}
+                              Duplicate
+                            </button>
+                            <button
+                              onClick={() => { setActionsMenuId(null); handleArchive(quote.id, !quote.is_archived); }}
+                              disabled={archivingId === quote.id}
+                              className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 transition-colors flex items-center gap-2 disabled:opacity-40"
+                            >
+                              {archivingId === quote.id
+                                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                : quote.is_archived ? <ArchiveRestore className="w-3.5 h-3.5" /> : <Archive className="w-3.5 h-3.5" />}
+                              {quote.is_archived ? 'Unarchive' : 'Archive'}
+                            </button>
+                            <div className="border-t border-slate-700/60 my-1" />
+                            <button
+                              onClick={() => { setActionsMenuId(null); setConfirmDelete(quote); }}
+                              className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" /> Delete
+                            </button>
                           </div>
                         )}
                       </div>
@@ -941,6 +1210,15 @@ export function AdminQuotes() {
             setQuotes(prev => prev.map(q => q.id === updated.id ? { ...q, ...updated } : q));
             setSlideOver(updated);
           }}
+          onDuplicate={() => handleDuplicate(slideOver)}
+          onArchive={() => handleArchive(slideOver.id, !slideOver.is_archived)}
+          onDelete={() => setConfirmDelete(slideOver)}
+          onBuild={() => navigate(`/admin/quotes/${slideOver.id}/build`)}
+          onSend={() => setSendingQuote(slideOver)}
+          onDownloadPdf={() => handleDownloadPdf(slideOver)}
+          duplicating={duplicatingId === slideOver.id}
+          archiving={archivingId === slideOver.id}
+          downloadingPdf={downloadingPdfId === slideOver.id}
         />
       )}
 
@@ -953,6 +1231,59 @@ export function AdminQuotes() {
             setShowNewModal(false);
             setSlideOver(q);
           }}
+        />
+      )}
+
+      {/* Delete confirmation */}
+      {confirmDelete && (
+        <ConfirmDialog
+          title={`Delete ${confirmDelete.quote_number}?`}
+          message={`This will permanently delete the quote for ${confirmDelete.customer_name}${confirmDelete.company ? ` (${confirmDelete.company})` : ''}. This cannot be undone.`}
+          confirmLabel="Delete Quote"
+          onConfirm={() => handleDelete(confirmDelete.id)}
+          onCancel={() => setConfirmDelete(null)}
+          loading={deletingId === confirmDelete.id}
+        />
+      )}
+
+      {/* Send quote modal */}
+      {sendingQuote && (
+        <SendQuoteModal
+          quote={{
+            quote_number:        sendingQuote.quote_number,
+            customer_name:       sendingQuote.customer_name,
+            customer_email:      sendingQuote.customer_email,
+            customer_phone:      sendingQuote.customer_phone,
+            company:             sendingQuote.company,
+            position:            sendingQuote.position,
+            address:             sendingQuote.address,
+            city:                sendingQuote.city,
+            country:             sendingQuote.country,
+            status:              sendingQuote.status,
+            sales_person:        sendingQuote.sales_person,
+            expiry_date:         sendingQuote.expiry_date,
+            submitted_at:        sendingQuote.submitted_at || sendingQuote.created_at,
+            notes:               sendingQuote.notes,
+            discount_pct:        sendingQuote.discount_pct ?? 0,
+            discount_amount:     sendingQuote.discount_amount ?? 0,
+            vat_pct:             sendingQuote.vat_pct ?? 16,
+            delivery_charge:     sendingQuote.delivery_charge ?? 0,
+            installation_charge: sendingQuote.installation_charge ?? 0,
+            warranty_charge:     sendingQuote.warranty_charge ?? 0,
+            customer_notes:      sendingQuote.customer_notes,
+            quote_items: (sendingQuote.quote_items ?? []).map(i => ({
+              product_name:    i.product_name,
+              product_sku:     i.product_sku,
+              quantity:        i.quantity,
+              unit_price:      i.unit_price ?? 0,
+              discount_pct:    i.discount_pct ?? 0,
+              discount_amount: i.discount_amount ?? 0,
+              is_optional:     i.is_optional ?? false,
+              item_type:       i.item_type ?? 'product',
+              notes:           i.notes,
+            })),
+          }}
+          onClose={() => setSendingQuote(null)}
         />
       )}
     </div>

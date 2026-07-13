@@ -23,7 +23,7 @@ interface Stats {
 
 interface DayBucket { date: string; label: string; quotes: number; orders: number }
 interface AvailabilityBreakdown { 'in-stock': number; 'low-stock': number; 'out-of-stock': number; 'pre-order': number }
-interface QuoteStatusBreakdown { pending: number; reviewing: number; quoted: number; accepted: number; declined: number }
+interface QuoteStatusBreakdown { [key: string]: number }
 interface OrderStatusBreakdown { [key: string]: number }
 
 interface RecentQuote {
@@ -350,10 +350,10 @@ export function AdminDashboard() {
       setAvailability(avail);
 
       // Quote status breakdown
-      const qs: QuoteStatusBreakdown = { pending: 0, reviewing: 0, quoted: 0, accepted: 0, declined: 0 };
+      const qs: QuoteStatusBreakdown = {};
       (qStatusRes.data ?? []).forEach((r: { status: string }) => {
-        const k = r.status as keyof QuoteStatusBreakdown;
-        if (k in qs) qs[k]++;
+        const k = r.status ?? 'submitted';
+        qs[k] = (qs[k] ?? 0) + 1;
       });
       setQuoteStatus(qs);
 

@@ -281,6 +281,44 @@ export async function adminDeleteCategory(id: string) {
   if (error) throw error;
 }
 
+// Admin — Brand CRUD
+
+export async function adminGetBrandById(id: string) {
+  const { data, error } = await supabase
+    .from('brands')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function adminCreateBrand(data: Record<string, unknown>) {
+  const { data: created, error } = await supabase
+    .from('brands')
+    .insert(data)
+    .select()
+    .single();
+  if (error) throw error;
+  return created;
+}
+
+export async function adminUpdateBrand(id: string, data: Record<string, unknown>) {
+  const { data: updated, error } = await supabase
+    .from('brands')
+    .update(data)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return updated;
+}
+
+export async function adminDeleteBrand(id: string) {
+  const { error } = await supabase.from('brands').delete().eq('id', id);
+  if (error) throw error;
+}
+
 // Admin — Product CRUD
 
 export async function adminGetProductById(id: string) {

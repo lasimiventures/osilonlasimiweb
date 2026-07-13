@@ -6,9 +6,11 @@ import {
   Calendar, UserCheck, DollarSign, StickyNote, Package,
   ArrowRight, CheckCircle2, Clock, Ban, Hourglass, RotateCcw,
   Send, Eye, Trash2, Copy, Archive, ArchiveRestore, MoreHorizontal,
-  Hammer,
+  Hammer, Download,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { generateQuotePdf } from '../../lib/quotePdf';
+import type { PdfQuoteData } from '../../lib/quotePdf';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -169,11 +171,13 @@ interface SlideOverProps {
   onArchive: () => void;
   onDelete: () => void;
   onBuild: () => void;
+  onDownloadPdf: () => void;
   duplicating: boolean;
   archiving: boolean;
+  downloadingPdf: boolean;
 }
 
-function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDelete, onBuild, duplicating, archiving }: SlideOverProps) {
+function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDelete, onBuild, onDownloadPdf, duplicating, archiving, downloadingPdf }: SlideOverProps) {
   const [salesPerson, setSalesPerson] = useState(quote.sales_person ?? '');
   const [expiryDate, setExpiryDate] = useState(quote.expiry_date ?? '');
   const [totalValue, setTotalValue] = useState(quote.total_value?.toString() ?? '');
@@ -574,6 +578,14 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
               <Hammer className="w-3.5 h-3.5" /> Build Quote
             </button>
             <button
+              onClick={onDownloadPdf}
+              disabled={downloadingPdf}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/50 transition-all disabled:opacity-40"
+            >
+              {downloadingPdf ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+              {downloadingPdf ? 'Generating…' : 'Download PDF'}
+            </button>
+            <button
               onClick={onDuplicate}
               disabled={duplicating}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white border border-slate-800 hover:border-slate-600 transition-all disabled:opacity-40"
@@ -736,6 +748,7 @@ export function AdminQuotes() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
+  const [downloadingPdfId, setDownloadingPdfId] = useState<string | null>(null);
   const [statusMenuId, setStatusMenuId] = useState<string | null>(null);
   const [actionsMenuId, setActionsMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -861,6 +874,49 @@ export function AdminQuotes() {
     }
     setDeletingId(null);
     setConfirmDelete(null);
+  }
+
+  async function handleDownloadPdf(quote: QuoteRow) {
+    setDownloadingPdfId(quote.id);
+    try {
+      const pdfData: PdfQuoteData = {
+        quote_number:       quote.quote_number,
+        customer_name:      quote.customer_name,
+        customer_email:     quote.customer_email,
+        customer_phone:     quote.customer_phone,
+        company:            quote.company,
+        position:           quote.position,
+        address:            quote.address,
+        city:               quote.city,
+        country:            quote.country,
+        status:             quote.status,
+        sales_person:       quote.sales_person,
+        expiry_date:        quote.expiry_date,
+        submitted_at:       quote.submitted_at || quote.created_at,
+        notes:              quote.notes,
+        discount_pct:       quote.discount_pct ?? 0,
+        discount_amount:    quote.discount_amount ?? 0,
+        vat_pct:            quote.vat_pct ?? 16,
+        delivery_charge:    quote.delivery_charge ?? 0,
+        installation_charge: quote.installation_charge ?? 0,
+        warranty_charge:    quote.warranty_charge ?? 0,
+        customer_notes:     quote.customer_notes,
+        quote_items: (quote.quote_items ?? []).map(i => ({
+          product_name:    i.product_name,
+          product_sku:     i.product_sku,
+          quantity:        i.quantity,
+          unit_price:      i.unit_price ?? 0,
+          discount_pct:    i.discount_pct ?? 0,
+          discount_amount: i.discount_amount ?? 0,
+          is_optional:     i.is_optional ?? false,
+          item_type:       i.item_type ?? 'product',
+          notes:           i.notes,
+        })),
+      };
+      await generateQuotePdf(pdfData);
+    } finally {
+      setDownloadingPdfId(null);
+    }
   }
 
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
@@ -1149,8 +1205,10 @@ export function AdminQuotes() {
           onArchive={() => handleArchive(slideOver.id, !slideOver.is_archived)}
           onDelete={() => setConfirmDelete(slideOver)}
           onBuild={() => navigate(`/admin/quotes/${slideOver.id}/build`)}
+          onDownloadPdf={() => handleDownloadPdf(slideOver)}
           duplicating={duplicatingId === slideOver.id}
           archiving={archivingId === slideOver.id}
+          downloadingPdf={downloadingPdfId === slideOver.id}
         />
       )}
 

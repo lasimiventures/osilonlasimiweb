@@ -4,9 +4,11 @@ import {
   ArrowLeft, Save, CheckCircle2, AlertCircle, Loader2, Plus, Trash2,
   User, Building2, Mail, Phone, ArrowRight, Package, Wrench,
   Truck, ShieldCheck, FileText, StickyNote, Percent, DollarSign, Info,
-  Ban, Hourglass, Clock, RotateCcw, Send, Eye,
+  Ban, Hourglass, Clock, RotateCcw, Send, Eye, Download,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { generateQuotePdf } from '../../lib/quotePdf';
+import type { PdfQuoteData } from '../../lib/quotePdf';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -155,6 +157,7 @@ export function AdminQuoteBuilder() {
   const [saving, setSaving] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
   const [savedOk, setSavedOk] = useState(false);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -328,6 +331,52 @@ export function AdminQuoteBuilder() {
     }
   }
 
+  async function handleDownloadPdf() {
+    if (!quote) return;
+    setGeneratingPdf(true);
+    try {
+      const pdfData: PdfQuoteData = {
+        quote_number: quote.quote_number,
+        customer_name: quote.customer_name,
+        customer_email: quote.customer_email,
+        customer_phone: quote.customer_phone,
+        company: quote.company,
+        position: null,
+        address: null,
+        city: null,
+        country: null,
+        status: quote.status,
+        sales_person: quote.sales_person,
+        expiry_date: quote.expiry_date,
+        submitted_at: quote.submitted_at || new Date().toISOString(),
+        notes: quote.notes,
+        discount_pct: discountPct,
+        discount_amount: discountAmount,
+        vat_pct: vatPct,
+        delivery_charge: deliveryCharge,
+        installation_charge: installationCharge,
+        warranty_charge: warrantyCharge,
+        customer_notes: customerNotes || null,
+        quote_items: items.filter(i => !i.toDelete).map(i => ({
+          product_name: i.product_name,
+          product_sku: i.product_sku,
+          quantity: i.quantity,
+          unit_price: i.unit_price,
+          discount_pct: i.discount_pct,
+          discount_amount: i.discount_amount,
+          is_optional: i.is_optional,
+          item_type: i.item_type,
+          notes: i.notes,
+        })),
+      };
+      await generateQuotePdf(pdfData);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'PDF generation failed.');
+    } finally {
+      setGeneratingPdf(false);
+    }
+  }
+
   async function handleTransition(toStatus: string) {
     if (!id || !quote) return;
     setTransitioning(true);
@@ -420,6 +469,16 @@ export function AdminQuoteBuilder() {
                 {t.label}
               </button>
             ))}
+
+            {/* Download PDF */}
+            <button
+              onClick={handleDownloadPdf}
+              disabled={generatingPdf || saving}
+              className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+            >
+              {generatingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              {generatingPdf ? 'Generating…' : 'Download PDF'}
+            </button>
 
             {/* Save */}
             <button
@@ -851,8 +910,8 @@ export function AdminQuoteBuilder() {
                   )}
                 </div>
 
-                {/* Save button */}
-                <div className="px-5 pb-5">
+                {/* Save + PDF buttons */}
+                <div className="px-5 pb-5 space-y-2">
                   <button
                     onClick={handleSave}
                     disabled={saving}
@@ -860,6 +919,14 @@ export function AdminQuoteBuilder() {
                   >
                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : savedOk ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
                     {saving ? 'Saving…' : savedOk ? 'Saved!' : 'Save Quote'}
+                  </button>
+                  <button
+                    onClick={handleDownloadPdf}
+                    disabled={generatingPdf || saving}
+                    className="w-full flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+                  >
+                    {generatingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                    {generatingPdf ? 'Generating PDF…' : 'Download PDF'}
                   </button>
                 </div>
               </div>

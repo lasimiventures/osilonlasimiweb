@@ -11,6 +11,7 @@ import {
 import { supabase } from '../../lib/supabase';
 import { generateQuotePdf } from '../../lib/quotePdf';
 import type { PdfQuoteData } from '../../lib/quotePdf';
+import { SendQuoteModal } from '../../components/admin/SendQuoteModal';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -171,13 +172,14 @@ interface SlideOverProps {
   onArchive: () => void;
   onDelete: () => void;
   onBuild: () => void;
+  onSend: () => void;
   onDownloadPdf: () => void;
   duplicating: boolean;
   archiving: boolean;
   downloadingPdf: boolean;
 }
 
-function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDelete, onBuild, onDownloadPdf, duplicating, archiving, downloadingPdf }: SlideOverProps) {
+function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDelete, onBuild, onSend, onDownloadPdf, duplicating, archiving, downloadingPdf }: SlideOverProps) {
   const [salesPerson, setSalesPerson] = useState(quote.sales_person ?? '');
   const [expiryDate, setExpiryDate] = useState(quote.expiry_date ?? '');
   const [totalValue, setTotalValue] = useState(quote.total_value?.toString() ?? '');
@@ -572,6 +574,12 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
           {/* Secondary actions */}
           <div className="flex items-center gap-2 pt-1 border-t border-slate-800/60">
             <button
+              onClick={onSend}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/50 transition-all"
+            >
+              <Send className="w-3.5 h-3.5" /> Send Quote
+            </button>
+            <button
               onClick={onBuild}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold text-blue-400 hover:text-blue-300 border border-blue-500/30 hover:border-blue-400/50 transition-all"
             >
@@ -749,6 +757,7 @@ export function AdminQuotes() {
   const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [downloadingPdfId, setDownloadingPdfId] = useState<string | null>(null);
+  const [sendingQuote, setSendingQuote] = useState<QuoteRow | null>(null);
   const [statusMenuId, setStatusMenuId] = useState<string | null>(null);
   const [actionsMenuId, setActionsMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -1205,6 +1214,7 @@ export function AdminQuotes() {
           onArchive={() => handleArchive(slideOver.id, !slideOver.is_archived)}
           onDelete={() => setConfirmDelete(slideOver)}
           onBuild={() => navigate(`/admin/quotes/${slideOver.id}/build`)}
+          onSend={() => setSendingQuote(slideOver)}
           onDownloadPdf={() => handleDownloadPdf(slideOver)}
           duplicating={duplicatingId === slideOver.id}
           archiving={archivingId === slideOver.id}
@@ -1233,6 +1243,47 @@ export function AdminQuotes() {
           onConfirm={() => handleDelete(confirmDelete.id)}
           onCancel={() => setConfirmDelete(null)}
           loading={deletingId === confirmDelete.id}
+        />
+      )}
+
+      {/* Send quote modal */}
+      {sendingQuote && (
+        <SendQuoteModal
+          quote={{
+            quote_number:        sendingQuote.quote_number,
+            customer_name:       sendingQuote.customer_name,
+            customer_email:      sendingQuote.customer_email,
+            customer_phone:      sendingQuote.customer_phone,
+            company:             sendingQuote.company,
+            position:            sendingQuote.position,
+            address:             sendingQuote.address,
+            city:                sendingQuote.city,
+            country:             sendingQuote.country,
+            status:              sendingQuote.status,
+            sales_person:        sendingQuote.sales_person,
+            expiry_date:         sendingQuote.expiry_date,
+            submitted_at:        sendingQuote.submitted_at || sendingQuote.created_at,
+            notes:               sendingQuote.notes,
+            discount_pct:        sendingQuote.discount_pct ?? 0,
+            discount_amount:     sendingQuote.discount_amount ?? 0,
+            vat_pct:             sendingQuote.vat_pct ?? 16,
+            delivery_charge:     sendingQuote.delivery_charge ?? 0,
+            installation_charge: sendingQuote.installation_charge ?? 0,
+            warranty_charge:     sendingQuote.warranty_charge ?? 0,
+            customer_notes:      sendingQuote.customer_notes,
+            quote_items: (sendingQuote.quote_items ?? []).map(i => ({
+              product_name:    i.product_name,
+              product_sku:     i.product_sku,
+              quantity:        i.quantity,
+              unit_price:      i.unit_price ?? 0,
+              discount_pct:    i.discount_pct ?? 0,
+              discount_amount: i.discount_amount ?? 0,
+              is_optional:     i.is_optional ?? false,
+              item_type:       i.item_type ?? 'product',
+              notes:           i.notes,
+            })),
+          }}
+          onClose={() => setSendingQuote(null)}
         />
       )}
     </div>

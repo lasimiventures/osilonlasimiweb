@@ -9,6 +9,7 @@ import {
 import { supabase } from '../../lib/supabase';
 import { generateQuotePdf } from '../../lib/quotePdf';
 import type { PdfQuoteData } from '../../lib/quotePdf';
+import { SendQuoteModal } from '../../components/admin/SendQuoteModal';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -159,6 +160,7 @@ export function AdminQuoteBuilder() {
   const [savedOk, setSavedOk] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSendModal, setShowSendModal] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -335,46 +337,49 @@ export function AdminQuoteBuilder() {
     if (!quote) return;
     setGeneratingPdf(true);
     try {
-      const pdfData: PdfQuoteData = {
-        quote_number: quote.quote_number,
-        customer_name: quote.customer_name,
-        customer_email: quote.customer_email,
-        customer_phone: quote.customer_phone,
-        company: quote.company,
-        position: null,
-        address: null,
-        city: null,
-        country: null,
-        status: quote.status,
-        sales_person: quote.sales_person,
-        expiry_date: quote.expiry_date,
-        submitted_at: quote.submitted_at || new Date().toISOString(),
-        notes: quote.notes,
-        discount_pct: discountPct,
-        discount_amount: discountAmount,
-        vat_pct: vatPct,
-        delivery_charge: deliveryCharge,
-        installation_charge: installationCharge,
-        warranty_charge: warrantyCharge,
-        customer_notes: customerNotes || null,
-        quote_items: items.filter(i => !i.toDelete).map(i => ({
-          product_name: i.product_name,
-          product_sku: i.product_sku,
-          quantity: i.quantity,
-          unit_price: i.unit_price,
-          discount_pct: i.discount_pct,
-          discount_amount: i.discount_amount,
-          is_optional: i.is_optional,
-          item_type: i.item_type,
-          notes: i.notes,
-        })),
-      };
-      await generateQuotePdf(pdfData);
+      await generateQuotePdf(buildPdfData());
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'PDF generation failed.');
     } finally {
       setGeneratingPdf(false);
     }
+  }
+
+  function buildPdfData(): PdfQuoteData {
+    return {
+      quote_number: quote!.quote_number,
+      customer_name: quote!.customer_name,
+      customer_email: quote!.customer_email,
+      customer_phone: quote!.customer_phone,
+      company: quote!.company,
+      position: null,
+      address: null,
+      city: null,
+      country: null,
+      status: quote!.status,
+      sales_person: quote!.sales_person,
+      expiry_date: quote!.expiry_date,
+      submitted_at: quote!.submitted_at || new Date().toISOString(),
+      notes: quote!.notes,
+      discount_pct: discountPct,
+      discount_amount: discountAmount,
+      vat_pct: vatPct,
+      delivery_charge: deliveryCharge,
+      installation_charge: installationCharge,
+      warranty_charge: warrantyCharge,
+      customer_notes: customerNotes || null,
+      quote_items: items.filter(i => !i.toDelete).map(i => ({
+        product_name: i.product_name,
+        product_sku: i.product_sku,
+        quantity: i.quantity,
+        unit_price: i.unit_price,
+        discount_pct: i.discount_pct,
+        discount_amount: i.discount_amount,
+        is_optional: i.is_optional,
+        item_type: i.item_type,
+        notes: i.notes,
+      })),
+    };
   }
 
   async function handleTransition(toStatus: string) {
@@ -426,6 +431,7 @@ export function AdminQuoteBuilder() {
   }
 
   return (
+    <>
     <div className="min-h-full bg-slate-950">
 
       {/* ── Sticky Header ── */}
@@ -469,6 +475,16 @@ export function AdminQuoteBuilder() {
                 {t.label}
               </button>
             ))}
+
+            {/* Send Quote */}
+            <button
+              onClick={() => setShowSendModal(true)}
+              disabled={saving}
+              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+            >
+              <Send className="w-4 h-4" />
+              Send Quote
+            </button>
 
             {/* Download PDF */}
             <button
@@ -921,6 +937,13 @@ export function AdminQuoteBuilder() {
                     {saving ? 'Saving…' : savedOk ? 'Saved!' : 'Save Quote'}
                   </button>
                   <button
+                    onClick={() => setShowSendModal(true)}
+                    disabled={saving}
+                    className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+                  >
+                    <Send className="w-4 h-4" /> Send Quote
+                  </button>
+                  <button
                     onClick={handleDownloadPdf}
                     disabled={generatingPdf || saving}
                     className="w-full flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-40 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
@@ -966,5 +989,13 @@ export function AdminQuoteBuilder() {
         </div>
       </div>
     </div>
+
+    {showSendModal && quote && (
+      <SendQuoteModal
+        quote={buildPdfData()}
+        onClose={() => setShowSendModal(false)}
+      />
+    )}
+    </>
   );
 }

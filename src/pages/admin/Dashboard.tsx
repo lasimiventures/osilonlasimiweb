@@ -34,11 +34,19 @@ interface RecentQuote {
 // ─── config ───────────────────────────────────────────────────────────────────
 
 const QUOTE_STATUS: Record<string, { label: string; dot: string; bg: string; text: string }> = {
-  pending:   { label: 'Pending',   dot: 'bg-amber-400',   bg: 'bg-amber-500/10',   text: 'text-amber-300' },
-  reviewing: { label: 'Reviewing', dot: 'bg-blue-400',    bg: 'bg-blue-500/10',    text: 'text-blue-300' },
-  quoted:    { label: 'Quoted',    dot: 'bg-sky-400',     bg: 'bg-sky-500/10',     text: 'text-sky-300' },
-  accepted:  { label: 'Accepted',  dot: 'bg-emerald-400', bg: 'bg-emerald-500/10', text: 'text-emerald-300' },
-  declined:  { label: 'Declined',  dot: 'bg-red-400',     bg: 'bg-red-500/10',     text: 'text-red-300' },
+  draft:              { label: 'Draft',              dot: 'bg-slate-400',   bg: 'bg-slate-500/10',   text: 'text-slate-300' },
+  submitted:          { label: 'Submitted',          dot: 'bg-amber-400',   bg: 'bg-amber-500/10',   text: 'text-amber-300' },
+  under_review:       { label: 'Under Review',       dot: 'bg-blue-400',    bg: 'bg-blue-500/10',    text: 'text-blue-300' },
+  quoted:             { label: 'Quoted',             dot: 'bg-sky-400',     bg: 'bg-sky-500/10',     text: 'text-sky-300' },
+  awaiting_customer:  { label: 'Awaiting Customer',  dot: 'bg-orange-400',  bg: 'bg-orange-500/10',  text: 'text-orange-300' },
+  accepted:           { label: 'Accepted',           dot: 'bg-emerald-400', bg: 'bg-emerald-500/10', text: 'text-emerald-300' },
+  rejected:           { label: 'Rejected',           dot: 'bg-red-400',     bg: 'bg-red-500/10',     text: 'text-red-300' },
+  expired:            { label: 'Expired',            dot: 'bg-zinc-400',    bg: 'bg-zinc-500/10',    text: 'text-zinc-300' },
+  converted_to_order: { label: 'Converted to Order', dot: 'bg-teal-400',    bg: 'bg-teal-500/10',    text: 'text-teal-300' },
+  // backward compat for any pre-migration rows
+  pending:            { label: 'Submitted',          dot: 'bg-amber-400',   bg: 'bg-amber-500/10',   text: 'text-amber-300' },
+  reviewing:          { label: 'Under Review',       dot: 'bg-blue-400',    bg: 'bg-blue-500/10',    text: 'text-blue-300' },
+  declined:           { label: 'Rejected',           dot: 'bg-red-400',     bg: 'bg-red-500/10',     text: 'text-red-300' },
 };
 
 const ORDER_STATUS: Record<string, { label: string; dot: string; bg: string; text: string }> = {
@@ -308,7 +316,7 @@ export function AdminDashboard() {
         supabase.from('categories').select('id', { count: 'exact', head: true }),
         supabase.from('brands').select('id', { count: 'exact', head: true }),
         supabase.from('quote_requests').select('id', { count: 'exact', head: true }),
-        supabase.from('quote_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('quote_requests').select('id', { count: 'exact', head: true }).eq('status', 'submitted'),
         supabase.from('orders').select('id', { count: 'exact', head: true }),
         supabase.from('orders').select('id', { count: 'exact', head: true }).eq('order_status', 'pending'),
         supabase.from('products').select('availability'),

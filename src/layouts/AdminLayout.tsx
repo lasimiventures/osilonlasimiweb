@@ -12,6 +12,7 @@ import {
   ChevronRight,
   Settings,
   ShoppingBag,
+  Image,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 
@@ -21,6 +22,7 @@ const navItems = [
   { to: '/admin/products', icon: Package, label: 'Products' },
   { to: '/admin/categories', icon: Layers, label: 'Categories' },
   { to: '/admin/brands', icon: Tag, label: 'Brands' },
+  { to: '/admin/media', icon: Image, label: 'Media Library' },
   { to: '/admin/quotes', icon: FileText, label: 'Quote Requests' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
 ];

@@ -27,6 +27,10 @@ import { AdminProducts } from '../pages/admin/Products';
 import { AdminProductForm } from '../pages/admin/ProductForm';
 import { AdminCategories } from '../pages/admin/Categories';
 import { AdminCategoryForm } from '../pages/admin/CategoryForm';
+import { AdminBrands } from '../pages/admin/Brands';
+import { AdminBrandForm } from '../pages/admin/BrandForm';
+import { AdminMedia } from '../pages/admin/Media';
+import { AdminQuotes } from '../pages/admin/Quotes';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -69,6 +73,11 @@ export function AppRoutes() {
           <Route path="/admin/categories" element={<AdminCategories />} />
           <Route path="/admin/categories/new" element={<AdminCategoryForm />} />
           <Route path="/admin/categories/:id/edit" element={<AdminCategoryForm />} />
+          <Route path="/admin/brands" element={<AdminBrands />} />
+          <Route path="/admin/brands/new" element={<AdminBrandForm />} />
+          <Route path="/admin/brands/:id/edit" element={<AdminBrandForm />} />
+          <Route path="/admin/media" element={<AdminMedia />} />
+          <Route path="/admin/quotes" element={<AdminQuotes />} />
           {/* Further admin routes added in later milestones */}
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>

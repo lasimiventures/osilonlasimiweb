@@ -247,3 +247,20 @@ export interface Promotion {
   image: string;
   highlight?: string;
 }
+
+export interface Banner {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  badgeText: string | null;
+  ctaPrimaryText: string | null;
+  ctaPrimaryLink: string | null;
+  ctaSecondaryText: string | null;
+  ctaSecondaryLink: string | null;
+  imageUrl: string | null;
+  isActive: boolean;
+  sortOrder: number;
+  bannerType: 'hero' | 'promo';
+  createdAt: string;
+  updatedAt: string;
+}

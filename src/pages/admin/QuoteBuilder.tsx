@@ -385,15 +385,66 @@ export function AdminQuoteBuilder() {
   async function handleTransition(toStatus: string) {
     if (!id || !quote) return;
     setTransitioning(true);
+    setError(null);
     const now = new Date().toISOString();
     const extras: Record<string, string> = {};
     if (toStatus === 'quoted') extras.quoted_at = now;
     if (toStatus === 'accepted') extras.accepted_at = now;
     if (toStatus === 'converted_to_order') extras.converted_at = now;
-    const { error: err } = await supabase.from('quote_requests').update({ status: toStatus, ...extras }).eq('id', id);
-    if (!err) setQuote(prev => prev ? { ...prev, status: toStatus } : prev);
-    else setError(err.message);
+
+    const { error: err } = await supabase
+      .from('quote_requests')
+      .update({ status: toStatus, ...extras })
+      .eq('id', id);
+
+    if (err) { setError(err.message); setTransitioning(false); return; }
+    setQuote(prev => prev ? { ...prev, status: toStatus } : prev);
+
+    if (toStatus === 'converted_to_order') {
+      await createOrderFromQuote(quote, id);
+    }
+
     setTransitioning(false);
+  }
+
+  async function createOrderFromQuote(q: QuoteRow, quoteId: string) {
+    const existingOrder = await supabase
+      .from('orders')
+      .select('id')
+      .eq('quote_id', quoteId)
+      .maybeSingle();
+    if (existingOrder.data) return; // already converted, no re-entry
+
+    const { data: order, error: oErr } = await supabase
+      .from('orders')
+      .insert({
+        customer_name: q.customer_name,
+        company_name: q.company,
+        email: q.customer_email,
+        phone: q.customer_phone,
+        notes: q.notes,
+        order_status: 'processing',
+        quote_id: quoteId,
+        total_value: pricing.grandTotal,
+      })
+      .select('id')
+      .maybeSingle();
+
+    if (oErr || !order) { setError('Quote converted but order creation failed: ' + (oErr?.message ?? '')); return; }
+
+    const nonOptional = items.filter(i => !i.toDelete && !i.is_optional);
+    if (nonOptional.length > 0) {
+      await supabase.from('order_items').insert(
+        nonOptional.map(i => ({
+          order_id: order.id,
+          product_name: i.product_name,
+          product_sku: i.product_sku,
+          quantity: i.quantity,
+          unit_price: i.unit_price,
+          subtotal: computeLineNet(i),
+        }))
+      );
+    }
   }
 
   // ── render ────────────────────────────────────────────────────────────────

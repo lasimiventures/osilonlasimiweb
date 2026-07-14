@@ -174,12 +174,13 @@ interface SlideOverProps {
   onBuild: () => void;
   onSend: () => void;
   onDownloadPdf: () => void;
+  onConvertToOrder: (quote: QuoteRow, grandTotal: number) => Promise<void>;
   duplicating: boolean;
   archiving: boolean;
   downloadingPdf: boolean;
 }
 
-function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDelete, onBuild, onSend, onDownloadPdf, duplicating, archiving, downloadingPdf }: SlideOverProps) {
+function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDelete, onBuild, onSend, onDownloadPdf, onConvertToOrder, duplicating, archiving, downloadingPdf }: SlideOverProps) {
   const [salesPerson, setSalesPerson] = useState(quote.sales_person ?? '');
   const [expiryDate, setExpiryDate] = useState(quote.expiry_date ?? '');
   const [totalValue, setTotalValue] = useState(quote.total_value?.toString() ?? '');
@@ -289,8 +290,13 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
       .update({ status: toStatus, ...extras })
       .eq('id', quote.id);
 
-    if (tErr) { setError(tErr.message); }
-    else { onSaved({ ...quote, status: toStatus, ...extras }); }
+    if (tErr) { setError(tErr.message); setTransitioning(false); return; }
+    onSaved({ ...quote, status: toStatus, ...extras });
+
+    if (toStatus === 'converted_to_order') {
+      await onConvertToOrder({ ...quote, status: toStatus }, computedTotal);
+    }
+
     setTransitioning(false);
   }
 
@@ -873,6 +879,51 @@ export function AdminQuotes() {
     setArchivingId(null);
   }
 
+  async function createOrderFromQuote(quote: QuoteRow, grandTotal: number) {
+    const { data: existing } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('quote_id', quote.id)
+      .maybeSingle();
+    if (existing) return;
+
+    const { data: order, error: oErr } = await supabase
+      .from('orders')
+      .insert({
+        customer_name: quote.customer_name,
+        company_name: quote.company,
+        email: quote.customer_email,
+        phone: quote.customer_phone,
+        notes: quote.notes,
+        order_status: 'processing',
+        quote_id: quote.id,
+        total_value: grandTotal,
+      })
+      .select('id')
+      .maybeSingle();
+
+    if (oErr || !order) return;
+
+    const { data: qItems } = await supabase
+      .from('quote_items')
+      .select('*')
+      .eq('quote_request_id', quote.id);
+
+    const lineItems = (qItems ?? []).filter(i => !i.is_optional);
+    if (lineItems.length > 0) {
+      await supabase.from('order_items').insert(
+        lineItems.map(i => ({
+          order_id: order.id,
+          product_name: i.product_name,
+          product_sku: i.product_sku,
+          quantity: i.quantity,
+          unit_price: i.unit_price,
+          subtotal: i.subtotal,
+        }))
+      );
+    }
+  }
+
   async function handleDelete(id: string) {
     setDeletingId(id);
     await supabase.from('quote_items').delete().eq('quote_request_id', id);
@@ -1216,6 +1267,7 @@ export function AdminQuotes() {
           onBuild={() => navigate(`/admin/quotes/${slideOver.id}/build`)}
           onSend={() => setSendingQuote(slideOver)}
           onDownloadPdf={() => handleDownloadPdf(slideOver)}
+          onConvertToOrder={createOrderFromQuote}
           duplicating={duplicatingId === slideOver.id}
           archiving={archivingId === slideOver.id}
           downloadingPdf={downloadingPdfId === slideOver.id}

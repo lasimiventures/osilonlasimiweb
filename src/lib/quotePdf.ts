@@ -83,7 +83,7 @@ const COLORS = {
 };
 
 const COMPANY = {
-  name:    'OSIL Group Ltd',
+  name:    'OSIL Ltd',
   tagline: 'Professional Technology Solutions',
   address: '1st Floor, Jethalal Chambers, Tubman Rd, Suite 103, Nairobi',
   phone:   '+254 795 030 476',
@@ -99,7 +99,7 @@ const DEFAULT_TERMS: Array<{ title: string; body: string }> = [
   },
   {
     title: 'Delivery',
-    body: 'Delivery lead times are indicative and subject to stock availability. OSIL Group Ltd will notify the customer promptly of any delays. Delivery charges are as quoted above unless otherwise agreed in writing.',
+    body: 'Delivery lead times are indicative and subject to stock availability. OSIL Ltd will notify the customer promptly of any delays. Delivery charges are as quoted above unless otherwise agreed in writing.',
   },
   {
     title: 'Warranty',
@@ -670,7 +670,7 @@ function drawSignature(doc: jsPDF, qrUrl: string, quoteNumber: string, y: number
     sf(doc, 7, 'normal', COLORS.blue600);
     doc.text(quoteNumber, qrX + qrSize / 2, y + qrSize + 5.5, { align: 'center' });
     sf(doc, 6.5, 'normal', COLORS.slate400);
-    doc.text('OSIL Group Ltd — Official Quotation', qrX + qrSize / 2, y + qrSize + 9, { align: 'center' });
+    doc.text('OSIL Ltd — Official Quotation', qrX + qrSize / 2, y + qrSize + 9, { align: 'center' });
   }
 }
 

@@ -139,7 +139,7 @@ function buildEmailHtml(quote: QuoteData, coverMessage: string): string {
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
           <td>
-            <div style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-0.3px;">OSIL Group Ltd</div>
+            <div style="font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-0.3px;">OSIL Ltd</div>
             <div style="font-size:12px;color:#bfdbfe;margin-top:2px;">Professional Technology Solutions</div>
           </td>
           <td align="right">
@@ -290,7 +290,7 @@ function buildEmailHtml(quote: QuoteData, coverMessage: string): string {
     <td style="background:#0f172a;padding:16px 32px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
-          <td style="font-size:12px;color:#94a3b8;">OSIL Group Ltd · 1st Floor, Jethalal Chambers, Tubman Rd, Suite 103, Nairobi · PIN: P051234567X</td>
+          <td style="font-size:12px;color:#94a3b8;">OSIL Ltd · 1st Floor, Jethalal Chambers, Tubman Rd, Suite 103, Nairobi · PIN: P051234567X</td>
           <td align="right" style="font-size:11px;color:#475569;">${quote.quote_number}</td>
         </tr>
       </table>
@@ -345,7 +345,7 @@ Deno.serve(async (req: Request) => {
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: [recipientEmail],
-        subject: `Quotation ${quote.quote_number} from OSIL Group Ltd`,
+        subject: `Quotation ${quote.quote_number} from OSIL Ltd`,
         html,
       }),
     });

@@ -6,7 +6,7 @@ import {
   Calendar, UserCheck, DollarSign, StickyNote, Package,
   ArrowRight, CheckCircle2, Clock, Ban, Hourglass, RotateCcw,
   Send, Eye, Trash2, Copy, Archive, ArchiveRestore, MoreHorizontal,
-  Hammer, Download,
+  Hammer, Download, ShoppingCart,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { generateQuotePdf } from '../../lib/quotePdf';
@@ -56,6 +56,7 @@ interface QuoteRow {
   submitted_at: string;
   created_at: string;
   is_archived: boolean;
+  linked_order_number: string | null;
   discount_pct: number;
   discount_amount: number;
   vat_pct: number;
@@ -315,6 +316,12 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
             <div className="flex items-center gap-2.5 flex-wrap">
               <span className="text-base font-bold text-white font-mono">{quote.quote_number}</span>
               <StatusBadge status={quote.status} />
+                {quote.linked_order_number && (
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-mono font-medium">
+                    <ShoppingCart className="w-3 h-3" />
+                    {quote.linked_order_number}
+                  </span>
+                )}
               {quote.is_archived && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium bg-slate-700/50 text-slate-400">
                   <Archive className="w-3 h-3" /> Archived
@@ -451,6 +458,12 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
                     <span className="text-slate-500">Total Value</span>
                     <span className="text-slate-200 font-medium">{fmtCurrency(quote.total_value ?? (computedTotal > 0 ? computedTotal : null))}</span>
                   </div>
+                      {quote.linked_order_number && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-500 text-xs">Order</span>
+                          <span className="text-teal-300 font-mono text-xs font-semibold">{quote.linked_order_number}</span>
+                        </div>
+                      )}
                 </div>
               </section>
             </>

@@ -29,6 +29,7 @@ interface OrderRow {
   created_at: string;
   total_value: number | null;
   quote_id: string | null;
+  quote_number_ref: string | null;  // populated from a separate fetch if needed
   order_items: OrderItem[];
 }
 
@@ -94,7 +95,18 @@ export function AdminOrders() {
       if (statusFilter) query = query.eq('order_status', statusFilter);
       const { data, error: err } = await query;
       if (err) throw err;
-      setOrders((data ?? []) as OrderRow[]);
+      // Fetch quote numbers for converted orders
+      const quoteIds = (data ?? []).filter(o => o.quote_id).map(o => o.quote_id);
+      if (quoteIds.length > 0) {
+        const { data: quotes } = await supabase
+          .from('quote_requests')
+          .select('id, quote_number')
+          .in('id', quoteIds);
+        const qMap = Object.fromEntries((quotes ?? []).map(q => [q.id, q.quote_number]));
+        setOrders((data ?? []).map(o => ({ ...o, quote_number_ref: o.quote_id ? (qMap[o.quote_id] ?? null) : null })) as OrderRow[]);
+      } else {
+        setOrders((data ?? []) as OrderRow[]);
+      }
     } catch {
       setError('Failed to load orders.');
     } finally {
@@ -255,7 +267,7 @@ export function AdminOrders() {
                           {order.quote_id && (
                             <span className="flex items-center gap-1 text-xs text-emerald-400">
                               <FileText className="w-3 h-3" />
-                              From Quote
+                              {order.quote_number_ref ?? 'From Quote'}
                             </span>
                           )}
                         </div>
@@ -377,10 +389,10 @@ export function AdminOrders() {
                                     <span className="text-slate-500">Source Quote</span>
                                     <Link
                                       to={`/admin/quotes/${order.quote_id}`}
-                                      className="text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
+                                      className="text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1 font-mono font-semibold"
                                     >
                                       <FileText className="w-3 h-3" />
-                                      View Quote
+                                      {order.quote_number_ref ?? 'View Quote'}
                                     </Link>
                                   </div>
                                 )}

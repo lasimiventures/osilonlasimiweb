@@ -34,6 +34,8 @@ import { AdminQuotes } from '../pages/admin/Quotes';
 import { AdminQuoteBuilder } from '../pages/admin/QuoteBuilder';
 import { AdminBanners } from '../pages/admin/Banners';
 import { AdminBannerForm } from '../pages/admin/BannerForm';
+import { AdminCustomers } from '../pages/admin/Customers';
+import { AdminCustomerDetail } from '../pages/admin/CustomerDetail';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -85,6 +87,8 @@ export function AppRoutes() {
           <Route path="/admin/banners" element={<AdminBanners />} />
           <Route path="/admin/banners/new" element={<AdminBannerForm />} />
           <Route path="/admin/banners/:id/edit" element={<AdminBannerForm />} />
+          <Route path="/admin/customers" element={<AdminCustomers />} />
+          <Route path="/admin/customers/:email" element={<AdminCustomerDetail />} />
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>
       </Route>

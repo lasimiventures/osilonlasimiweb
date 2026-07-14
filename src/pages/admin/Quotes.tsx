@@ -6,7 +6,7 @@ import {
   Calendar, UserCheck, DollarSign, StickyNote, Package,
   ArrowRight, CheckCircle2, Clock, Ban, Hourglass, RotateCcw,
   Send, Eye, Trash2, Copy, Archive, ArchiveRestore, MoreHorizontal,
-  Hammer, Download,
+  Hammer, Download, ShoppingCart,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { generateQuotePdf } from '../../lib/quotePdf';
@@ -56,6 +56,7 @@ interface QuoteRow {
   submitted_at: string;
   created_at: string;
   is_archived: boolean;
+  linked_order_number: string | null;
   discount_pct: number;
   discount_amount: number;
   vat_pct: number;
@@ -174,12 +175,13 @@ interface SlideOverProps {
   onBuild: () => void;
   onSend: () => void;
   onDownloadPdf: () => void;
+  onConvertToOrder: (quote: QuoteRow, grandTotal: number) => Promise<void>;
   duplicating: boolean;
   archiving: boolean;
   downloadingPdf: boolean;
 }
 
-function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDelete, onBuild, onSend, onDownloadPdf, duplicating, archiving, downloadingPdf }: SlideOverProps) {
+function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDelete, onBuild, onSend, onDownloadPdf, onConvertToOrder, duplicating, archiving, downloadingPdf }: SlideOverProps) {
   const [salesPerson, setSalesPerson] = useState(quote.sales_person ?? '');
   const [expiryDate, setExpiryDate] = useState(quote.expiry_date ?? '');
   const [totalValue, setTotalValue] = useState(quote.total_value?.toString() ?? '');
@@ -289,8 +291,21 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
       .update({ status: toStatus, ...extras })
       .eq('id', quote.id);
 
-    if (tErr) { setError(tErr.message); }
-    else { onSaved({ ...quote, status: toStatus, ...extras }); }
+    if (tErr) { setError(tErr.message); setTransitioning(false); return; }
+
+    await supabase.from('quote_history').insert({
+      quote_request_id: quote.id,
+      event_type: 'status_change',
+      from_status: quote.status,
+      to_status: toStatus,
+    });
+
+    onSaved({ ...quote, status: toStatus, ...extras });
+
+    if (toStatus === 'converted_to_order') {
+      await onConvertToOrder({ ...quote, status: toStatus }, computedTotal);
+    }
+
     setTransitioning(false);
   }
 
@@ -309,6 +324,12 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
             <div className="flex items-center gap-2.5 flex-wrap">
               <span className="text-base font-bold text-white font-mono">{quote.quote_number}</span>
               <StatusBadge status={quote.status} />
+                {quote.linked_order_number && (
+                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-mono font-medium">
+                    <ShoppingCart className="w-3 h-3" />
+                    {quote.linked_order_number}
+                  </span>
+                )}
               {quote.is_archived && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-medium bg-slate-700/50 text-slate-400">
                   <Archive className="w-3 h-3" /> Archived
@@ -445,6 +466,12 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
                     <span className="text-slate-500">Total Value</span>
                     <span className="text-slate-200 font-medium">{fmtCurrency(quote.total_value ?? (computedTotal > 0 ? computedTotal : null))}</span>
                   </div>
+                      {quote.linked_order_number && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-slate-500 text-xs">Order</span>
+                          <span className="text-teal-300 font-mono text-xs font-semibold">{quote.linked_order_number}</span>
+                        </div>
+                      )}
                 </div>
               </section>
             </>
@@ -798,6 +825,15 @@ export function AdminQuotes() {
     const { error: err } = await supabase
       .from('quote_requests').update({ status: newStatus, ...extras }).eq('id', id);
     if (!err) {
+      const fromStatus = quotes.find(q => q.id === id)?.status;
+      if (fromStatus && fromStatus !== newStatus) {
+        await supabase.from('quote_history').insert({
+          quote_request_id: id,
+          event_type: 'status_change',
+          from_status: fromStatus,
+          to_status: newStatus,
+        });
+      }
       setQuotes(prev => prev.map(q => q.id === id ? { ...q, status: newStatus, ...extras } : q));
       setSlideOver(prev => prev?.id === id ? { ...prev, status: newStatus, ...extras } : prev);
     }
@@ -871,6 +907,52 @@ export function AdminQuotes() {
       setSlideOver(prev => prev?.id === id ? { ...prev, is_archived: archive } : prev);
     }
     setArchivingId(null);
+  }
+
+  async function createOrderFromQuote(quote: QuoteRow, grandTotal: number) {
+    const { data: existing } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('quote_id', quote.id)
+      .maybeSingle();
+    if (existing) return;
+
+    const { data: order, error: oErr } = await supabase
+      .from('orders')
+      .insert({
+        customer_name: quote.customer_name,
+        company_name: quote.company,
+        email: quote.customer_email,
+        phone: quote.customer_phone,
+        notes: quote.notes,
+        order_status: 'processing',
+        source: 'quote_conversion',
+        quote_id: quote.id,
+        total_value: grandTotal,
+      })
+      .select('id')
+      .maybeSingle();
+
+    if (oErr || !order) return;
+
+    const { data: qItems } = await supabase
+      .from('quote_items')
+      .select('*')
+      .eq('quote_request_id', quote.id);
+
+    const lineItems = (qItems ?? []).filter(i => !i.is_optional);
+    if (lineItems.length > 0) {
+      await supabase.from('order_items').insert(
+        lineItems.map(i => ({
+          order_id: order.id,
+          product_name: i.product_name,
+          product_sku: i.product_sku,
+          quantity: i.quantity,
+          unit_price: i.unit_price,
+          subtotal: i.subtotal,
+        }))
+      );
+    }
   }
 
   async function handleDelete(id: string) {
@@ -1216,6 +1298,7 @@ export function AdminQuotes() {
           onBuild={() => navigate(`/admin/quotes/${slideOver.id}/build`)}
           onSend={() => setSendingQuote(slideOver)}
           onDownloadPdf={() => handleDownloadPdf(slideOver)}
+          onConvertToOrder={createOrderFromQuote}
           duplicating={duplicatingId === slideOver.id}
           archiving={archivingId === slideOver.id}
           downloadingPdf={downloadingPdfId === slideOver.id}

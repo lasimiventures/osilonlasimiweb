@@ -71,6 +71,7 @@ export function Checkout() {
         delivery_address: form.deliveryAddress || undefined,
         notes: form.notes || undefined,
         order_status: action === 'request_callback' ? 'awaiting_customer_confirmation' : 'pending',
+        source: 'cart',
         items: items.map(item => ({
           product_id: item.productId,
           product_name: item.productName,

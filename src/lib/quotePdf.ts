@@ -83,10 +83,10 @@ const COLORS = {
 };
 
 const COMPANY = {
-  name:    'OSIL Group Ltd',
+  name:    'OSIL Ltd',
   tagline: 'Professional Technology Solutions',
-  address: 'Airport North Road, Nairobi, Kenya',
-  phone:   '+254 700 000 000',
+  address: '1st Floor, Jethalal Chambers, Tubman Rd, Suite 103, Nairobi',
+  phone:   '+254 795 030 476',
   email:   'info@osilltd.co.ke',
   website: 'www.osilltd.co.ke',
   pin:     'P051234567X',
@@ -99,7 +99,7 @@ const DEFAULT_TERMS: Array<{ title: string; body: string }> = [
   },
   {
     title: 'Delivery',
-    body: 'Delivery lead times are indicative and subject to stock availability. OSIL Group Ltd will notify the customer promptly of any delays. Delivery charges are as quoted above unless otherwise agreed in writing.',
+    body: 'Delivery lead times are indicative and subject to stock availability. OSIL Ltd will notify the customer promptly of any delays. Delivery charges are as quoted above unless otherwise agreed in writing.',
   },
   {
     title: 'Warranty',
@@ -234,8 +234,7 @@ export async function generateQuotePdf(quote: PdfQuoteData): Promise<void> {
   let y = MT;
 
   y = drawHeader(doc, logoUrl, quote, y);
-  hline(doc, y, COLORS.blue700, 0.8);
-  y += 5;
+  y += 4;
 
   y = drawBillTo(doc, quote, y);
   y += 6;
@@ -280,53 +279,59 @@ export async function generateQuotePdf(quote: PdfQuoteData): Promise<void> {
 // ─── header ───────────────────────────────────────────────────────────────────
 
 function drawHeader(doc: jsPDF, logoUrl: string | null, quote: PdfQuoteData, y: number): number {
-  // Logo
+  // Blue header banner
+  fillRect(doc, 0, 0, PAGE_W, 38, COLORS.blue800);
+
+  // Logo — white background pill so it pops on the dark banner
   if (logoUrl) {
-    try { doc.addImage(logoUrl, 'JPEG', ML, y, 26, 18); } catch { /* skip */ }
+    try {
+      // white backing card
+      fillRect(doc, ML, y + 1, 32, 24, COLORS.white);
+      doc.addImage(logoUrl, 'JPEG', ML + 1, y + 2, 30, 22);
+    } catch { /* skip */ }
   }
 
-  // Company block
-  const cx = ML + 29;
-  sf(doc, 13, 'bold', COLORS.slate900);
-  doc.text(COMPANY.name, cx, y + 5);
+  // Company name + tagline (right of logo)
+  const cx = logoUrl ? ML + 36 : ML;
+  sf(doc, 13, 'bold', COLORS.white);
+  doc.text(COMPANY.name, cx, y + 9);
 
-  sf(doc, 8, 'normal', COLORS.slate500);
-  doc.text(COMPANY.tagline, cx, y + 9.5);
+  sf(doc, 8, 'normal', '#bfdbfe'); // blue-200
+  doc.text(COMPANY.tagline, cx, y + 14);
 
-  sf(doc, 8, 'normal', COLORS.slate700);
-  doc.text(COMPANY.address, cx, y + 13.5);
+  sf(doc, 7.5, 'normal', '#93c5fd'); // blue-300
+  doc.text(COMPANY.address, cx, y + 19);
+  doc.text(`${COMPANY.phone}  |  ${COMPANY.email}`, cx, y + 23.5);
 
-  sf(doc, 8, 'normal', COLORS.slate700);
-  doc.text(`${COMPANY.phone}  |  ${COMPANY.email}`, cx, y + 17.5);
-
-  sf(doc, 8, 'normal', COLORS.blue600);
-  doc.text(COMPANY.website, cx, y + 21.5);
-
-  // QUOTATION title
+  // QUOTATION block — right side of banner
   const rx = PAGE_W - MR;
-  sf(doc, 24, 'bold', COLORS.blue700);
-  doc.text('QUOTATION', rx, y + 7, { align: 'right' });
+  sf(doc, 22, 'bold', COLORS.white);
+  doc.text('QUOTATION', rx, y + 10, { align: 'right' });
 
-  sf(doc, 10, 'bold', COLORS.slate900);
-  doc.text(quote.quote_number, rx, y + 14, { align: 'right' });
+  sf(doc, 10, 'bold', '#bfdbfe');
+  doc.text(quote.quote_number, rx, y + 17, { align: 'right' });
 
-  sf(doc, 8, 'normal', COLORS.slate600);
-  doc.text(`Date: ${fmtDate(quote.submitted_at)}`, rx, y + 19, { align: 'right' });
+  sf(doc, 8, 'normal', '#93c5fd');
+  doc.text(`Date: ${fmtDate(quote.submitted_at)}`, rx, y + 22.5, { align: 'right' });
   if (quote.expiry_date) {
-    doc.text(`Valid Until: ${fmtDate(quote.expiry_date)}`, rx, y + 23.5, { align: 'right' });
+    doc.text(`Valid Until: ${fmtDate(quote.expiry_date)}`, rx, y + 27, { align: 'right' });
   }
 
-  // Status pill
-  sf(doc, 8, 'bold', statusColor(quote.status));
-  doc.text(`● ${statusLabel(quote.status)}`, rx, y + 28, { align: 'right' });
+  // Status pill — small badge bottom-right of banner
+  const sLabel = statusLabel(quote.status);
+  const sColor = statusColor(quote.status);
+  const pillW  = doc.getTextWidth(sLabel) + 6;
+  fillRect(doc, rx - pillW, y + 29, pillW, 5.5, '#1e3a8a'); // darker pill bg
+  sf(doc, 7.5, 'bold', sColor);
+  doc.text(sLabel, rx - pillW / 2, y + 33, { align: 'center' });
 
-  return y + 32;
+  return y + 44; // below banner + breathing room
 }
 
 // ─── bill-to / quote details ──────────────────────────────────────────────────
 
 function drawBillTo(doc: jsPDF, quote: PdfQuoteData, y: number): number {
-  const rightColX = ML + CW * 0.52;
+  const rightColX = ML + CW * 0.55;
 
   // Section labels
   sf(doc, 7, 'bold', COLORS.slate400);
@@ -460,7 +465,7 @@ function drawTable(doc: jsPDF, required: PdfQuoteItem[], optional: PdfQuoteItem[
       sf(doc, 9, 'normal', COLORS.red500);
       const discStr = item.discount_pct > 0
         ? `${item.discount_pct}%`
-        : `−${item.discount_amount.toLocaleString('en-KE', { maximumFractionDigits: 0 })}`;
+        : `-${item.discount_amount.toLocaleString('en-KE', { maximumFractionDigits: 0 })}`;
       doc.text(discStr, TC.disc + 22 - 2, ty, { align: 'right' });
     } else {
       sf(doc, 9, 'normal', COLORS.slate400);
@@ -547,7 +552,8 @@ function drawTotals(
 
   for (const row of rows) {
     if (row.sep) {
-      hline(doc, y - 1, COLORS.slate300, 0.3, labelX - 1, valueX);
+      hline(doc, y - 3.5, COLORS.slate300, 0.3, labelX - 1, valueX);
+      y += 1;
     }
 
     const fSize = row.big ? 11 : 9;
@@ -557,7 +563,7 @@ function drawTotals(
     sf(doc, fSize, (row.bold || row.big) ? 'bold' : 'normal', color);
 
     doc.text(row.label, labelX, y);
-    doc.text(row.negative ? `−${row.value}` : row.value, valueX, y, { align: 'right' });
+    doc.text(row.negative ? `-${row.value}` : row.value, valueX, y, { align: 'right' });
 
     y += (row.big ? bigH : rowH) + (row.sep ? 1 : 0);
   }
@@ -651,7 +657,9 @@ function drawSignature(doc: jsPDF, qrUrl: string, quoteNumber: string, y: number
   sf(doc, 7.5, 'bold', COLORS.slate900);
   doc.text(COMPANY.name, ML + 3, stampY + 24);
   sf(doc, 7, 'normal', COLORS.slate500);
-  doc.text(`${COMPANY.address}  |  ${COMPANY.phone}  |  ${COMPANY.email}`, ML + 3, stampY + 28);
+  doc.text(`${COMPANY.address}`, ML + 3, stampY + 28);
+  sf(doc, 7, 'normal', COLORS.slate500);
+  doc.text(`${COMPANY.phone}  |  ${COMPANY.email}  |  ${COMPANY.website}`, ML + 3, stampY + 32.5);
 
   // QR code
   if (qrUrl) {
@@ -663,7 +671,7 @@ function drawSignature(doc: jsPDF, qrUrl: string, quoteNumber: string, y: number
     sf(doc, 7, 'normal', COLORS.blue600);
     doc.text(quoteNumber, qrX + qrSize / 2, y + qrSize + 5.5, { align: 'center' });
     sf(doc, 6.5, 'normal', COLORS.slate400);
-    doc.text('OSIL Group Ltd — Official Quotation', qrX + qrSize / 2, y + qrSize + 9, { align: 'center' });
+    doc.text('OSIL Ltd — Official Quotation', qrX + qrSize / 2, y + qrSize + 9, { align: 'center' });
   }
 }
 
@@ -671,10 +679,10 @@ function drawSignature(doc: jsPDF, qrUrl: string, quoteNumber: string, y: number
 
 function drawFooter(doc: jsPDF, quoteNumber: string, page: number, total: number): void {
   const fy = PAGE_H - 10;
-  hline(doc, fy - 4, COLORS.blue700, 0.4);
-  sf(doc, 7, 'normal', COLORS.slate400);
+  fillRect(doc, 0, PAGE_H - 14, PAGE_W, 14, COLORS.blue800);
+  sf(doc, 6.5, 'normal', '#93c5fd');
   doc.text(
-    `${COMPANY.name}  |  This document is confidential and intended for the named recipient only.`,
+    `${COMPANY.name}  |  ${COMPANY.address}  |  ${COMPANY.phone}`,
     ML, fy
   );
   doc.text(

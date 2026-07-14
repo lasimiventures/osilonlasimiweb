@@ -139,6 +139,7 @@ export async function createQuoteRequest(quote: {
   city?: string;
   country?: string;
   message?: string;
+  source?: string;
   items: Array<{
     product_id?: string;
     product_name: string;
@@ -186,6 +187,7 @@ export async function createOrder(order: {
   delivery_address?: string;
   notes?: string;
   order_status?: string;
+  source?: string;
   items: Array<{
     product_id?: string;
     product_name: string;
@@ -232,7 +234,7 @@ export async function getOrders(options?: { status?: string; limit?: number }) {
   return data;
 }
 
-export async function updateOrderStatus(orderId: string, status: string) {
+export async function updateOrderStatus(orderId: string, status: string, fromStatus?: string) {
   const { data, error } = await supabase
     .from('orders')
     .update({ order_status: status })
@@ -240,6 +242,14 @@ export async function updateOrderStatus(orderId: string, status: string) {
     .select()
     .single();
   if (error) throw error;
+  if (fromStatus) {
+    await supabase.from('order_history').insert({
+      order_id: orderId,
+      event_type: 'status_change',
+      from_status: fromStatus,
+      to_status: status,
+    });
+  }
   return data;
 }
 

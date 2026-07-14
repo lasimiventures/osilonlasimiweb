@@ -1,10 +1,11 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft, Save, CheckCircle2, AlertCircle, Loader2, Plus, Trash2,
   User, Building2, Mail, Phone, ArrowRight, Package, Wrench,
   Truck, ShieldCheck, FileText, StickyNote, Percent, DollarSign, Info,
   Ban, Hourglass, Clock, RotateCcw, Send, Eye, Download,
+  History, ExternalLink, ShoppingCart,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { generateQuotePdf } from '../../lib/quotePdf';
@@ -50,6 +51,17 @@ interface QuoteRow {
   total_items: number;
   submitted_at: string;
   is_archived: boolean;
+  linked_order_number: string | null;
+}
+
+interface QuoteHistoryEvent {
+  id: string;
+  event_type: string;
+  from_status: string | null;
+  to_status: string | null;
+  actor: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
 }
 
 // ─── status config ────────────────────────────────────────────────────────────
@@ -161,6 +173,7 @@ export function AdminQuoteBuilder() {
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSendModal, setShowSendModal] = useState(false);
+  const [history, setHistory] = useState<QuoteHistoryEvent[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -169,7 +182,7 @@ export function AdminQuoteBuilder() {
       .select('*, quote_items(*)')
       .eq('id', id)
       .maybeSingle()
-      .then(({ data, error: err }) => {
+      .then(async ({ data, error: err }) => {
         if (err || !data) { setError('Quote not found.'); setLoading(false); return; }
         const q = data as QuoteRow & { quote_items: QuoteItem[] };
         setQuote(q);
@@ -189,6 +202,13 @@ export function AdminQuoteBuilder() {
         setInstallationCharge(q.installation_charge ?? 0);
         setWarrantyCharge(q.warranty_charge ?? 0);
         setCustomerNotes(q.customer_notes ?? '');
+        // fetch history
+        const { data: hist } = await supabase
+          .from('quote_history')
+          .select('id, event_type, from_status, to_status, actor, metadata, created_at')
+          .eq('quote_request_id', quoteId)
+          .order('created_at', { ascending: false });
+        setHistory((hist ?? []) as QuoteHistoryEvent[]);
         setLoading(false);
       });
   }, [id]);
@@ -385,15 +405,110 @@ export function AdminQuoteBuilder() {
   async function handleTransition(toStatus: string) {
     if (!id || !quote) return;
     setTransitioning(true);
+    setError(null);
     const now = new Date().toISOString();
     const extras: Record<string, string> = {};
     if (toStatus === 'quoted') extras.quoted_at = now;
     if (toStatus === 'accepted') extras.accepted_at = now;
     if (toStatus === 'converted_to_order') extras.converted_at = now;
-    const { error: err } = await supabase.from('quote_requests').update({ status: toStatus, ...extras }).eq('id', id);
-    if (!err) setQuote(prev => prev ? { ...prev, status: toStatus } : prev);
-    else setError(err.message);
+
+    const { error: err } = await supabase
+      .from('quote_requests')
+      .update({ status: toStatus, ...extras })
+      .eq('id', id);
+
+    if (err) { setError(err.message); setTransitioning(false); return; }
+    setQuote(prev => prev ? { ...prev, status: toStatus } : prev);
+
+    // record history event
+    supabase.from('quote_history').insert({
+      quote_request_id: id,
+      event_type: 'status_change',
+      from_status: quote.status,
+      to_status: toStatus,
+      actor: 'admin',
+    }).then(({ data: hRow }) => {
+      if (hRow) setHistory(prev => [hRow[0] as QuoteHistoryEvent, ...prev]);
+    });
+    // refetch history to include the new event
+    supabase.from('quote_history')
+      .select('id, event_type, from_status, to_status, actor, metadata, created_at')
+      .eq('quote_request_id', id)
+      .order('created_at', { ascending: false })
+      .then(({ data: hist }) => { if (hist) setHistory(hist as QuoteHistoryEvent[]); });
+
+    if (toStatus === 'converted_to_order') {
+      await createOrderFromQuote(quote, id);
+    }
+
     setTransitioning(false);
+  }
+
+  async function createOrderFromQuote(q: QuoteRow, quoteId: string) {
+    const existingOrder = await supabase
+      .from('orders')
+      .select('id')
+      .eq('quote_id', quoteId)
+      .maybeSingle();
+    if (existingOrder.data) return; // already converted, no re-entry
+
+    const { data: order, error: oErr } = await supabase
+      .from('orders')
+      .insert({
+        customer_name: q.customer_name,
+        company_name: q.company,
+        email: q.customer_email,
+        phone: q.customer_phone,
+        notes: q.notes,
+        order_status: 'processing',
+        quote_id: quoteId,
+        total_value: pricing.grandTotal,
+      })
+      .select('id')
+      .maybeSingle();
+
+    if (oErr || !order) { setError('Quote converted but order creation failed: ' + (oErr?.message ?? '')); return; }
+
+    const nonOptional = items.filter(i => !i.toDelete && !i.is_optional);
+    if (nonOptional.length > 0) {
+      await supabase.from('order_items').insert(
+        nonOptional.map(i => ({
+          order_id: order.id,
+          product_name: i.product_name,
+          product_sku: i.product_sku,
+          quantity: i.quantity,
+          unit_price: i.unit_price,
+          subtotal: computeLineNet(i),
+        }))
+      );
+    }
+
+    // store the generated order_number back on the quote so it shows in the header
+    const { data: orderFull } = await supabase
+      .from('orders')
+      .select('order_number')
+      .eq('id', order.id)
+      .maybeSingle();
+    if (orderFull?.order_number) {
+      await supabase
+        .from('quote_requests')
+        .update({ linked_order_number: orderFull.order_number })
+        .eq('id', quoteId);
+      setQuote(prev => prev ? { ...prev, linked_order_number: orderFull.order_number } : prev);
+    }
+    // record conversion in history
+    supabase.from('quote_history').insert({
+      quote_request_id: quoteId,
+      event_type: 'converted',
+      actor: 'admin',
+      metadata: { order_id: order.id, order_number: orderFull?.order_number ?? '' },
+    }).then(() => {
+      supabase.from('quote_history')
+        .select('id, event_type, from_status, to_status, actor, metadata, created_at')
+        .eq('quote_request_id', quoteId)
+        .order('created_at', { ascending: false })
+        .then(({ data: hist }) => { if (hist) setHistory(hist as QuoteHistoryEvent[]); });
+    });
   }
 
   // ── render ────────────────────────────────────────────────────────────────
@@ -450,6 +565,16 @@ export function AdminQuoteBuilder() {
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="text-sm font-bold font-mono text-white">{quote?.quote_number}</span>
             {quote && <StatusBadge status={quote.status} />}
+            {quote?.linked_order_number && (
+              <Link
+                to="/admin/orders"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-500/10 border border-teal-500/30 text-teal-300 text-xs font-mono font-medium hover:bg-teal-500/20 transition-colors"
+              >
+                <ShoppingCart className="w-3 h-3" />
+                {quote.linked_order_number}
+                <ExternalLink className="w-3 h-3 opacity-60" />
+              </Link>
+            )}
           </div>
 
           {quote?.customer_name && (
@@ -978,6 +1103,75 @@ export function AdminQuoteBuilder() {
                   </div>
                 </div>
               )}
+
+              {/* Quote History Timeline */}
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                <div className="px-4 py-3.5 border-b border-slate-800 flex items-center gap-2">
+                  <History className="w-4 h-4 text-slate-400" />
+                  <h2 className="text-sm font-semibold text-white">Quote History</h2>
+                  <span className="ml-auto text-xs text-slate-600">{history.length} events</span>
+                </div>
+                {history.length === 0 ? (
+                  <div className="px-4 py-6 text-center text-xs text-slate-600">No history yet</div>
+                ) : (
+                  <div className="px-4 py-3 space-y-0 max-h-80 overflow-y-auto">
+                    {history.map((evt, idx) => (
+                      <div key={evt.id} className="relative flex gap-3 pb-4 last:pb-0">
+                        {idx < history.length - 1 && (
+                          <div className="absolute left-[11px] top-5 bottom-0 w-px bg-slate-800" />
+                        )}
+                        <div className={`w-5.5 h-5.5 flex-shrink-0 rounded-full flex items-center justify-center mt-0.5 ${
+                          evt.event_type === 'converted'      ? 'bg-teal-500/20 ring-1 ring-teal-500/40' :
+                          evt.event_type === 'status_change'  ? 'bg-blue-500/20 ring-1 ring-blue-500/40' :
+                          evt.event_type === 'sent_email'     ? 'bg-emerald-500/20 ring-1 ring-emerald-500/40' :
+                          evt.event_type === 'pdf_downloaded' ? 'bg-slate-600/40 ring-1 ring-slate-600' :
+                          'bg-slate-700 ring-1 ring-slate-600'
+                        }`}>
+                          {evt.event_type === 'converted'      ? <ShoppingCart className="w-2.5 h-2.5 text-teal-400" /> :
+                           evt.event_type === 'sent_email'     ? <Send className="w-2.5 h-2.5 text-emerald-400" /> :
+                           evt.event_type === 'pdf_downloaded' ? <Download className="w-2.5 h-2.5 text-slate-400" /> :
+                           <ArrowRight className="w-2.5 h-2.5 text-blue-400" />}
+                        </div>
+                        <div className="flex-1 min-w-0 pt-0.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              {evt.event_type === 'status_change' && evt.from_status && evt.to_status ? (
+                                <div className="flex items-center gap-1 flex-wrap">
+                                  <span className="text-xs text-slate-500">{STATUS_CONFIG[evt.from_status]?.label ?? evt.from_status}</span>
+                                  <ArrowRight className="w-2.5 h-2.5 text-slate-600 flex-shrink-0" />
+                                  <span className={`text-xs font-medium ${STATUS_CONFIG[evt.to_status]?.text ?? 'text-slate-300'}`}>
+                                    {STATUS_CONFIG[evt.to_status]?.label ?? evt.to_status}
+                                  </span>
+                                </div>
+                              ) : evt.event_type === 'converted' ? (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-medium text-teal-300">Converted to Order</span>
+                                  {(evt.metadata?.order_number as string) && (
+                                    <Link to="/admin/orders" className="text-xs font-mono text-teal-400 hover:text-teal-300 flex items-center gap-0.5">
+                                      {evt.metadata.order_number as string}
+                                      <ExternalLink className="w-2.5 h-2.5" />
+                                    </Link>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-xs font-medium text-slate-300 capitalize">{evt.event_type.replace(/_/g, ' ')}</span>
+                              )}
+                              {evt.actor && (
+                                <p className="text-[10px] text-slate-600 mt-0.5">{evt.actor}</p>
+                              )}
+                            </div>
+                            <time className="text-[10px] text-slate-600 flex-shrink-0 whitespace-nowrap">
+                              {new Date(evt.created_at).toLocaleDateString('en-KE', { day: 'numeric', month: 'short' })}
+                              {' '}
+                              {new Date(evt.created_at).toLocaleTimeString('en-KE', { hour: '2-digit', minute: '2-digit' })}
+                            </time>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               {/* SKU input note */}
               <p className="text-xs text-slate-700 text-center px-2">

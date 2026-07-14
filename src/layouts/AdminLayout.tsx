@@ -16,6 +16,7 @@ import {
   Megaphone,
   Users,
   FileSpreadsheet,
+  BarChart3,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 
@@ -29,6 +30,7 @@ const navItems = [
   { to: '/admin/media',      icon: Image,           label: 'Media Library' },
   { to: '/admin/quotes',     icon: FileText,          label: 'Quote Requests' },
   { to: '/admin/rfqs',       icon: FileSpreadsheet,   label: 'RFQ Requests' },
+  { to: '/admin/crm',        icon: BarChart3,         label: 'CRM Prep' },
   { to: '/admin/banners',    icon: Megaphone,         label: 'Banners' },
   { to: '/admin/settings',   icon: Settings,        label: 'Settings' },
 ];

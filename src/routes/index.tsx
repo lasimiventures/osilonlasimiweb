@@ -39,6 +39,7 @@ import { AdminCustomers } from '../pages/admin/Customers';
 import { AdminCustomerDetail } from '../pages/admin/CustomerDetail';
 import { AdminRFQs } from '../pages/admin/RFQs';
 import { AdminRFQDetail } from '../pages/admin/RFQDetail';
+import { AdminCRM } from '../pages/admin/CRM';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -95,6 +96,7 @@ export function AppRoutes() {
           <Route path="/admin/customers/:email" element={<AdminCustomerDetail />} />
           <Route path="/admin/rfqs" element={<AdminRFQs />} />
           <Route path="/admin/rfqs/:id" element={<AdminRFQDetail />} />
+          <Route path="/admin/crm" element={<AdminCRM />} />
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>
       </Route>

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Users, Send, CheckCircle } from 'lucide-react';
+import { createQuoteRequest } from '../lib/database';
 
 interface BulkPricingModalProps {
   productName: string;
@@ -8,6 +9,8 @@ interface BulkPricingModalProps {
 
 export function BulkPricingModal({ productName, onClose }: BulkPricingModalProps) {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: '',
     company: '',
@@ -21,9 +24,26 @@ export function BulkPricingModal({ productName, onClose }: BulkPricingModalProps
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await createQuoteRequest({
+        customer_name: form.name,
+        customer_email: form.email,
+        customer_phone: form.phone,
+        company: form.company || undefined,
+        message: `Bulk pricing request for ${productName}. Quantity: ${form.quantity}. ${form.message}`.trim(),
+        source: 'bulk_pricing',
+        items: [{ product_name: productName, quantity: 1, notes: `Quantity required: ${form.quantity}` }],
+      });
+      setSubmitted(true);
+    } catch {
+      setSubmitError('Failed to submit. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

@@ -292,6 +292,14 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
       .eq('id', quote.id);
 
     if (tErr) { setError(tErr.message); setTransitioning(false); return; }
+
+    await supabase.from('quote_history').insert({
+      quote_request_id: quote.id,
+      event_type: 'status_change',
+      from_status: quote.status,
+      to_status: toStatus,
+    });
+
     onSaved({ ...quote, status: toStatus, ...extras });
 
     if (toStatus === 'converted_to_order') {
@@ -817,6 +825,15 @@ export function AdminQuotes() {
     const { error: err } = await supabase
       .from('quote_requests').update({ status: newStatus, ...extras }).eq('id', id);
     if (!err) {
+      const fromStatus = quotes.find(q => q.id === id)?.status;
+      if (fromStatus && fromStatus !== newStatus) {
+        await supabase.from('quote_history').insert({
+          quote_request_id: id,
+          event_type: 'status_change',
+          from_status: fromStatus,
+          to_status: newStatus,
+        });
+      }
       setQuotes(prev => prev.map(q => q.id === id ? { ...q, status: newStatus, ...extras } : q));
       setSlideOver(prev => prev?.id === id ? { ...prev, status: newStatus, ...extras } : prev);
     }
@@ -909,6 +926,7 @@ export function AdminQuotes() {
         phone: quote.customer_phone,
         notes: quote.notes,
         order_status: 'processing',
+        source: 'quote_conversion',
         quote_id: quote.id,
         total_value: grandTotal,
       })

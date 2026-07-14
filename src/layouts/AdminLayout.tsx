@@ -14,19 +14,21 @@ import {
   ShoppingBag,
   Image,
   Megaphone,
+  Users,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 
 const navItems = [
-  { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
-  { to: '/admin/products', icon: Package, label: 'Products' },
-  { to: '/admin/categories', icon: Layers, label: 'Categories' },
-  { to: '/admin/brands', icon: Tag, label: 'Brands' },
-  { to: '/admin/media', icon: Image, label: 'Media Library' },
-  { to: '/admin/quotes', icon: FileText, label: 'Quote Requests' },
-  { to: '/admin/banners', icon: Megaphone, label: 'Banners' },
-  { to: '/admin/settings', icon: Settings, label: 'Settings' },
+  { to: '/admin/dashboard',  icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/admin/orders',     icon: ShoppingBag,     label: 'Orders' },
+  { to: '/admin/customers',  icon: Users,           label: 'Customers' },
+  { to: '/admin/products',   icon: Package,         label: 'Products' },
+  { to: '/admin/categories', icon: Layers,          label: 'Categories' },
+  { to: '/admin/brands',     icon: Tag,             label: 'Brands' },
+  { to: '/admin/media',      icon: Image,           label: 'Media Library' },
+  { to: '/admin/quotes',     icon: FileText,        label: 'Quote Requests' },
+  { to: '/admin/banners',    icon: Megaphone,       label: 'Banners' },
+  { to: '/admin/settings',   icon: Settings,        label: 'Settings' },
 ];
 
 export function AdminLayout() {

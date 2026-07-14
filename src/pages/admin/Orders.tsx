@@ -119,11 +119,22 @@ export function AdminOrders() {
   async function handleStatusChange(orderId: string, newStatus: string) {
     setUpdatingId(orderId);
     setStatusMenuId(null);
+    const fromStatus = orders.find(o => o.id === orderId)?.order_status;
     const { error: err } = await supabase
       .from('orders')
       .update({ order_status: newStatus })
       .eq('id', orderId);
-    if (!err) setOrders(prev => prev.map(o => o.id === orderId ? { ...o, order_status: newStatus } : o));
+    if (!err) {
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, order_status: newStatus } : o));
+      if (fromStatus && fromStatus !== newStatus) {
+        await supabase.from('order_history').insert({
+          order_id: orderId,
+          event_type: 'status_change',
+          from_status: fromStatus,
+          to_status: newStatus,
+        });
+      }
+    }
     setUpdatingId(null);
   }
 

@@ -84,8 +84,8 @@ export function RequestQuote() {
         country: formData.country,
         message: formData.message || null,
         total_items: itemCount,
+        source: 'quote_form',
       })
-      .select('id, quote_number')
       .maybeSingle();
 
     if (quoteErr || !quoteData) {

@@ -552,7 +552,8 @@ function drawTotals(
 
   for (const row of rows) {
     if (row.sep) {
-      hline(doc, y - 1, COLORS.slate300, 0.3, labelX - 1, valueX);
+      hline(doc, y - 3.5, COLORS.slate300, 0.3, labelX - 1, valueX);
+      y += 1;
     }
 
     const fSize = row.big ? 11 : 9;

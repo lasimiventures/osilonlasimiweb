@@ -15,6 +15,7 @@ import {
   Image,
   Megaphone,
   Users,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 
@@ -26,8 +27,9 @@ const navItems = [
   { to: '/admin/categories', icon: Layers,          label: 'Categories' },
   { to: '/admin/brands',     icon: Tag,             label: 'Brands' },
   { to: '/admin/media',      icon: Image,           label: 'Media Library' },
-  { to: '/admin/quotes',     icon: FileText,        label: 'Quote Requests' },
-  { to: '/admin/banners',    icon: Megaphone,       label: 'Banners' },
+  { to: '/admin/quotes',     icon: FileText,          label: 'Quote Requests' },
+  { to: '/admin/rfqs',       icon: FileSpreadsheet,   label: 'RFQ Requests' },
+  { to: '/admin/banners',    icon: Megaphone,         label: 'Banners' },
   { to: '/admin/settings',   icon: Settings,        label: 'Settings' },
 ];
 

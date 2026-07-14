@@ -20,6 +20,7 @@ import { OrderConfirmation } from '../pages/OrderConfirmation';
 import { PrivacyPolicy } from '../pages/PrivacyPolicy';
 import { TermsConditions } from '../pages/TermsConditions';
 import { NotFound } from '../pages/NotFound';
+import { BulkQuote } from '../pages/BulkQuote';
 import { AdminLogin } from '../pages/admin/Login';
 import { AdminDashboard } from '../pages/admin/Dashboard';
 import { AdminOrders } from '../pages/admin/Orders';
@@ -36,6 +37,8 @@ import { AdminBanners } from '../pages/admin/Banners';
 import { AdminBannerForm } from '../pages/admin/BannerForm';
 import { AdminCustomers } from '../pages/admin/Customers';
 import { AdminCustomerDetail } from '../pages/admin/CustomerDetail';
+import { AdminRFQs } from '../pages/admin/RFQs';
+import { AdminRFQDetail } from '../pages/admin/RFQDetail';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -60,6 +63,7 @@ export function AppRoutes() {
         <Route path="/order-confirmation/:orderNumber" element={<OrderConfirmation />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsConditions />} />
+        <Route path="/bulk-quote" element={<BulkQuote />} />
         <Route path="*" element={<NotFound />} />
       </Route>
 
@@ -89,6 +93,8 @@ export function AppRoutes() {
           <Route path="/admin/banners/:id/edit" element={<AdminBannerForm />} />
           <Route path="/admin/customers" element={<AdminCustomers />} />
           <Route path="/admin/customers/:email" element={<AdminCustomerDetail />} />
+          <Route path="/admin/rfqs" element={<AdminRFQs />} />
+          <Route path="/admin/rfqs/:id" element={<AdminRFQDetail />} />
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>
       </Route>

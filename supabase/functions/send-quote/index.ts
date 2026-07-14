@@ -278,7 +278,7 @@ function buildEmailHtml(quote: QuoteData, coverMessage: string): string {
       <p style="font-size:14px;color:#334155;margin:0 0 16px;">To accept this quotation or for any queries, please contact us:</p>
       <table cellpadding="0" cellspacing="0">
         <tr>
-          <td style="padding-right:24px;font-size:12px;color:#64748b;">📞 +254 700 000 000</td>
+          <td style="padding-right:24px;font-size:12px;color:#64748b;">📞 +254 795 030 476</td>
           <td style="padding-right:24px;font-size:12px;color:#64748b;">✉️ info@osilltd.co.ke</td>
           <td style="font-size:12px;color:#64748b;">🌐 www.osilltd.co.ke</td>
         </tr>
@@ -290,7 +290,7 @@ function buildEmailHtml(quote: QuoteData, coverMessage: string): string {
     <td style="background:#0f172a;padding:16px 32px;">
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
-          <td style="font-size:12px;color:#94a3b8;">OSIL Group Ltd · Airport North Road, Nairobi, Kenya · PIN: P051234567X</td>
+          <td style="font-size:12px;color:#94a3b8;">OSIL Group Ltd · 1st Floor, Jethalal Chambers, Tubman Rd, Suite 103, Nairobi · PIN: P051234567X</td>
           <td align="right" style="font-size:11px;color:#475569;">${quote.quote_number}</td>
         </tr>
       </table>

@@ -40,6 +40,7 @@ import { AdminCustomerDetail } from '../pages/admin/CustomerDetail';
 import { AdminRFQs } from '../pages/admin/RFQs';
 import { AdminRFQDetail } from '../pages/admin/RFQDetail';
 import { AdminCRM } from '../pages/admin/CRM';
+import { AdminInventory } from '../pages/admin/Inventory';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -80,6 +81,7 @@ export function AppRoutes() {
           <Route path="/admin/products" element={<AdminProducts />} />
           <Route path="/admin/products/new" element={<AdminProductForm />} />
           <Route path="/admin/products/:id/edit" element={<AdminProductForm />} />
+          <Route path="/admin/inventory" element={<AdminInventory />} />
           <Route path="/admin/categories" element={<AdminCategories />} />
           <Route path="/admin/categories/new" element={<AdminCategoryForm />} />
           <Route path="/admin/categories/:id/edit" element={<AdminCategoryForm />} />

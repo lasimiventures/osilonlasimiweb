@@ -22,6 +22,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
     'low-stock': 'Low Stock',
     'out-of-stock': 'Out of Stock',
     'pre-order': 'Pre-Order',
+    'discontinued': 'Discontinued',
   };
 
   const availabilityColor = {
@@ -29,6 +30,7 @@ export const ProductCard = memo(function ProductCard({ product }: ProductCardPro
     'low-stock': 'bg-amber-100 text-amber-700',
     'out-of-stock': 'bg-red-100 text-red-700',
     'pre-order': 'bg-blue-100 text-brand-blue',
+    'discontinued': 'bg-slate-200 text-slate-600',
   };
 
   const handleCompare = (e: React.MouseEvent) => {

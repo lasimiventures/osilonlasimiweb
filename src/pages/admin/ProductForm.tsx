@@ -2,9 +2,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft, Save, Plus, Trash2, AlertCircle,
-  Loader2, ImagePlus, Tag, Package, Info,
+  Loader2, ImagePlus, Tag, Package, Info, Boxes,
 } from 'lucide-react';
 import { adminCreateProduct, adminUpdateProduct, adminGetProductById, getCategories, getBrands } from '../../lib/database';
+import { supabase } from '../../lib/supabase';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -45,6 +46,15 @@ interface FormState {
   price_visible: boolean;
   minimum_order_quantity: string;
   maximum_order_quantity: string;
+  // Inventory
+  inv_stock_quantity: string;
+  inv_reserved_quantity: string;
+  inv_incoming_quantity: string;
+  inv_reorder_level: string;
+  inv_safety_stock: string;
+  inv_discontinued: boolean;
+  inv_restock_expected_date: string;
+  inv_notes: string;
 }
 
 const EMPTY_FORM: FormState = {
@@ -59,6 +69,9 @@ const EMPTY_FORM: FormState = {
   buy_now_enabled: true, call_for_price: false,
   display_price: '', price_visible: false,
   minimum_order_quantity: '1', maximum_order_quantity: '',
+  inv_stock_quantity: '0', inv_reserved_quantity: '0', inv_incoming_quantity: '0',
+  inv_reorder_level: '5', inv_safety_stock: '2', inv_discontinued: false,
+  inv_restock_expected_date: '', inv_notes: '',
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -89,6 +102,14 @@ function dbToForm(raw: any): FormState {
     price_visible: raw.price_visible ?? false,
     minimum_order_quantity: String(raw.minimum_order_quantity ?? 1),
     maximum_order_quantity: raw.maximum_order_quantity != null ? String(raw.maximum_order_quantity) : '',
+    inv_stock_quantity: String(raw.product_inventory?.stock_quantity ?? 0),
+    inv_reserved_quantity: String(raw.product_inventory?.reserved_quantity ?? 0),
+    inv_incoming_quantity: String(raw.product_inventory?.incoming_quantity ?? 0),
+    inv_reorder_level: String(raw.product_inventory?.reorder_level ?? 5),
+    inv_safety_stock: String(raw.product_inventory?.safety_stock ?? 2),
+    inv_discontinued: raw.product_inventory?.discontinued ?? false,
+    inv_restock_expected_date: raw.product_inventory?.restock_expected_date ?? '',
+    inv_notes: raw.product_inventory?.notes ?? '',
   };
 }
 
@@ -228,11 +249,29 @@ export function AdminProductForm() {
     setSaving(true);
     try {
       const payload = formToDb(form);
+      let productId = id;
       if (isEdit && id) {
         await adminUpdateProduct(id, payload);
       } else {
-        await adminCreateProduct(payload);
+        const { data: created } = await adminCreateProduct(payload);
+        if (created?.[0]?.id) productId = created[0].id;
       }
+
+      if (productId) {
+        const invPayload = {
+          product_id: productId,
+          stock_quantity: parseInt(form.inv_stock_quantity) || 0,
+          reserved_quantity: parseInt(form.inv_reserved_quantity) || 0,
+          incoming_quantity: parseInt(form.inv_incoming_quantity) || 0,
+          reorder_level: parseInt(form.inv_reorder_level) || 5,
+          safety_stock: parseInt(form.inv_safety_stock) || 2,
+          discontinued: form.inv_discontinued,
+          restock_expected_date: form.inv_restock_expected_date || null,
+          notes: form.inv_notes || null,
+        };
+        await supabase.from('product_inventory').upsert(invPayload, { onConflict: 'product_id' });
+      }
+
       navigate('/admin/products');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to save product.';
@@ -381,6 +420,7 @@ export function AdminProductForm() {
                 <option value="low-stock">Low Stock</option>
                 <option value="out-of-stock">Out of Stock</option>
                 <option value="pre-order">Pre-Order</option>
+                <option value="discontinued">Discontinued</option>
               </select>
             </div>
           </div>
@@ -555,6 +595,75 @@ export function AdminProductForm() {
                 </div>
               </label>
             ))}
+          </div>
+        </SectionCard>
+
+        {/* Inventory */}
+        <SectionCard title="Inventory Management" icon={Boxes}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div>
+              <label className={labelCls}>Stock Quantity <span className="text-slate-500 font-normal">(on hand)</span></label>
+              <input type="number" min={0} value={form.inv_stock_quantity}
+                onChange={e => set('inv_stock_quantity', e.target.value)}
+                className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Reserved <span className="text-slate-500 font-normal">(pending orders)</span></label>
+              <input type="number" min={0} value={form.inv_reserved_quantity}
+                onChange={e => set('inv_reserved_quantity', e.target.value)}
+                className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Incoming <span className="text-slate-500 font-normal">(on PO)</span></label>
+              <input type="number" min={0} value={form.inv_incoming_quantity}
+                onChange={e => set('inv_incoming_quantity', e.target.value)}
+                className={inputCls} />
+            </div>
+            <div>
+              <label className={labelCls}>Reorder Level</label>
+              <input type="number" min={0} value={form.inv_reorder_level}
+                onChange={e => set('inv_reorder_level', e.target.value)}
+                className={inputCls} />
+              <p className="text-xs text-slate-500 mt-1">Alert when stock drops to this level.</p>
+            </div>
+            <div>
+              <label className={labelCls}>Safety Stock</label>
+              <input type="number" min={0} value={form.inv_safety_stock}
+                onChange={e => set('inv_safety_stock', e.target.value)}
+                className={inputCls} />
+              <p className="text-xs text-slate-500 mt-1">Minimum buffer to keep on hand.</p>
+            </div>
+            <div>
+              <label className={labelCls}>Restock Expected</label>
+              <input type="date" value={form.inv_restock_expected_date}
+                onChange={e => set('inv_restock_expected_date', e.target.value)}
+                className={inputCls} />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+            <label className="flex items-start gap-3 p-3 bg-slate-800 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 transition-colors sm:col-span-1">
+              <input type="checkbox" checked={form.inv_discontinued}
+                onChange={e => set('inv_discontinued', e.target.checked)}
+                className="w-4 h-4 rounded accent-blue-500 mt-0.5" />
+              <div>
+                <p className="text-sm text-slate-300 font-medium">Discontinued</p>
+                <p className="text-xs text-slate-500">Marks product as retired — overrides stock status.</p>
+              </div>
+            </label>
+            <div className="sm:col-span-2">
+              <label className={labelCls}>Inventory Notes <span className="text-slate-500 font-normal">(optional)</span></label>
+              <textarea value={form.inv_notes}
+                onChange={e => set('inv_notes', e.target.value)} rows={2}
+                className={inputCls + ' resize-none'}
+                placeholder="Supplier info, restock notes, special handling…" />
+            </div>
+          </div>
+          <div className="mt-3 p-3 bg-blue-900/20 border border-blue-700/30 rounded-xl">
+            <p className="text-xs text-blue-300/80">
+              <Info className="w-3.5 h-3.5 inline mr-1" />
+              Availability status is auto-derived: stock &#8804; 0 + incoming {'>'} 0 = Pre-Order; stock &#8804; 0 = Out of Stock;
+              stock &#8804; reorder or safety = Low Stock; otherwise In Stock. Discontinued overrides all.
+            </p>
           </div>
         </SectionCard>
 

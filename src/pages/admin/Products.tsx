@@ -27,6 +27,7 @@ interface RawProduct {
   price_visible: boolean;
   display_price: number | null;
   created_at: string;
+  product_inventory?: { stock_quantity: number; reserved_quantity: number; incoming_quantity: number } | null;
 }
 
 const AVAILABILITY_CFG: Record<string, { label: string; dot: string; bg: string; text: string }> = {
@@ -34,6 +35,7 @@ const AVAILABILITY_CFG: Record<string, { label: string; dot: string; bg: string;
   'low-stock':   { label: 'Low Stock',    dot: 'bg-amber-400',   bg: 'bg-amber-500/10',   text: 'text-amber-300' },
   'out-of-stock':{ label: 'Out of Stock', dot: 'bg-red-400',     bg: 'bg-red-500/10',     text: 'text-red-300' },
   'pre-order':   { label: 'Pre-Order',    dot: 'bg-blue-400',    bg: 'bg-blue-500/10',    text: 'text-blue-300' },
+  'discontinued':{ label: 'Discontinued', dot: 'bg-slate-400',   bg: 'bg-slate-500/10',   text: 'text-slate-400' },
 };
 
 const PAGE_SIZE = 20;
@@ -60,7 +62,7 @@ export function AdminProducts() {
     setError(null);
     const { data, error: err } = await supabase
       .from('products')
-      .select('id,name,slug,sku,brand,category,availability,images,is_featured,is_new,is_best_seller,buy_now_enabled,call_for_price,price_visible,display_price,created_at')
+      .select('id,name,slug,sku,brand,category,availability,images,is_featured,is_new,is_best_seller,buy_now_enabled,call_for_price,price_visible,display_price,created_at,product_inventory(stock_quantity,reserved_quantity,incoming_quantity)')
       .order('created_at', { ascending: false });
     if (err) { setError('Failed to load products.'); setLoading(false); return; }
     setProducts((data ?? []) as RawProduct[]);
@@ -155,6 +157,7 @@ export function AdminProducts() {
             <option value="low-stock">Low Stock</option>
             <option value="out-of-stock">Out of Stock</option>
             <option value="pre-order">Pre-Order</option>
+            <option value="discontinued">Discontinued</option>
           </select>
         </div>
       </div>

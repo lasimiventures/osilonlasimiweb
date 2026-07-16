@@ -12,7 +12,7 @@ export interface Product {
   images: string[];
   specifications: Record<string, string>;
   price: number | null;
-  availability: 'in-stock' | 'low-stock' | 'out-of-stock' | 'pre-order';
+  availability: 'in-stock' | 'low-stock' | 'out-of-stock' | 'pre-order' | 'discontinued';
   isFeatured: boolean;
   isNew: boolean;
   isBestSeller: boolean;
@@ -26,6 +26,23 @@ export interface Product {
   priceVisible: boolean;
   minimumOrderQuantity: number;
   maximumOrderQuantity: number | null;
+  // Inventory fields (from product_inventory table, null if no inventory row)
+  inventory?: ProductInventory | null;
+}
+
+export interface ProductInventory {
+  productId: string;
+  stockQuantity: number;
+  reservedQuantity: number;
+  incomingQuantity: number;
+  availableQuantity: number;
+  reorderLevel: number;
+  safetyStock: number;
+  discontinued: boolean;
+  restockExpectedDate: string | null;
+  lastStockUpdate: string;
+  notes: string | null;
+  inventoryStatus: 'in-stock' | 'low-stock' | 'out-of-stock' | 'pre-order' | 'discontinued';
 }
 
 export interface Category {

@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
+  Boxes,
   Tag,
   Layers,
   FileText,
@@ -25,6 +26,7 @@ const navItems = [
   { to: '/admin/orders',     icon: ShoppingBag,     label: 'Orders' },
   { to: '/admin/customers',  icon: Users,           label: 'Customers' },
   { to: '/admin/products',   icon: Package,         label: 'Products' },
+  { to: '/admin/inventory',  icon: Boxes,           label: 'Inventory' },
   { to: '/admin/categories', icon: Layers,          label: 'Categories' },
   { to: '/admin/brands',     icon: Tag,             label: 'Brands' },
   { to: '/admin/media',      icon: Image,           label: 'Media Library' },

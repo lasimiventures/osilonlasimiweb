@@ -1,4 +1,4 @@
-import type { Product, Category, Brand } from '../types';
+import type { Product, ProductInventory, Category, Brand } from '../types';
 
 type RawProduct = {
   id: string;
@@ -27,6 +27,20 @@ type RawProduct = {
   price_visible?: boolean;
   minimum_order_quantity?: number;
   maximum_order_quantity?: number | null;
+  product_inventory?: RawInventory | null;
+};
+
+type RawInventory = {
+  product_id: string;
+  stock_quantity: number;
+  reserved_quantity: number;
+  incoming_quantity: number;
+  reorder_level: number;
+  safety_stock: number;
+  discontinued: boolean;
+  restock_expected_date: string | null;
+  last_stock_update: string;
+  notes: string | null;
 };
 
 type RawCategory = {
@@ -102,6 +116,24 @@ export function mapProduct(raw: RawProduct): Product {
     priceVisible: raw.price_visible ?? false,
     minimumOrderQuantity: raw.minimum_order_quantity ?? 1,
     maximumOrderQuantity: raw.maximum_order_quantity ?? null,
+    inventory: raw.product_inventory ? mapInventory(raw.product_inventory, raw.availability) : null,
+  };
+}
+
+function mapInventory(raw: RawInventory, availability: string): ProductInventory {
+  return {
+    productId: raw.product_id,
+    stockQuantity: raw.stock_quantity,
+    reservedQuantity: raw.reserved_quantity,
+    incomingQuantity: raw.incoming_quantity,
+    availableQuantity: raw.stock_quantity - raw.reserved_quantity,
+    reorderLevel: raw.reorder_level,
+    safetyStock: raw.safety_stock,
+    discontinued: raw.discontinued,
+    restockExpectedDate: raw.restock_expected_date,
+    lastStockUpdate: raw.last_stock_update,
+    notes: raw.notes,
+    inventoryStatus: availability as ProductInventory['inventoryStatus'],
   };
 }
 

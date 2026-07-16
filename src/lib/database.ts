@@ -85,7 +85,7 @@ export async function getProducts(options?: {
 export async function getProductBySlug(slug: string) {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, product_inventory(*)')
     .eq('slug', slug)
     .maybeSingle();
   if (error) throw error;
@@ -95,7 +95,7 @@ export async function getProductBySlug(slug: string) {
 export async function getProductsByIds(ids: string[]) {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, product_inventory(*)')
     .in('id', ids);
   if (error) throw error;
   return data;
@@ -334,7 +334,7 @@ export async function adminDeleteBrand(id: string) {
 export async function adminGetProductById(id: string) {
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, product_inventory(*)')
     .eq('id', id)
     .maybeSingle();
   if (error) throw error;

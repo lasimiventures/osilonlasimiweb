@@ -30,6 +30,107 @@ export interface Product {
   inventory?: ProductInventory | null;
 }
 
+export interface Warehouse {
+  id: string;
+  name: string;
+  code: string;
+  addressLine1: string | null;
+  addressLine2: string | null;
+  city: string | null;
+  county: string | null;
+  country: string;
+  postalCode: string | null;
+  phone: string | null;
+  email: string | null;
+  region: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WarehouseContact {
+  id: string;
+  warehouseId: string;
+  name: string;
+  role: string | null;
+  phone: string | null;
+  email: string | null;
+  isPrimary: boolean;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WarehouseZone {
+  id: string;
+  warehouseId: string;
+  name: string;
+  code: string;
+  description: string | null;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WarehouseBin {
+  id: string;
+  zoneId: string;
+  warehouseId: string;
+  name: string;
+  code: string;
+  description: string | null;
+  maxCapacity: number | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WarehouseStock {
+  id: string;
+  productId: string;
+  warehouseId: string;
+  zoneId: string | null;
+  binId: string | null;
+  quantityOnHand: number;
+  quantityReserved: number;
+  quantityAvailable: number;
+  productName: string;
+  productSku: string;
+  warehouseName: string;
+  warehouseCode: string;
+  warehouseRegion: string | null;
+  zoneName: string | null;
+  binName: string | null;
+}
+
+export type StockTransferStatus = 'draft' | 'pending' | 'in_transit' | 'received' | 'cancelled';
+
+export interface StockTransfer {
+  id: string;
+  transferNumber: string;
+  fromWarehouseId: string | null;
+  toWarehouseId: string | null;
+  status: StockTransferStatus;
+  notes: string | null;
+  fromWarehouseName?: string | null;
+  toWarehouseName?: string | null;
+  itemCount?: number;
+  totalQuantity?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StockTransferItem {
+  id: string;
+  transferId: string;
+  productId: string;
+  quantity: number;
+  receivedQuantity: number;
+  notes: string | null;
+  productName?: string;
+  productSku?: string;
+}
+
 export interface ProductInventory {
   productId: string;
   stockQuantity: number;

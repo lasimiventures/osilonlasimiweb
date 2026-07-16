@@ -41,6 +41,9 @@ import { AdminRFQs } from '../pages/admin/RFQs';
 import { AdminRFQDetail } from '../pages/admin/RFQDetail';
 import { AdminCRM } from '../pages/admin/CRM';
 import { AdminInventory } from '../pages/admin/Inventory';
+import { AdminWarehouses } from '../pages/admin/Warehouses';
+import { AdminWarehouseForm } from '../pages/admin/WarehouseForm';
+import { AdminStockTransfers } from '../pages/admin/StockTransfers';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -82,6 +85,10 @@ export function AppRoutes() {
           <Route path="/admin/products/new" element={<AdminProductForm />} />
           <Route path="/admin/products/:id/edit" element={<AdminProductForm />} />
           <Route path="/admin/inventory" element={<AdminInventory />} />
+          <Route path="/admin/warehouses" element={<AdminWarehouses />} />
+          <Route path="/admin/warehouses/new" element={<AdminWarehouseForm />} />
+          <Route path="/admin/warehouses/:id/edit" element={<AdminWarehouseForm />} />
+          <Route path="/admin/transfers" element={<AdminStockTransfers />} />
           <Route path="/admin/categories" element={<AdminCategories />} />
           <Route path="/admin/categories/new" element={<AdminCategoryForm />} />
           <Route path="/admin/categories/:id/edit" element={<AdminCategoryForm />} />

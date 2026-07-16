@@ -65,6 +65,21 @@ interface QuoteRow {
   warranty_charge: number;
   customer_notes: string | null;
   quote_items: QuoteItem[];
+  // Professional quote fields (migration 017)
+  approved_by: string | null;
+  approved_date: string | null;
+  converted_order_id: string | null;
+  subtotal: number | null;
+  discount: number | null;
+  vat: number | null;
+  shipping: number | null;
+  grand_total: number | null;
+  currency: string;
+  payment_terms: string | null;
+  delivery_terms: string | null;
+  installation_required: boolean;
+  warranty: string | null;
+  internal_notes: string | null;
 }
 
 // ─── status config ────────────────────────────────────────────────────────────
@@ -186,11 +201,18 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
   const [expiryDate, setExpiryDate] = useState(quote.expiry_date ?? '');
   const [totalValue, setTotalValue] = useState(quote.total_value?.toString() ?? '');
   const [notes, setNotes] = useState(quote.notes ?? '');
+  const [currency, setCurrency] = useState(quote.currency ?? 'KES');
+  const [paymentTerms, setPaymentTerms] = useState(quote.payment_terms ?? '');
+  const [deliveryTerms, setDeliveryTerms] = useState(quote.delivery_terms ?? '');
+  const [installationRequired, setInstallationRequired] = useState(quote.installation_required ?? false);
+  const [warranty, setWarranty] = useState(quote.warranty ?? '');
+  const [internalNotes, setInternalNotes] = useState(quote.internal_notes ?? '');
+  const [customerNotes, setCustomerNotes] = useState(quote.customer_notes ?? '');
   const [items, setItems] = useState<QuoteItem[]>(quote.quote_items ?? []);
   const [saving, setSaving] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'items'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'items' | 'commercial'>('overview');
 
   function updateItem(idx: number, field: keyof QuoteItem, value: string | number) {
     setItems(prev => prev.map((item, i) => {
@@ -227,6 +249,13 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
           expiry_date: expiryDate || null,
           total_value: totalValue ? Number(totalValue) : null,
           notes: notes || null,
+          currency,
+          payment_terms: paymentTerms || null,
+          delivery_terms: deliveryTerms || null,
+          installation_required: installationRequired,
+          warranty: warranty || null,
+          internal_notes: internalNotes || null,
+          customer_notes: customerNotes || null,
         })
         .eq('id', quote.id);
       if (upErr) throw upErr;
@@ -268,6 +297,13 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
         expiry_date: expiryDate || null,
         total_value: totalValue ? Number(totalValue) : null,
         notes: notes || null,
+        currency,
+        payment_terms: paymentTerms || null,
+        delivery_terms: deliveryTerms || null,
+        installation_required: installationRequired,
+        warranty: warranty || null,
+        internal_notes: internalNotes || null,
+        customer_notes: customerNotes || null,
         quote_items: items.filter(i => !i.toDelete),
       });
     } catch (e: unknown) {
@@ -345,7 +381,7 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
 
         {/* Tabs */}
         <div className="flex border-b border-slate-800 flex-shrink-0 px-6">
-          {(['overview', 'items'] as const).map(tab => (
+          {(['overview', 'items', 'commercial'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -353,7 +389,7 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
                 activeTab === tab ? 'border-blue-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'
               }`}
             >
-              {tab === 'items' ? `Line Items (${visibleItems.length})` : 'Overview'}
+              {tab === 'items' ? `Line Items (${visibleItems.length})` : tab === 'commercial' ? 'Commercial' : 'Overview'}
             </button>
           ))}
         </div>
@@ -553,6 +589,70 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
                       <span className="text-base font-bold text-white">{fmtCurrency(computedTotal)}</span>
                     </div>
                   )}
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* ── Commercial Tab ── */}
+          {activeTab === 'commercial' && (
+            <section className="px-6 py-4 space-y-5">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Currency</label>
+                  <select value={currency} onChange={e => setCurrency(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40">
+                    {['KES','USD','EUR','GBP','TZS','UGX'].map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Warranty</label>
+                  <input value={warranty} onChange={e => setWarranty(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                    placeholder="e.g. 12 months manufacturer" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Payment Terms</label>
+                <input value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                  placeholder="e.g. 50% deposit, 50% on delivery" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Delivery Terms</label>
+                <input value={deliveryTerms} onChange={e => setDeliveryTerms(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                  placeholder="e.g. FOB Nairobi, 7-14 days" />
+              </div>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={installationRequired} onChange={e => setInstallationRequired(e.target.checked)}
+                  className="w-4 h-4 rounded accent-blue-500" />
+                <span className="text-sm text-slate-300">Installation required</span>
+              </label>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Customer Notes <span className="text-slate-600 normal-case font-normal">(printed on quote)</span></label>
+                <textarea value={customerNotes} onChange={e => setCustomerNotes(e.target.value)} rows={3}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 resize-none"
+                  placeholder="Customer-facing notes…" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">Internal Notes <span className="text-slate-600 normal-case font-normal">(admin only)</span></label>
+                <textarea value={internalNotes} onChange={e => setInternalNotes(e.target.value)} rows={3}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 resize-none"
+                  placeholder="Private notes for the sales team…" />
+              </div>
+
+              {quote.approved_by && (
+                <div className="p-3 bg-emerald-900/20 border border-emerald-700/30 rounded-lg">
+                  <p className="text-xs text-emerald-300">
+                    Approved by {quote.approved_by}
+                    {quote.approved_date && ` on ${new Date(quote.approved_date).toLocaleDateString('en-KE', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+                  </p>
                 </div>
               )}
             </section>
@@ -818,12 +918,12 @@ export function AdminQuotes() {
     setStatusMenuId(null);
     const now = new Date().toISOString();
     const extras: Record<string, string> = {};
-    if (newStatus === 'quoted') extras.quoted_at = now;
+    if (newStatus === 'quoted') { extras.quoted_at = now; extras.approved_by = 'Admin'; extras.approved_date = now; }
     if (newStatus === 'accepted') extras.accepted_at = now;
     if (newStatus === 'converted_to_order') extras.converted_at = now;
 
     const { error: err } = await supabase
-      .from('quote_requests').update({ status: newStatus, ...extras }).eq('id', id);
+      .from('quote_requests').update({ status: newStatus, quote_status: newStatus, ...extras }).eq('id', id);
     if (!err) {
       const fromStatus = quotes.find(q => q.id === id)?.status;
       if (fromStatus && fromStatus !== newStatus) {
@@ -934,6 +1034,11 @@ export function AdminQuotes() {
       .maybeSingle();
 
     if (oErr || !order) return;
+
+    // Link quote to the created order
+    await supabase.from('quote_requests').update({
+      converted_order_id: order.id,
+    }).eq('id', quote.id);
 
     const { data: qItems } = await supabase
       .from('quote_items')

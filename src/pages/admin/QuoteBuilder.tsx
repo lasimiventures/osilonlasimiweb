@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft, Save, CheckCircle2, AlertCircle, Loader2, Plus, Trash2,
   User, Building2, Mail, Phone, ArrowRight, Package, Wrench,
-  Truck, ShieldCheck, FileText, StickyNote, Percent, DollarSign, Info,
+  Truck, ShieldCheck, FileText, StickyNote, Percent, DollarSign, Info, Lock,
   Ban, Hourglass, Clock, RotateCcw, Send, Eye, Download,
   History, ExternalLink, ShoppingCart,
 } from 'lucide-react';
@@ -52,6 +52,20 @@ interface QuoteRow {
   submitted_at: string;
   is_archived: boolean;
   linked_order_number: string | null;
+  approved_by: string | null;
+  approved_date: string | null;
+  converted_order_id: string | null;
+  subtotal: number | null;
+  discount: number | null;
+  vat: number | null;
+  shipping: number | null;
+  grand_total: number | null;
+  currency: string;
+  payment_terms: string | null;
+  delivery_terms: string | null;
+  installation_required: boolean;
+  warranty: string | null;
+  internal_notes: string | null;
 }
 
 interface QuoteHistoryEvent {
@@ -166,6 +180,12 @@ export function AdminQuoteBuilder() {
   const [installationCharge, setInstallationCharge] = useState(0);
   const [warrantyCharge, setWarrantyCharge] = useState(0);
   const [customerNotes, setCustomerNotes] = useState('');
+  const [currency, setCurrency] = useState('KES');
+  const [paymentTerms, setPaymentTerms] = useState('');
+  const [deliveryTerms, setDeliveryTerms] = useState('');
+  const [installationRequired, setInstallationRequired] = useState(false);
+  const [warranty, setWarranty] = useState('');
+  const [internalNotes, setInternalNotes] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
@@ -202,6 +222,12 @@ export function AdminQuoteBuilder() {
         setInstallationCharge(q.installation_charge ?? 0);
         setWarrantyCharge(q.warranty_charge ?? 0);
         setCustomerNotes(q.customer_notes ?? '');
+        setCurrency(q.currency ?? 'KES');
+        setPaymentTerms(q.payment_terms ?? '');
+        setDeliveryTerms(q.delivery_terms ?? '');
+        setInstallationRequired(q.installation_required ?? false);
+        setWarranty(q.warranty ?? '');
+        setInternalNotes(q.internal_notes ?? '');
         // fetch history
         const { data: hist } = await supabase
           .from('quote_history')
@@ -282,6 +308,17 @@ export function AdminQuoteBuilder() {
         customer_notes: customerNotes || null,
         total_value: pricing.grandTotal,
         total_items: nonDeleted.length,
+        subtotal: pricing.subtotal,
+        discount: pricing.totalQuoteDiscount,
+        vat: pricing.vatAmount,
+        shipping: deliveryCharge,
+        grand_total: pricing.grandTotal,
+        currency,
+        payment_terms: paymentTerms || null,
+        delivery_terms: deliveryTerms || null,
+        installation_required: installationRequired,
+        warranty: warranty || null,
+        internal_notes: internalNotes || null,
       }).eq('id', id);
       if (upErr) throw upErr;
 
@@ -388,6 +425,14 @@ export function AdminQuoteBuilder() {
       installation_charge: installationCharge,
       warranty_charge: warrantyCharge,
       customer_notes: customerNotes || null,
+      currency,
+      payment_terms: paymentTerms || null,
+      delivery_terms: deliveryTerms || null,
+      installation_required: installationRequired,
+      warranty: warranty || null,
+      internal_notes: internalNotes || null,
+      subtotal: pricing.subtotal,
+      grand_total: pricing.grandTotal,
       quote_items: items.filter(i => !i.toDelete).map(i => ({
         product_name: i.product_name,
         product_sku: i.product_sku,
@@ -408,13 +453,13 @@ export function AdminQuoteBuilder() {
     setError(null);
     const now = new Date().toISOString();
     const extras: Record<string, string> = {};
-    if (toStatus === 'quoted') extras.quoted_at = now;
+    if (toStatus === 'quoted') { extras.quoted_at = now; extras.approved_by = 'Admin'; extras.approved_date = now; }
     if (toStatus === 'accepted') extras.accepted_at = now;
     if (toStatus === 'converted_to_order') extras.converted_at = now;
 
     const { error: err } = await supabase
       .from('quote_requests')
-      .update({ status: toStatus, ...extras })
+      .update({ status: toStatus, quote_status: toStatus, ...extras })
       .eq('id', id);
 
     if (err) { setError(err.message); setTransitioning(false); return; }
@@ -492,9 +537,9 @@ export function AdminQuoteBuilder() {
     if (orderFull?.order_number) {
       await supabase
         .from('quote_requests')
-        .update({ linked_order_number: orderFull.order_number })
+        .update({ linked_order_number: orderFull.order_number, converted_order_id: orderFull.id })
         .eq('id', quoteId);
-      setQuote(prev => prev ? { ...prev, linked_order_number: orderFull.order_number } : prev);
+      setQuote(prev => prev ? { ...prev, linked_order_number: orderFull.order_number, converted_order_id: orderFull.id } : prev);
     }
     // record conversion in history
     supabase.from('quote_history').insert({
@@ -938,6 +983,45 @@ export function AdminQuoteBuilder() {
               </div>
             </div>
 
+            {/* ── Commercial Terms ── */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+              <label className="flex items-center gap-2 text-sm font-semibold text-white">
+                <FileText className="w-4 h-4 text-slate-400" /> Commercial Terms
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">Currency</label>
+                  <select value={currency} onChange={e => setCurrency(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    {['KES','USD','EUR','GBP','TZS','UGX'].map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">Warranty</label>
+                  <input value={warranty} onChange={e => setWarranty(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g. 12 months manufacturer" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">Payment Terms</label>
+                <input value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g. 50% deposit, 50% on delivery" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-500 mb-1">Delivery Terms</label>
+                <input value={deliveryTerms} onChange={e => setDeliveryTerms(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 text-white placeholder-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g. FOB Nairobi, 7-14 days" />
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={installationRequired} onChange={e => setInstallationRequired(e.target.checked)}
+                  className="w-4 h-4 rounded accent-blue-500" />
+                <span className="text-sm text-slate-300">Installation required</span>
+              </label>
+            </div>
+
             {/* ── Customer Notes ── */}
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
               <label className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
@@ -947,8 +1031,23 @@ export function AdminQuoteBuilder() {
               <textarea
                 value={customerNotes}
                 onChange={e => setCustomerNotes(e.target.value)}
-                rows={4}
+                rows={3}
                 placeholder="Terms, delivery notes, special conditions, validity period, etc."
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-white placeholder-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              />
+            </div>
+
+            {/* ── Internal Notes ── */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+              <label className="flex items-center gap-2 text-sm font-semibold text-white mb-3">
+                <Lock className="w-4 h-4 text-slate-400" /> Internal Notes
+                <span className="text-xs text-slate-600 font-normal">(admin only, not printed)</span>
+              </label>
+              <textarea
+                value={internalNotes}
+                onChange={e => setInternalNotes(e.target.value)}
+                rows={2}
+                placeholder="Private notes for the sales team…"
                 className="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-white placeholder-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               />
             </div>

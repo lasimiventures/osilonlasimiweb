@@ -37,6 +37,14 @@ export interface PdfQuoteData {
   installation_charge: number;
   warranty_charge: number;
   customer_notes: string | null;
+  currency?: string;
+  payment_terms?: string | null;
+  delivery_terms?: string | null;
+  installation_required?: boolean;
+  warranty?: string | null;
+  internal_notes?: string | null;
+  subtotal?: number;
+  grand_total?: number;
   quote_items: PdfQuoteItem[];
 }
 
@@ -119,6 +127,13 @@ const DEFAULT_TERMS: Array<{ title: string; body: string }> = [
 
 function fmtKES(n: number): string {
   return `KES ${n.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function fmtMoney(n: number, currency: string): string {
+  if (currency && currency !== 'KES') {
+    return `${currency} ${n.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  return fmtKES(n);
 }
 
 function fmtDate(iso: string | null | undefined): string {
@@ -250,6 +265,7 @@ export async function generateQuotePdf(quote: PdfQuoteData): Promise<void> {
     warranty: quote.warranty_charge ?? 0,
     vatPct: quote.vat_pct,
     discPct: quote.discount_pct,
+    currency: quote.currency ?? 'KES',
   }, y);
   y += 6;
 
@@ -259,8 +275,23 @@ export async function generateQuotePdf(quote: PdfQuoteData): Promise<void> {
     y += 6;
   }
 
+  // ── Custom commercial terms override defaults when provided ──
+  const terms: Array<{ title: string; body: string }> = [];
+  if (quote.payment_terms?.trim()) {
+    terms.push({ title: 'Payment Terms', body: quote.payment_terms });
+  }
+  if (quote.delivery_terms?.trim()) {
+    terms.push({ title: 'Delivery Terms', body: quote.delivery_terms });
+  }
+  if (quote.warranty?.trim()) {
+    terms.push({ title: 'Warranty', body: quote.warranty });
+  }
+  if (quote.installation_required) {
+    terms.push({ title: 'Installation', body: 'Installation and commissioning by OSIL certified engineers is included. Site visit and pre-installation survey will be arranged upon order confirmation.' });
+  }
+
   y = ensureSpace(doc, y, 55);
-  y = drawTerms(doc, y);
+  y = drawTerms(doc, y, terms.length > 0 ? terms : undefined);
   y += 6;
 
   y = ensureSpace(doc, y, 52);
@@ -512,10 +543,11 @@ function drawTotals(
     totalQDisc: number; discSubtotal: number; charges: number;
     preVat: number; vatAmt: number; grandTotal: number;
     delivery: number; installation: number; warranty: number;
-    vatPct: number; discPct: number;
+    vatPct: number; discPct: number; currency: string;
   },
   startY: number
 ): number {
+  const cur = p.currency || 'KES';
   const labelX = ML + CW * 0.5 + 3;
   const valueX = PAGE_W - MR - 2;
   const boxW   = PAGE_W - MR - (ML + CW * 0.5);
@@ -523,24 +555,24 @@ function drawTotals(
   type Row = { label: string; value: string; bold?: boolean; negative?: boolean; big?: boolean; sep?: boolean };
   const rows: Row[] = [];
 
-  rows.push({ label: `Items Subtotal (${p.subtotal > 0 ? '' : ''}${p.lineDicsTotal > 0 ? 'before line discounts' : ''})`.trim() || 'Items Subtotal', value: fmtKES(p.subtotal) });
+  rows.push({ label: `Items Subtotal (${p.subtotal > 0 ? '' : ''}${p.lineDicsTotal > 0 ? 'before line discounts' : ''})`.trim() || 'Items Subtotal', value: fmtMoney(p.subtotal, cur) });
 
   if (p.lineDicsTotal > 0) {
-    rows.push({ label: 'Line Discounts Applied', value: fmtKES(p.lineDicsTotal), negative: true });
+    rows.push({ label: 'Line Discounts Applied', value: fmtMoney(p.lineDicsTotal, cur), negative: true });
   }
   if (p.totalQDisc > 0) {
     const ql = p.discPct > 0 ? `Quote Discount (${p.discPct}%)` : 'Quote Discount (Fixed)';
-    rows.push({ label: ql, value: fmtKES(p.totalQDisc), negative: true });
+    rows.push({ label: ql, value: fmtMoney(p.totalQDisc, cur), negative: true });
   }
   if (p.lineDicsTotal > 0 || p.totalQDisc > 0) {
-    rows.push({ label: 'Net Amount', value: fmtKES(p.discSubtotal), bold: true, sep: true });
+    rows.push({ label: 'Net Amount', value: fmtMoney(p.discSubtotal, cur), bold: true, sep: true });
   }
-  if (p.delivery > 0)      rows.push({ label: 'Delivery Charge',      value: fmtKES(p.delivery) });
-  if (p.installation > 0)  rows.push({ label: 'Installation Charge',  value: fmtKES(p.installation) });
-  if (p.warranty > 0)      rows.push({ label: 'Warranty Extension',   value: fmtKES(p.warranty) });
+  if (p.delivery > 0)      rows.push({ label: 'Delivery Charge',      value: fmtMoney(p.delivery, cur) });
+  if (p.installation > 0)  rows.push({ label: 'Installation Charge',  value: fmtMoney(p.installation, cur) });
+  if (p.warranty > 0)      rows.push({ label: 'Warranty Extension',   value: fmtMoney(p.warranty, cur) });
 
-  rows.push({ label: `VAT (${p.vatPct}%)`, value: fmtKES(p.vatAmt), sep: true });
-  rows.push({ label: 'GRAND TOTAL', value: fmtKES(p.grandTotal), bold: true, big: true, sep: true });
+  rows.push({ label: `VAT (${p.vatPct}%)`, value: fmtMoney(p.vatAmt, cur), sep: true });
+  rows.push({ label: 'GRAND TOTAL', value: fmtMoney(p.grandTotal, cur), bold: true, big: true, sep: true });
 
   const rowH = 6;
   const bigH = 9;
@@ -588,13 +620,14 @@ function drawNotesBlock(doc: jsPDF, notes: string, y: number): number {
 
 // ─── terms & conditions ───────────────────────────────────────────────────────
 
-function drawTerms(doc: jsPDF, y: number): number {
+function drawTerms(doc: jsPDF, y: number, custom?: Array<{ title: string; body: string }>): number {
   fillRect(doc, ML, y, CW, 7.5, COLORS.blue800);
   sf(doc, 8, 'bold', COLORS.white);
   doc.text('TERMS & CONDITIONS', ML + 3, y + 5);
   y += 9;
 
-  for (const { title, body } of DEFAULT_TERMS) {
+  const termsList = custom && custom.length > 0 ? custom : DEFAULT_TERMS;
+  for (const { title, body } of termsList) {
     if (y > PAGE_H - 45) {
       doc.addPage();
       y = MT;

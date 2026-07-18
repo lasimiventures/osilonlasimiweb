@@ -63,7 +63,7 @@ export function CatalogProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       try {
         const [productsRes, categoriesRes, brandsRes] = await Promise.all([
-          supabase.from('products').select('*').order('created_at', { ascending: false }),
+          supabase.from('products').select('*, product_inventory(*)').order('created_at', { ascending: false }),
           supabase.from('categories').select('*').order('name'),
           supabase.from('brands').select('*').order('name'),
         ]);

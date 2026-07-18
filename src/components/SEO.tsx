@@ -162,9 +162,10 @@ export function getCanonicalUrl(path: string): string {
   return `${BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
 }
 
-export const AVAILABILITY_SCHEMA_MAP: Record<string, 'InStock' | 'OutOfStock' | 'PreOrder' | 'LimitedAvailability'> = {
+export const AVAILABILITY_SCHEMA_MAP: Record<string, 'InStock' | 'OutOfStock' | 'PreOrder' | 'LimitedAvailability' | 'Discontinued'> = {
   'in-stock': 'InStock',
   'out-of-stock': 'OutOfStock',
   'pre-order': 'PreOrder',
   'low-stock': 'LimitedAvailability',
+  'discontinued': 'Discontinued',
 };

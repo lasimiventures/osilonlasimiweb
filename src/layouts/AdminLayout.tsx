@@ -3,6 +3,9 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
+  Boxes,
+  Warehouse,
+  TrendingUp,
   Tag,
   Layers,
   FileText,
@@ -17,6 +20,7 @@ import {
   Users,
   FileSpreadsheet,
   BarChart3,
+  Building2,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 
@@ -25,12 +29,16 @@ const navItems = [
   { to: '/admin/orders',     icon: ShoppingBag,     label: 'Orders' },
   { to: '/admin/customers',  icon: Users,           label: 'Customers' },
   { to: '/admin/products',   icon: Package,         label: 'Products' },
+  { to: '/admin/inventory',  icon: Boxes,           label: 'Inventory' },
+  { to: '/admin/warehouses', icon: Warehouse,       label: 'Warehouses' },
+  { to: '/admin/transfers',  icon: TrendingUp,      label: 'Transfers' },
   { to: '/admin/categories', icon: Layers,          label: 'Categories' },
   { to: '/admin/brands',     icon: Tag,             label: 'Brands' },
   { to: '/admin/media',      icon: Image,           label: 'Media Library' },
   { to: '/admin/quotes',     icon: FileText,          label: 'Quote Requests' },
   { to: '/admin/rfqs',       icon: FileSpreadsheet,   label: 'RFQ Requests' },
   { to: '/admin/crm',        icon: BarChart3,         label: 'CRM Prep' },
+  { to: '/admin/suppliers',  icon: Building2,         label: 'Suppliers' },
   { to: '/admin/banners',    icon: Megaphone,         label: 'Banners' },
   { to: '/admin/settings',   icon: Settings,        label: 'Settings' },
 ];

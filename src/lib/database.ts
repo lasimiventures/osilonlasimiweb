@@ -554,3 +554,169 @@ export async function adminGetSupplierPaymentTerms() {
   if (error) throw error;
   return data;
 }
+
+// Admin — Purchase Order CRUD
+
+export async function adminGetPurchaseOrders() {
+  const { data, error } = await supabase
+    .from('purchase_orders')
+    .select('id,po_number,supplier_id,supplier:suppliers(id,name),warehouse:warehouses(id,name,code),status,order_date,expected_delivery_date,currency,total,created_at')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function adminGetPurchaseOrderById(id: string) {
+  const { data, error } = await supabase
+    .from('purchase_orders')
+    .select('*, supplier:suppliers(id,name,slug), warehouse:warehouses(id,name,code), payment_terms:supplier_payment_terms(id,name,code), purchase_order_items(*, product:products(id,name,sku))')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function adminCreatePurchaseOrder(header: Record<string, unknown>, items: Array<Record<string, unknown>>) {
+  const { data: created, error } = await supabase
+    .from('purchase_orders')
+    .insert(header)
+    .select()
+    .single();
+  if (error) throw error;
+  if (items.length > 0) {
+    const { error: itemsError } = await supabase
+      .from('purchase_order_items')
+      .insert(items.map(it => ({ ...it, po_id: created.id })));
+    if (itemsError) throw itemsError;
+  }
+  return created;
+}
+
+export async function adminUpdatePurchaseOrder(id: string, header: Record<string, unknown>, items: Array<Record<string, unknown>>) {
+  const { data: updated, error } = await supabase
+    .from('purchase_orders')
+    .update(header)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  // Replace items only when a fresh list is provided
+  if (items.length > 0) {
+    await supabase.from('purchase_order_items').delete().eq('po_id', id);
+    const { error: itemsError } = await supabase
+      .from('purchase_order_items')
+      .insert(items.map(it => ({ ...it, po_id: id })));
+    if (itemsError) throw itemsError;
+  }
+  return updated;
+}
+
+export async function adminUpdatePurchaseOrderStatus(id: string, status: string) {
+  const { data, error } = await supabase
+    .from('purchase_orders')
+    .update({ status })
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function adminDeletePurchaseOrder(id: string) {
+  const { error } = await supabase.from('purchase_orders').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// Admin — Goods Received Notes
+
+export async function adminGetGRNsForPO(poId: string) {
+  const { data, error } = await supabase
+    .from('goods_received_notes')
+    .select('id,grn_number,po_id,warehouse:warehouses(id,name,code),received_by,received_date,status,notes, goods_received_note_items(id,quantity_received,quantity_rejected,rejection_reason,product_id,po_item_id)')
+    .eq('po_id', poId)
+    .order('received_date', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function adminCreateGRN(grn: Record<string, unknown>, items: Array<Record<string, unknown>>) {
+  const { data: created, error } = await supabase
+    .from('goods_received_notes')
+    .insert(grn)
+    .select()
+    .single();
+  if (error) throw error;
+  if (items.length > 0) {
+    const { error: itemsError } = await supabase
+      .from('goods_received_note_items')
+      .insert(items.map(it => ({ ...it, grn_id: created.id })));
+    if (itemsError) throw itemsError;
+  }
+  return created;
+}
+
+// Admin — Supplier Deliveries
+
+export async function adminGetSupplierDeliveries() {
+  const { data, error } = await supabase
+    .from('supplier_deliveries')
+    .select('id,delivery_number,supplier:suppliers(name),po:purchase_orders(po_number),carrier,tracking_number,shipped_date,expected_delivery_date,actual_delivery_date,status,warehouse:warehouses(name),created_at')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function adminCreateSupplierDelivery(delivery: Record<string, unknown>) {
+  const { data: created, error } = await supabase
+    .from('supplier_deliveries')
+    .insert(delivery)
+    .select()
+    .single();
+  if (error) throw error;
+  return created;
+}
+
+export async function adminUpdateDeliveryStatus(id: string, status: string, actualDeliveryDate?: string) {
+  const payload: Record<string, unknown> = { status };
+  if (actualDeliveryDate) payload.actual_delivery_date = actualDeliveryDate;
+  const { data, error } = await supabase
+    .from('supplier_deliveries')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// Admin — Back Orders
+
+export async function adminGetBackOrders() {
+  const { data, error } = await supabase
+    .from('back_orders')
+    .select('id,po:purchase_orders(po_number),supplier:suppliers(name),product:products(name,sku),quantity_backordered,reason,status,expected_date,fulfilled_date,created_at')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function adminUpdateBackOrderStatus(id: string, status: string) {
+  const payload: Record<string, unknown> = { status };
+  if (status === 'fulfilled') payload.fulfilled_date = new Date().toISOString().slice(0, 10);
+  const { data, error } = await supabase
+    .from('back_orders')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// Admin — Procurement status summary
+
+export async function adminGetProcurementStatus() {
+  const { data, error } = await supabase.rpc('procurement_status_summary');
+  if (error) throw error;
+  return data;
+}

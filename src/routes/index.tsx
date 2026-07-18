@@ -46,6 +46,9 @@ import { AdminWarehouseForm } from '../pages/admin/WarehouseForm';
 import { AdminStockTransfers } from '../pages/admin/StockTransfers';
 import { AdminSuppliers } from '../pages/admin/Suppliers';
 import { AdminSupplierForm } from '../pages/admin/SupplierForm';
+import { AdminProcurement } from '../pages/admin/Procurement';
+import { AdminPurchaseOrderForm } from '../pages/admin/PurchaseOrderForm';
+import { AdminPurchaseOrderDetail } from '../pages/admin/PurchaseOrderDetail';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -111,6 +114,10 @@ export function AppRoutes() {
           <Route path="/admin/suppliers" element={<AdminSuppliers />} />
           <Route path="/admin/suppliers/new" element={<AdminSupplierForm />} />
           <Route path="/admin/suppliers/:id/edit" element={<AdminSupplierForm />} />
+          <Route path="/admin/procurement" element={<AdminProcurement />} />
+          <Route path="/admin/procurement/new" element={<AdminPurchaseOrderForm />} />
+          <Route path="/admin/procurement/:id" element={<AdminPurchaseOrderDetail />} />
+          <Route path="/admin/procurement/:id/edit" element={<AdminPurchaseOrderForm />} />
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>
       </Route>

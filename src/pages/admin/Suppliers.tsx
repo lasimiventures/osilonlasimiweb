@@ -24,7 +24,6 @@ interface SupplierRow {
   is_preferred: boolean;
   rating: number;
   rating_count: number;
-  product_catalog_count: number;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -81,7 +80,7 @@ export function AdminSuppliers() {
     setError(null);
     const { data, error: err } = await supabase
       .from('suppliers')
-      .select('id,name,slug,supplier_type,status,category:supplier_categories(name),email,phone,website,city,country,currency,lead_time_days,is_preferred,rating,rating_count,product_catalog_count')
+      .select('id,name,slug,supplier_type,status,category:supplier_categories(name),email,phone,website,city,country,currency,lead_time_days,is_preferred,rating,rating_count')
       .order('name');
     if (err) { setError('Failed to load suppliers.'); setLoading(false); return; }
     setSuppliers((data ?? []) as unknown as SupplierRow[]);

@@ -490,7 +490,7 @@ export async function adminToggleBannerActive(id: string, isActive: boolean) {
 export async function adminGetSupplierById(id: string) {
   const { data, error } = await supabase
     .from('suppliers')
-    .select('*, category:supplier_categories(id,name,slug), payment_terms:supplier_payment_terms(id,name,code)')
+    .select('*, category:supplier_categories(id,name,slug), payment_terms:supplier_payment_terms(id,name,code), supplier_contacts(id,name,position,email,phone,is_primary)')
     .eq('id', id)
     .maybeSingle();
   if (error) throw error;

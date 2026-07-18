@@ -484,3 +484,73 @@ export async function adminToggleBannerActive(id: string, isActive: boolean) {
   if (error) throw error;
   return mapBanner(data);
 }
+
+// Admin — Supplier CRUD
+
+export async function adminGetSupplierById(id: string) {
+  const { data, error } = await supabase
+    .from('suppliers')
+    .select('*, category:supplier_categories(id,name,slug), payment_terms:supplier_payment_terms(id,name,code)')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function adminCreateSupplier(data: Record<string, unknown>) {
+  const { data: created, error } = await supabase
+    .from('suppliers')
+    .insert(data)
+    .select()
+    .single();
+  if (error) throw error;
+  return created;
+}
+
+export async function adminUpdateSupplier(id: string, data: Record<string, unknown>) {
+  const { data: updated, error } = await supabase
+    .from('suppliers')
+    .update(data)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return updated;
+}
+
+export async function adminDeleteSupplier(id: string) {
+  const { error } = await supabase.from('suppliers').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function adminTogglePreferredSupplier(id: string, isPreferred: boolean) {
+  const payload: Record<string, unknown> = { is_preferred: isPreferred };
+  if (isPreferred) payload.preferred_since = new Date().toISOString();
+  else payload.preferred_since = null;
+  const { data, error } = await supabase
+    .from('suppliers')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function adminGetSupplierCategories() {
+  const { data, error } = await supabase
+    .from('supplier_categories')
+    .select('id,name,slug,description')
+    .order('name');
+  if (error) throw error;
+  return data;
+}
+
+export async function adminGetSupplierPaymentTerms() {
+  const { data, error } = await supabase
+    .from('supplier_payment_terms')
+    .select('id,name,code,description,default_days,is_active')
+    .order('default_days');
+  if (error) throw error;
+  return data;
+}

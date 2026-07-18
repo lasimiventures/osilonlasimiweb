@@ -20,6 +20,7 @@ import {
   Users,
   FileSpreadsheet,
   BarChart3,
+  Building2,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 
@@ -37,6 +38,7 @@ const navItems = [
   { to: '/admin/quotes',     icon: FileText,          label: 'Quote Requests' },
   { to: '/admin/rfqs',       icon: FileSpreadsheet,   label: 'RFQ Requests' },
   { to: '/admin/crm',        icon: BarChart3,         label: 'CRM Prep' },
+  { to: '/admin/suppliers',  icon: Building2,         label: 'Suppliers' },
   { to: '/admin/banners',    icon: Megaphone,         label: 'Banners' },
   { to: '/admin/settings',   icon: Settings,        label: 'Settings' },
 ];

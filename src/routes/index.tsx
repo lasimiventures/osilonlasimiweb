@@ -48,6 +48,7 @@ import { AdminStockTransfers } from '../pages/admin/StockTransfers';
 import { AdminSuppliers } from '../pages/admin/Suppliers';
 import { AdminSupplierForm } from '../pages/admin/SupplierForm';
 import { AdminCatalogSync } from '../pages/admin/CatalogSync';
+import { AdminProductHistory } from '../pages/admin/ProductHistory';
 import { AdminProcurement } from '../pages/admin/Procurement';
 import { AdminPurchaseOrderForm } from '../pages/admin/PurchaseOrderForm';
 import { AdminPurchaseOrderDetail } from '../pages/admin/PurchaseOrderDetail';
@@ -96,6 +97,8 @@ export function AppRoutes() {
           <Route path="/admin/products/import" element={<AdminProductImport />} />
           <Route path="/admin/products/import" element={<AdminProductImport />} />
           <Route path="/admin/products/:id/edit" element={<AdminProductForm />} />
+          <Route path="/admin/products/:id/history" element={<AdminProductHistory />} />
+          <Route path="/admin/product-history" element={<AdminProductHistory />} />
           <Route path="/admin/inventory" element={<AdminInventory />} />
           <Route path="/admin/warehouses" element={<AdminWarehouses />} />
           <Route path="/admin/warehouses/new" element={<AdminWarehouseForm />} />

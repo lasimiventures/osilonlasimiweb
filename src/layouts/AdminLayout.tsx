@@ -26,6 +26,7 @@ import {
   DollarSign,
   Bell,
   RefreshCw,
+  GitBranch,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { adminGetActiveAlertCount, adminRefreshAlerts } from '../lib/database';
@@ -46,6 +47,7 @@ const navItems = [
   { to: '/admin/crm',        icon: BarChart3,         label: 'CRM Prep' },
   { to: '/admin/suppliers',  icon: Building2,         label: 'Suppliers' },
   { to: '/admin/catalog-sync', icon: RefreshCw,        label: 'Catalog Sync' },
+  { to: '/admin/product-history', icon: GitBranch,      label: 'Product History' },
   { to: '/admin/procurement', icon: ShoppingCart,     label: 'Procurement' },
   { to: '/admin/stock-movements', icon: History,      label: 'Stock Movements' },
   { to: '/admin/pricing',     icon: DollarSign,        label: 'Cost & Pricing' },

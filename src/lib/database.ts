@@ -969,6 +969,65 @@ export async function adminGetCostHistory(productId: string) {
   return data;
 }
 
+// Admin — Product Version Control (Milestone 6.6)
+
+export interface ProductRevision {
+  id: string;
+  product_id: string;
+  revision_number: number;
+  change_type: 'price_update' | 'specification_change' | 'availability_change' | 'product_revision';
+  changed_fields: string[];
+  old_values: Record<string, unknown>;
+  new_values: Record<string, unknown>;
+  changed_by: string | null;
+  change_source: string;
+  notes: string | null;
+  created_at: string;
+  product?: { name: string; sku: string; brand: string } | null;
+}
+
+export async function adminGetProductRevisions(productId: string): Promise<ProductRevision[]> {
+  const { data, error } = await supabase
+    .from('product_revisions')
+    .select('id,product_id,revision_number,change_type,changed_fields,old_values,new_values,changed_by,change_source,notes,created_at,product:products(name,sku,brand)')
+    .eq('product_id', productId)
+    .order('revision_number', { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as ProductRevision[];
+}
+
+export async function adminGetAllProductRevisions(filter?: {
+  changeType?: string;
+  limit?: number;
+}): Promise<ProductRevision[]> {
+  let q = supabase
+    .from('product_revisions')
+    .select('id,product_id,revision_number,change_type,changed_fields,old_values,new_values,changed_by,change_source,notes,created_at,product:products(name,sku,brand)')
+    .order('created_at', { ascending: false })
+    .limit(filter?.limit ?? 100);
+  if (filter?.changeType && filter.changeType !== 'all') q = q.eq('change_type', filter.changeType);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []) as unknown as ProductRevision[];
+}
+
+export async function adminGetRevisionStats(): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from('product_revisions')
+    .select('change_type');
+  if (error) throw error;
+  const counts: Record<string, number> = {
+    price_update: 0,
+    specification_change: 0,
+    availability_change: 0,
+    product_revision: 0,
+  };
+  (data ?? []).forEach((r: { change_type: string }) => {
+    counts[r.change_type] = (counts[r.change_type] ?? 0) + 1;
+  });
+  return counts;
+}
+
 // Admin — Inventory Alerts
 
 export interface InventoryAlert {

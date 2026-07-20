@@ -4,6 +4,7 @@ import {
   Plus, Search, Filter, RefreshCcw, Pencil, Trash2,
   Package, AlertCircle, Star, Zap, TrendingUp, PhoneCall,
   ChevronLeft, ChevronRight, UploadCloud, PencilLine, X,
+  History,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { adminDeleteProduct } from '../../lib/database';
@@ -329,6 +330,13 @@ export function AdminProducts() {
                             >
                               <Pencil className="w-3 h-3" /> Edit
                             </button>
+                            <Link
+                              to={`/admin/products/${product.id}/history`}
+                              className="flex items-center gap-1 text-xs text-slate-400 hover:text-blue-300 border border-slate-700 hover:border-blue-800/50 px-2.5 py-1.5 rounded-lg transition-all"
+                              title="Revision history"
+                            >
+                              <History className="w-3 h-3" />
+                            </Link>
                             <button
                               onClick={() => setConfirmDeleteId(product.id)}
                               className="flex items-center gap-1 text-xs text-slate-500 hover:text-red-400 border border-slate-700 hover:border-red-800/50 px-2.5 py-1.5 rounded-lg transition-all"

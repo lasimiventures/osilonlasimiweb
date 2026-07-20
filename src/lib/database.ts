@@ -375,6 +375,18 @@ export async function adminBulkInsertProducts(rows: Record<string, unknown>[]): 
   return { inserted: data?.length ?? 0, errors: [] };
 }
 
+export async function adminBulkUpdateProducts(ids: string[], data: Record<string, unknown>): Promise<{ updated: number; errors: string[] }> {
+  const { data: updated, error } = await supabase.from('products').update(data).in('id', ids).select('id');
+  if (error) return { updated: 0, errors: [error.message] };
+  return { updated: updated?.length ?? 0, errors: [] };
+}
+
+export async function adminBulkUpdateInventory(productIds: string[], data: Record<string, unknown>): Promise<{ updated: number; errors: string[] }> {
+  const { data: updated, error } = await supabase.from('product_inventory').update(data).in('product_id', productIds).select('product_id');
+  if (error) return { updated: 0, errors: [error.message] };
+  return { updated: updated?.length ?? 0, errors: [] };
+}
+
 export interface ImportValidationData {
   existingSkus: Set<string>;
   existingSlugs: Set<string>;

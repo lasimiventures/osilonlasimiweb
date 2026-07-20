@@ -3,10 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Plus, Search, Filter, RefreshCcw, Pencil, Trash2,
   Package, AlertCircle, Star, Zap, TrendingUp, PhoneCall,
-  ChevronLeft, ChevronRight, UploadCloud,
+  ChevronLeft, ChevronRight, UploadCloud, PencilLine, X,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { adminDeleteProduct } from '../../lib/database';
+import { BulkEditModal } from '../../components/admin/BulkEditModal';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -56,6 +57,8 @@ export function AdminProducts() {
   const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkEditOpen, setBulkEditOpen] = useState(false);
 
   async function fetchProducts() {
     setLoading(true);
@@ -70,6 +73,16 @@ export function AdminProducts() {
   }
 
   useEffect(() => { fetchProducts(); }, []);
+
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
+  }
+  function toggleSelectPage() {
+    const pageIds = paginated.map(p => p.id);
+    const allOnPage = pageIds.every(id => selectedIds.has(id));
+    setSelectedIds(prev => { const next = new Set(prev); allOnPage ? pageIds.forEach(id => next.delete(id)) : pageIds.forEach(id => next.add(id)); return next; });
+  }
+  function clearSelection() { setSelectedIds(new Set()); }
 
   // Reset to page 1 on filter change
   useEffect(() => { setPage(1); }, [search, availFilter]);
@@ -117,6 +130,14 @@ export function AdminProducts() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <button
+              onClick={() => setBulkEditOpen(true)}
+              className="flex items-center gap-1.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl transition-colors"
+            >
+              <PencilLine className="w-4 h-4" /> Bulk Edit ({selectedIds.size})
+            </button>
+          )}
           <button
             onClick={fetchProducts}
             disabled={loading}
@@ -168,6 +189,18 @@ export function AdminProducts() {
         </div>
       </div>
 
+      {/* Bulk selection bar */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center justify-between gap-3 mb-4 bg-blue-600/10 border border-blue-600/30 rounded-xl px-4 py-2.5">
+          <span className="text-sm text-blue-300 font-medium">{selectedIds.size} product{selectedIds.size !== 1 ? 's' : ''} selected</span>
+          <div className="flex items-center gap-2">
+            <button onClick={clearSelection} className="flex items-center gap-1 text-xs text-slate-400 hover:text-white px-2 py-1 transition-colors">
+              <X className="w-3.5 h-3.5" /> Clear
+            </button>
+          </div>
+        </div>
+      )}
+
       {error && (
         <div className="flex items-center gap-3 bg-red-950/50 border border-red-800/40 rounded-xl p-4 text-red-300 text-sm mb-5">
           <AlertCircle className="w-4 h-4 flex-shrink-0" /> {error}
@@ -180,6 +213,9 @@ export function AdminProducts() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-800">
+                <th className="px-4 py-3.5 w-10">
+                  <input type="checkbox" checked={paginated.length > 0 && paginated.every(p => selectedIds.has(p.id))} onChange={toggleSelectPage} className="w-4 h-4 rounded accent-blue-600" />
+                </th>
                 <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide">Product</th>
                 <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide hidden md:table-cell">Brand / Category</th>
                 <th className="px-4 py-3.5 text-left text-xs font-semibold text-slate-400 uppercase tracking-wide">Availability</th>
@@ -191,6 +227,7 @@ export function AdminProducts() {
               {loading ? (
                 Array.from({ length: 8 }).map((_, i) => (
                   <tr key={i} className="border-b border-slate-800/50">
+                    <td className="px-4 py-3"><Skeleton className="w-4 h-4 rounded" /></td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <Skeleton className="w-10 h-10 rounded-lg flex-shrink-0" />
@@ -223,7 +260,11 @@ export function AdminProducts() {
                   const avail = AVAILABILITY_CFG[product.availability] ?? AVAILABILITY_CFG['in-stock'];
                   const isConfirmDelete = confirmDeleteId === product.id;
                   return (
-                    <tr key={product.id} className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors">
+                    <tr key={product.id} className={`border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors ${selectedIds.has(product.id) ? 'bg-blue-600/5' : ''}`}>
+                      {/* Checkbox */}
+                      <td className="px-4 py-3">
+                        <input type="checkbox" checked={selectedIds.has(product.id)} onChange={() => toggleSelect(product.id)} className="w-4 h-4 rounded accent-blue-600" />
+                      </td>
                       {/* Product */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
@@ -336,6 +377,14 @@ export function AdminProducts() {
           </div>
         )}
       </div>
+
+      <BulkEditModal
+        open={bulkEditOpen}
+        productIds={Array.from(selectedIds)}
+        productCount={selectedIds.size}
+        onClose={() => setBulkEditOpen(false)}
+        onDone={() => { setBulkEditOpen(false); clearSelection(); fetchProducts(); }}
+      />
     </div>
   );
 }

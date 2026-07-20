@@ -367,6 +367,50 @@ export async function adminDeleteProduct(id: string) {
   if (error) throw error;
 }
 
+// ─── Media Assets (DAM) ──────────────────────────────────────────────────────
+
+export interface MediaAsset {
+  id: string;
+  title: string;
+  asset_type: string;
+  storage_path: string | null;
+  public_url: string | null;
+  mime_type: string | null;
+  file_size: number | null;
+  linked_entity_type: string | null;
+  linked_entity_id: string | null;
+  linked_entity_name: string | null;
+  description: string | null;
+  tags: string[] | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getMediaAssets(assetType?: string): Promise<MediaAsset[]> {
+  let query = supabase.from('media_assets').select('*').order('created_at', { ascending: false });
+  if (assetType && assetType !== 'all') query = query.eq('asset_type', assetType);
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data ?? []) as MediaAsset[];
+}
+
+export async function createMediaAsset(asset: Omit<MediaAsset, 'id' | 'created_at' | 'updated_at'>): Promise<MediaAsset> {
+  const { data, error } = await supabase.from('media_assets').insert(asset).select().single();
+  if (error) throw error;
+  return data as MediaAsset;
+}
+
+export async function updateMediaAsset(id: string, updates: Partial<MediaAsset>): Promise<void> {
+  const { error } = await supabase.from('media_assets').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteMediaAsset(id: string): Promise<void> {
+  const { error } = await supabase.from('media_assets').delete().eq('id', id);
+  if (error) throw error;
+}
+
 export async function adminBulkInsertProducts(rows: Record<string, unknown>[]): Promise<{ inserted: number; errors: string[] }> {
   const { data, error } = await supabase.from('products').insert(rows).select('id');
   if (error) {

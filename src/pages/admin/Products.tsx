@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Plus, Search, Filter, RefreshCcw, Pencil, Trash2,
   Package, AlertCircle, Star, Zap, TrendingUp, PhoneCall,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, UploadCloud,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { adminDeleteProduct } from '../../lib/database';
@@ -130,6 +130,12 @@ export function AdminProducts() {
             className="flex items-center gap-1.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl transition-colors"
           >
             <Plus className="w-4 h-4" /> Add Product
+          </Link>
+          <Link
+            to="/admin/products/import"
+            className="flex items-center gap-1.5 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl transition-colors"
+          >
+            <UploadCloud className="w-4 h-4" /> Import
           </Link>
         </div>
       </div>

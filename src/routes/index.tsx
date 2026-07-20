@@ -26,6 +26,7 @@ import { AdminDashboard } from '../pages/admin/Dashboard';
 import { AdminOrders } from '../pages/admin/Orders';
 import { AdminProducts } from '../pages/admin/Products';
 import { AdminProductForm } from '../pages/admin/ProductForm';
+import { AdminProductImport } from '../pages/admin/ProductImport';
 import { AdminCategories } from '../pages/admin/Categories';
 import { AdminCategoryForm } from '../pages/admin/CategoryForm';
 import { AdminBrands } from '../pages/admin/Brands';
@@ -91,6 +92,8 @@ export function AppRoutes() {
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/products" element={<AdminProducts />} />
           <Route path="/admin/products/new" element={<AdminProductForm />} />
+          <Route path="/admin/products/import" element={<AdminProductImport />} />
+          <Route path="/admin/products/import" element={<AdminProductImport />} />
           <Route path="/admin/products/:id/edit" element={<AdminProductForm />} />
           <Route path="/admin/inventory" element={<AdminInventory />} />
           <Route path="/admin/warehouses" element={<AdminWarehouses />} />

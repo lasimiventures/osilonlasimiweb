@@ -367,6 +367,14 @@ export async function adminDeleteProduct(id: string) {
   if (error) throw error;
 }
 
+export async function adminBulkInsertProducts(rows: Record<string, unknown>[]): Promise<{ inserted: number; errors: string[] }> {
+  const { data, error } = await supabase.from('products').insert(rows).select('id');
+  if (error) {
+    return { inserted: 0, errors: [error.message] };
+  }
+  return { inserted: data?.length ?? 0, errors: [] };
+}
+
 // Bulk pricing request (simplified - stores as a quote request with notes)
 export async function createBulkPricingRequest(request: {
   product_name: string;

@@ -26,6 +26,7 @@ import { AdminDashboard } from '../pages/admin/Dashboard';
 import { AdminOrders } from '../pages/admin/Orders';
 import { AdminProducts } from '../pages/admin/Products';
 import { AdminProductForm } from '../pages/admin/ProductForm';
+import { AdminProductImport } from '../pages/admin/ProductImport';
 import { AdminCategories } from '../pages/admin/Categories';
 import { AdminCategoryForm } from '../pages/admin/CategoryForm';
 import { AdminBrands } from '../pages/admin/Brands';
@@ -46,6 +47,14 @@ import { AdminWarehouseForm } from '../pages/admin/WarehouseForm';
 import { AdminStockTransfers } from '../pages/admin/StockTransfers';
 import { AdminSuppliers } from '../pages/admin/Suppliers';
 import { AdminSupplierForm } from '../pages/admin/SupplierForm';
+import { AdminCatalogSync } from '../pages/admin/CatalogSync';
+import { AdminProductHistory } from '../pages/admin/ProductHistory';
+import { AdminProcurement } from '../pages/admin/Procurement';
+import { AdminPurchaseOrderForm } from '../pages/admin/PurchaseOrderForm';
+import { AdminPurchaseOrderDetail } from '../pages/admin/PurchaseOrderDetail';
+import { AdminStockMovements } from '../pages/admin/StockMovements';
+import { AdminPricing } from '../pages/admin/Pricing';
+import { AdminAlerts } from '../pages/admin/Alerts';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -85,7 +94,11 @@ export function AppRoutes() {
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/products" element={<AdminProducts />} />
           <Route path="/admin/products/new" element={<AdminProductForm />} />
+          <Route path="/admin/products/import" element={<AdminProductImport />} />
+          <Route path="/admin/products/import" element={<AdminProductImport />} />
           <Route path="/admin/products/:id/edit" element={<AdminProductForm />} />
+          <Route path="/admin/products/:id/history" element={<AdminProductHistory />} />
+          <Route path="/admin/product-history" element={<AdminProductHistory />} />
           <Route path="/admin/inventory" element={<AdminInventory />} />
           <Route path="/admin/warehouses" element={<AdminWarehouses />} />
           <Route path="/admin/warehouses/new" element={<AdminWarehouseForm />} />
@@ -111,6 +124,15 @@ export function AppRoutes() {
           <Route path="/admin/suppliers" element={<AdminSuppliers />} />
           <Route path="/admin/suppliers/new" element={<AdminSupplierForm />} />
           <Route path="/admin/suppliers/:id/edit" element={<AdminSupplierForm />} />
+          <Route path="/admin/catalog-sync" element={<AdminCatalogSync />} />
+          <Route path="/admin/catalog-sync/:supplierId" element={<AdminCatalogSync />} />
+          <Route path="/admin/procurement" element={<AdminProcurement />} />
+          <Route path="/admin/procurement/new" element={<AdminPurchaseOrderForm />} />
+          <Route path="/admin/procurement/:id" element={<AdminPurchaseOrderDetail />} />
+          <Route path="/admin/procurement/:id/edit" element={<AdminPurchaseOrderForm />} />
+          <Route path="/admin/stock-movements" element={<AdminStockMovements />} />
+          <Route path="/admin/pricing" element={<AdminPricing />} />
+          <Route path="/admin/alerts" element={<AdminAlerts />} />
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>
       </Route>

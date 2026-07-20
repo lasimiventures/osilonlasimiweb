@@ -768,3 +768,24 @@ export async function adminGetProductMovementSummary() {
   if (error) throw error;
   return data;
 }
+
+// Admin — Cost & Pricing
+
+export async function adminGetPricingOverview() {
+  const { data, error } = await supabase
+    .from('product_pricing_view')
+    .select('id,name,sku,brand,category,cost_price,selling_price,distributor_price,dealer_price,promotional_price,promo_start_date,promo_end_date,promo_active,effective_price,margin_amount,margin_pct,markup_pct,on_hand,availability,pricing_currency')
+    .order('name');
+  if (error) throw error;
+  return data;
+}
+
+export async function adminGetCostHistory(productId: string) {
+  const { data, error } = await supabase
+    .from('product_cost_history')
+    .select('id,old_cost,new_cost,change_source,reference_type,reference_number,changed_by,notes,created_at')
+    .eq('product_id', productId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}

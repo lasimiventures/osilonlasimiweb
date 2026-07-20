@@ -23,6 +23,7 @@ import {
   Building2,
   ShoppingCart,
   History,
+  DollarSign,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 
@@ -43,6 +44,7 @@ const navItems = [
   { to: '/admin/suppliers',  icon: Building2,         label: 'Suppliers' },
   { to: '/admin/procurement', icon: ShoppingCart,     label: 'Procurement' },
   { to: '/admin/stock-movements', icon: History,      label: 'Stock Movements' },
+  { to: '/admin/pricing',     icon: DollarSign,        label: 'Cost & Pricing' },
   { to: '/admin/banners',    icon: Megaphone,         label: 'Banners' },
   { to: '/admin/settings',   icon: Settings,        label: 'Settings' },
 ];

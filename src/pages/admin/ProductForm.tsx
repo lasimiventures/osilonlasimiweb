@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft, Save, Plus, Trash2, AlertCircle,
-  Loader2, ImagePlus, Tag, Package, Info, Boxes,
+  Loader2, ImagePlus, Tag, Package, Info, Boxes, DollarSign,
 } from 'lucide-react';
 import { adminCreateProduct, adminUpdateProduct, adminGetProductById, getCategories, getBrands } from '../../lib/database';
 import { supabase } from '../../lib/supabase';
@@ -34,6 +34,14 @@ interface FormState {
   images: string[];
   specifications: SpecRow[];
   price: string;
+  cost_price: string;
+  selling_price: string;
+  distributor_price: string;
+  dealer_price: string;
+  promotional_price: string;
+  promo_start_date: string;
+  promo_end_date: string;
+  pricing_currency: string;
   availability: string;
   is_featured: boolean;
   is_new: boolean;
@@ -63,7 +71,9 @@ const EMPTY_FORM: FormState = {
   description: '', short_description: '',
   images: [''],
   specifications: [],
-  price: '', availability: 'in-stock',
+  price: '', cost_price: '', selling_price: '', distributor_price: '',
+  dealer_price: '', promotional_price: '', promo_start_date: '', promo_end_date: '',
+  pricing_currency: 'KES', availability: 'in-stock',
   is_featured: false, is_new: false, is_best_seller: false,
   tags: '', datasheet_url: '',
   buy_now_enabled: true, call_for_price: false,
@@ -90,6 +100,14 @@ function dbToForm(raw: any): FormState {
     images: raw.images?.length ? raw.images : [''],
     specifications: specs.length ? specs : [],
     price: raw.price != null ? String(raw.price) : '',
+    cost_price: raw.cost_price != null ? String(raw.cost_price) : '',
+    selling_price: raw.selling_price != null ? String(raw.selling_price) : '',
+    distributor_price: raw.distributor_price != null ? String(raw.distributor_price) : '',
+    dealer_price: raw.dealer_price != null ? String(raw.dealer_price) : '',
+    promotional_price: raw.promotional_price != null ? String(raw.promotional_price) : '',
+    promo_start_date: raw.promo_start_date ?? '',
+    promo_end_date: raw.promo_end_date ?? '',
+    pricing_currency: raw.pricing_currency ?? 'KES',
     availability: raw.availability ?? 'in-stock',
     is_featured: raw.is_featured ?? false,
     is_new: raw.is_new ?? false,
@@ -129,6 +147,14 @@ function formToDb(form: FormState) {
       form.specifications.filter(s => s.key.trim()).map(s => [s.key.trim(), s.value.trim()])
     ),
     price: form.price ? parseFloat(form.price) : null,
+    cost_price: form.cost_price ? parseFloat(form.cost_price) : null,
+    selling_price: form.selling_price ? parseFloat(form.selling_price) : null,
+    distributor_price: form.distributor_price ? parseFloat(form.distributor_price) : null,
+    dealer_price: form.dealer_price ? parseFloat(form.dealer_price) : null,
+    promotional_price: form.promotional_price ? parseFloat(form.promotional_price) : null,
+    promo_start_date: form.promo_start_date || null,
+    promo_end_date: form.promo_end_date || null,
+    pricing_currency: form.pricing_currency || 'KES',
     availability: form.availability,
     is_featured: form.is_featured,
     is_new: form.is_new,
@@ -596,6 +622,100 @@ export function AdminProductForm() {
               </label>
             ))}
           </div>
+        </SectionCard>
+
+        {/* Cost & Tiered Pricing */}
+        <SectionCard title="Cost & Tiered Pricing" icon={DollarSign}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className={labelCls}>Cost Price ({form.pricing_currency}) <span className="text-slate-500 font-normal">(supplier cost)</span></label>
+              <input type="number" min="0" step="0.01" value={form.cost_price}
+                onChange={e => set('cost_price', e.target.value)} className={inputCls} placeholder="0.00" />
+              <p className="text-xs text-slate-500 mt-1">Used to calculate margin & mark-up. Changes are archived to cost history.</p>
+            </div>
+            <div>
+              <label className={labelCls}>Selling Price ({form.pricing_currency}) <span className="text-slate-500 font-normal">(retail)</span></label>
+              <input type="number" min="0" step="0.01" value={form.selling_price}
+                onChange={e => set('selling_price', e.target.value)} className={inputCls} placeholder="0.00" />
+              <p className="text-xs text-slate-500 mt-1">Standard retail price for B2C customers.</p>
+            </div>
+            <div>
+              <label className={labelCls}>Distributor Price ({form.pricing_currency}) <span className="text-slate-500 font-normal">(tier 1)</span></label>
+              <input type="number" min="0" step="0.01" value={form.distributor_price}
+                onChange={e => set('distributor_price', e.target.value)} className={inputCls} placeholder="0.00" />
+              <p className="text-xs text-slate-500 mt-1">Tiered pricing for distributor accounts.</p>
+            </div>
+            <div>
+              <label className={labelCls}>Dealer Price ({form.pricing_currency}) <span className="text-slate-500 font-normal">(tier 2)</span></label>
+              <input type="number" min="0" step="0.01" value={form.dealer_price}
+                onChange={e => set('dealer_price', e.target.value)} className={inputCls} placeholder="0.00" />
+              <p className="text-xs text-slate-500 mt-1">Tiered pricing for dealer / reseller accounts.</p>
+            </div>
+            <div>
+              <label className={labelCls}>Pricing Currency</label>
+              <select value={form.pricing_currency} onChange={e => set('pricing_currency', e.target.value)} className={inputCls}>
+                {['KES','USD','EUR','GBP','TZS','UGX'].map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Promotional pricing */}
+          <div className="border-t border-slate-700 pt-4">
+            <p className="text-xs font-semibold text-slate-400 uppercase mb-3">Promotional Price <span className="text-slate-600 normal-case font-normal">(temporary override)</span></p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className={labelCls}>Promo Price ({form.pricing_currency})</label>
+                <input type="number" min="0" step="0.01" value={form.promotional_price}
+                  onChange={e => set('promotional_price', e.target.value)} className={inputCls} placeholder="No promo" />
+              </div>
+              <div>
+                <label className={labelCls}>Promo Start Date</label>
+                <input type="date" value={form.promo_start_date}
+                  onChange={e => set('promo_start_date', e.target.value)} className={inputCls} />
+              </div>
+              <div>
+                <label className={labelCls}>Promo End Date</label>
+                <input type="date" value={form.promo_end_date}
+                  onChange={e => set('promo_end_date', e.target.value)} className={inputCls} />
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 mt-2">When set and within the date range, promo price overrides selling price. Leave blank for no promotion.</p>
+          </div>
+
+          {/* Live margin/markup calculator */}
+          {(() => {
+            const cost = parseFloat(form.cost_price) || 0;
+            const sell = parseFloat(form.selling_price) || 0;
+            const today = new Date().toISOString().slice(0, 10);
+            const promoActive = form.promotional_price &&
+              (!form.promo_start_date || today >= form.promo_start_date) &&
+              (!form.promo_end_date || today <= form.promo_end_date);
+            const effPrice = promoActive ? (parseFloat(form.promotional_price) || 0) : sell;
+            const marginAmt = cost > 0 && effPrice > 0 ? effPrice - cost : null;
+            const marginPct = marginAmt !== null ? (marginAmt / effPrice) * 100 : null;
+            const markupPct = marginAmt !== null ? (marginAmt / cost) * 100 : null;
+            if (cost <= 0 || effPrice <= 0) return null;
+            return (
+              <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 bg-slate-800 border border-slate-700 rounded-xl">
+                  <p className="text-xs text-slate-400 mb-1">Effective Price</p>
+                  <p className="text-sm font-semibold text-white tabular-nums">{form.pricing_currency} {effPrice.toLocaleString()}</p>
+                </div>
+                <div className="p-3 bg-slate-800 border border-slate-700 rounded-xl">
+                  <p className="text-xs text-slate-400 mb-1">Margin (amount)</p>
+                  <p className={`text-sm font-semibold tabular-nums ${marginAmt !== null && marginAmt >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>{form.pricing_currency} {marginAmt?.toLocaleString() ?? '—'}</p>
+                </div>
+                <div className="p-3 bg-slate-800 border border-slate-700 rounded-xl">
+                  <p className="text-xs text-slate-400 mb-1">Margin %</p>
+                  <p className={`text-sm font-semibold tabular-nums ${marginPct !== null && marginPct >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>{marginPct !== null ? `${marginPct.toFixed(1)}%` : '—'}</p>
+                </div>
+                <div className="p-3 bg-slate-800 border border-slate-700 rounded-xl">
+                  <p className="text-xs text-slate-400 mb-1">Mark-up %</p>
+                  <p className={`text-sm font-semibold tabular-nums ${markupPct !== null && markupPct >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>{markupPct !== null ? `${markupPct.toFixed(1)}%` : '—'}</p>
+                </div>
+              </div>
+            );
+          })()}
         </SectionCard>
 
         {/* Inventory */}

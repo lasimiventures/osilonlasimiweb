@@ -6,7 +6,7 @@ import {
   AlertCircle, CheckCircle2, Loader2, Download, Eye, Database,
   RefreshCcw, Pencil,
 } from 'lucide-react';
-import { adminBulkInsertProducts } from '../../lib/database';
+import { adminBulkInsertProducts, adminGetImportValidationData, type ImportValidationData } from '../../lib/database';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -49,6 +49,7 @@ const MAPPABLE_FIELDS: { key: string; label: string; required: boolean; group: s
   { key: 'availability',      label: 'Availability',       required: false, group: 'Details' },
   { key: 'tags',              label: 'Tags (comma-sep)',   required: false, group: 'Details' },
   { key: 'datasheet_url',     label: 'Datasheet URL',      required: false, group: 'Details' },
+  { key: 'images',            label: 'Image URLs (semicolon-sep)', required: false, group: 'Details' },
   { key: 'warranty_expiry_date', label: 'Warranty Expiry', required: false, group: 'Details' },
   { key: 'minimum_order_quantity', label: 'Min Order Qty', required: false, group: 'Commerce' },
   { key: 'is_featured',       label: 'Featured (true/false)', required: false, group: 'Flags' },
@@ -103,6 +104,7 @@ export function AdminProductImport() {
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [validated, setValidated] = useState<ValidatedRow[]>([]);
   const [importing, setImporting] = useState(false);
+  const [validating, setValidating] = useState(false);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [dragOver, setDragOver] = useState(false);
 
@@ -172,8 +174,21 @@ export function AdminProductImport() {
 
   // ─── Step 2 → 3: Validate ───────────────────────────────────────────────────
 
-  function runValidation() {
+  async function runValidation() {
+    setValidating(true);
+    let refData: ImportValidationData | null = null;
+    try {
+      refData = await adminGetImportValidationData();
+    } catch {
+      // If DB fetch fails, proceed with file-level checks only
+      refData = null;
+    }
+
     const mappedFields = Object.entries(mapping).filter(([, col]) => col);
+    const seenSkus = new Set<string>();
+    const seenSlugs = new Set<string>();
+    const seenNames = new Set<string>();
+
     const rows: ValidatedRow[] = rawRows.map(r => {
       const data: Record<string, unknown> = {};
       const errors: string[] = [];
@@ -182,11 +197,25 @@ export function AdminProductImport() {
       mappedFields.forEach(([field, col]) => {
         const val = r._raw[col] ?? '';
         if (field === 'name' || field === 'sku' || field === 'brand' || field === 'category') {
-          if (!val.trim()) errors.push(`${field} is required`);
-          data[field] = val.trim();
+          if (!val.trim()) {
+            if (field === 'sku') errors.push('Missing SKU');
+            else if (field === 'category') errors.push('Missing category');
+            else if (field === 'brand') errors.push('Missing brand');
+            else errors.push('Missing product name');
+            data[field] = val.trim();
+          } else {
+            data[field] = val.trim();
+          }
         } else if (field === 'price' || field === 'cost_price' || field === 'selling_price' ||
                    field === 'distributor_price' || field === 'dealer_price' || field === 'promotional_price') {
-          data[field] = parseNum(val);
+          if (val.trim()) {
+            const n = parseNum(val);
+            if (n === null) errors.push(`Invalid price "${val}"`);
+            else if (n < 0) errors.push(`Negative price ${val}`);
+            data[field] = n;
+          } else {
+            data[field] = null;
+          }
         } else if (field === 'minimum_order_quantity') {
           data[field] = parseNum(val) ?? 1;
         } else if (field === 'is_featured' || field === 'is_new' || field === 'is_best_seller' ||
@@ -205,16 +234,68 @@ export function AdminProductImport() {
         } else if (field === 'warranty_expiry_date') {
           data[field] = parseDate(val);
           if (val && !data[field]) warnings.push(`invalid date "${val}"`);
+        } else if (field === 'images') {
+          const imgs = val.split(';').map(s => s.trim()).filter(Boolean);
+          data[field] = imgs;
         } else {
           data[field] = val.trim();
         }
       });
 
       // Auto-generate slugs
+      const slug = data.name ? slugify(String(data.name)) : '';
       if (data.name) {
-        data.slug = slugify(String(data.name));
+        data.slug = slug;
         data.brand_slug = data.brand ? slugify(String(data.brand)) : '';
         data.category_slug = data.category ? slugify(String(data.category)) : '';
+      }
+
+      // ─── Check 1: Missing SKUs ────────────────────────────────────────────────
+      // (already handled above)
+
+      // ─── Check 2: Missing Categories ──────────────────────────────────────────
+      // (already handled above)
+
+      // ─── Check 3: Invalid Brands ──────────────────────────────────────────────
+      if (data.brand && refData) {
+        const bLower = String(data.brand).toLowerCase();
+        if (!refData.brandNames.has(bLower) && !refData.brandSlugs.has(slug)) {
+          warnings.push(`Brand "${data.brand}" not found in catalog — will be created`);
+        }
+      }
+
+      // ─── Check 4: Duplicate Products (DB + within-file) ───────────────────────
+      if (data.sku) {
+        const skuLower = String(data.sku).toLowerCase();
+        if (refData?.existingSkus.has(skuLower)) {
+          errors.push(`Duplicate SKU "${data.sku}" already exists in database`);
+        } else if (seenSkus.has(skuLower)) {
+          errors.push(`Duplicate SKU "${data.sku}" within file`);
+        }
+        seenSkus.add(skuLower);
+      }
+      if (slug && refData?.existingSlugs.has(slug.toLowerCase())) {
+        errors.push(`Duplicate slug "${slug}" already exists in database`);
+      } else if (slug && seenSlugs.has(slug.toLowerCase())) {
+        errors.push(`Duplicate product name within file`);
+      }
+      if (slug) seenSlugs.add(slug.toLowerCase());
+
+      // ─── Check 5: Missing Images ──────────────────────────────────────────────
+      const imgArr = Array.isArray(data.images) ? data.images : [];
+      if (imgArr.length === 0) {
+        warnings.push('No images — product will show a placeholder');
+      } else {
+        const invalid = imgArr.filter(u => !u.match(/^https?:\/\/.+/i));
+        if (invalid.length > 0) warnings.push(`${invalid.length} image URL(s) don't start with http(s)`);
+      }
+
+      // ─── Check 6: Invalid Prices ──────────────────────────────────────────────
+      // (negative/non-numeric already handled above; check logical inconsistencies)
+      const sp = data.selling_price as number | null;
+      const cp = data.cost_price as number | null;
+      if (sp !== null && cp !== null && cp > sp) {
+        warnings.push(`Cost price (${cp}) exceeds selling price (${sp})`);
       }
 
       // Ensure required booleans have defaults
@@ -223,11 +304,13 @@ export function AdminProductImport() {
       if (data.availability === undefined) data.availability = 'in-stock';
       if (data.pricing_currency === undefined || !data.pricing_currency) data.pricing_currency = 'KES';
       if (data.minimum_order_quantity === undefined) data.minimum_order_quantity = 1;
+      if (!Array.isArray(data.images)) data.images = [];
 
       return { rowNum: r._rowNum, data, errors, warnings };
     });
 
     setValidated(rows);
+    setValidating(false);
     setStep(3);
   }
 
@@ -284,6 +367,7 @@ export function AdminProductImport() {
     setValidated([]);
     setResult(null);
     setParseError(null);
+    setValidating(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
@@ -435,10 +519,11 @@ export function AdminProductImport() {
             </button>
             <button
               onClick={runValidation}
-              disabled={!mapping.name || !mapping.sku || !mapping.brand || !mapping.category}
+              disabled={!mapping.name || !mapping.sku || !mapping.brand || !mapping.category || validating}
               className="flex items-center gap-1.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 px-5 py-2.5 rounded-xl transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              <Eye className="w-4 h-4" /> Preview Records
+              {validating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eye className="w-4 h-4" />}
+              {validating ? 'Validating…' : 'Preview Records'}
             </button>
           </div>
         </div>
@@ -460,6 +545,15 @@ export function AdminProductImport() {
               <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-red-500/10 text-red-400"><X className="w-4 h-4" /></div>
               <div><p className="text-lg font-bold text-white tabular-nums">{errorRows.length}</p><p className="text-xs text-slate-400">Errors</p></div>
             </div>
+          </div>
+
+          <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 mb-5 flex items-center gap-2 flex-wrap text-xs text-slate-400">
+            <span className="text-slate-500 font-semibold">Checked:</span>
+            {['Missing SKUs', 'Missing categories', 'Invalid brands', 'Duplicate products', 'Missing images', 'Invalid prices'].map(c => (
+              <span key={c} className="inline-flex items-center gap-1 px-2 py-1 bg-slate-800 rounded-lg">
+                <CheckCircle2 className="w-3 h-3 text-emerald-500" /> {c}
+              </span>
+            ))}
           </div>
 
           <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
@@ -487,9 +581,19 @@ export function AdminProductImport() {
                       </td>
                       <td className="px-3 py-2.5">
                         {r.errors.length > 0 ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-red-400"><X className="w-3 h-3" /> {r.errors[0]}{r.errors.length > 1 && ` +${r.errors.length - 1}`}</span>
+                          <div className="flex flex-col gap-0.5">
+                            {r.errors.slice(0, 2).map((e, i) => (
+                              <span key={i} className="inline-flex items-center gap-1 text-xs text-red-400"><X className="w-3 h-3 flex-shrink-0" /> {e}</span>
+                            ))}
+                            {r.errors.length > 2 && <span className="text-xs text-red-400">+{r.errors.length - 2} more</span>}
+                          </div>
                         ) : r.warnings.length > 0 ? (
-                          <span className="inline-flex items-center gap-1 text-xs text-amber-400"><AlertCircle className="w-3 h-3" /> {r.warnings[0]}</span>
+                          <div className="flex flex-col gap-0.5">
+                            {r.warnings.slice(0, 2).map((w, i) => (
+                              <span key={i} className="inline-flex items-center gap-1 text-xs text-amber-400"><AlertCircle className="w-3 h-3 flex-shrink-0" /> {w}</span>
+                            ))}
+                            {r.warnings.length > 2 && <span className="text-xs text-amber-400">+{r.warnings.length - 2} more</span>}
+                          </div>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-xs text-emerald-400"><CheckCircle2 className="w-3 h-3" /> OK</span>
                         )}

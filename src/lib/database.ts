@@ -375,6 +375,47 @@ export async function adminBulkInsertProducts(rows: Record<string, unknown>[]): 
   return { inserted: data?.length ?? 0, errors: [] };
 }
 
+export interface ImportValidationData {
+  existingSkus: Set<string>;
+  existingSlugs: Set<string>;
+  brandNames: Set<string>;
+  brandSlugs: Set<string>;
+  categoryNames: Set<string>;
+  categorySlugs: Set<string>;
+}
+
+export async function adminGetImportValidationData(): Promise<ImportValidationData> {
+  const [skus, slugs, brands, categories] = await Promise.all([
+    supabase.from('products').select('sku, slug'),
+    supabase.from('brands').select('name, slug'),
+    supabase.from('categories').select('name, slug'),
+  ]);
+  // Note: skus/slugs come from the products table, brands/categories from their tables
+
+  const existingSkus = new Set<string>();
+  const existingSlugs = new Set<string>();
+  skus.data?.forEach((p: { sku: string; slug: string }) => {
+    if (p.sku) existingSkus.add(p.sku.toLowerCase());
+    if (p.slug) existingSlugs.add(p.slug.toLowerCase());
+  });
+
+  const brandNames = new Set<string>();
+  const brandSlugs = new Set<string>();
+  brands.data?.forEach((b: { name: string; slug: string }) => {
+    brandNames.add(b.name.toLowerCase());
+    brandSlugs.add(b.slug.toLowerCase());
+  });
+
+  const categoryNames = new Set<string>();
+  const categorySlugs = new Set<string>();
+  categories.data?.forEach((c: { name: string; slug: string }) => {
+    categoryNames.add(c.name.toLowerCase());
+    categorySlugs.add(c.slug.toLowerCase());
+  });
+
+  return { existingSkus, existingSlugs, brandNames, brandSlugs, categoryNames, categorySlugs };
+}
+
 // Bulk pricing request (simplified - stores as a quote request with notes)
 export async function createBulkPricingRequest(request: {
   product_name: string;

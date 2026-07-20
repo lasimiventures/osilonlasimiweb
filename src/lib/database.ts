@@ -789,3 +789,68 @@ export async function adminGetCostHistory(productId: string) {
   if (error) throw error;
   return data;
 }
+
+// Admin — Inventory Alerts
+
+export interface InventoryAlert {
+  id: string;
+  alert_type: 'low_stock'|'out_of_stock'|'expiring_warranty'|'incoming_shipment'|'price_change'|'supplier_delay';
+  severity: 'info'|'warning'|'critical';
+  title: string;
+  message: string;
+  entity_type: string;
+  entity_id: string | null;
+  entity_ref: string | null;
+  metric_value: number | null;
+  threshold_value: number | null;
+  status: 'active'|'acknowledged'|'resolved';
+  acknowledged_by: string | null;
+  acknowledged_at: string | null;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function adminRefreshAlerts(): Promise<number> {
+  const { data, error } = await supabase.rpc('refresh_inventory_alerts');
+  if (error) throw error;
+  return data as number;
+}
+
+export async function adminGetAlerts(status?: 'active'|'acknowledged'|'resolved') {
+  let q = supabase
+    .from('inventory_alerts')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(500);
+  if (status) q = q.eq('status', status);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []) as InventoryAlert[];
+}
+
+export async function adminAcknowledgeAlert(id: string, by: string) {
+  const { error } = await supabase
+    .from('inventory_alerts')
+    .update({ status: 'acknowledged', acknowledged_by: by, acknowledged_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function adminResolveAlert(id: string, by: string) {
+  const { error } = await supabase
+    .from('inventory_alerts')
+    .update({ status: 'resolved', resolved_by: by, resolved_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function adminGetActiveAlertCount(): Promise<number> {
+  const { count, error } = await supabase
+    .from('inventory_alerts')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'active');
+  if (error) throw error;
+  return count ?? 0;
+}

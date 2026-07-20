@@ -51,6 +51,7 @@ import { AdminPurchaseOrderForm } from '../pages/admin/PurchaseOrderForm';
 import { AdminPurchaseOrderDetail } from '../pages/admin/PurchaseOrderDetail';
 import { AdminStockMovements } from '../pages/admin/StockMovements';
 import { AdminPricing } from '../pages/admin/Pricing';
+import { AdminAlerts } from '../pages/admin/Alerts';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -122,6 +123,7 @@ export function AppRoutes() {
           <Route path="/admin/procurement/:id/edit" element={<AdminPurchaseOrderForm />} />
           <Route path="/admin/stock-movements" element={<AdminStockMovements />} />
           <Route path="/admin/pricing" element={<AdminPricing />} />
+          <Route path="/admin/alerts" element={<AdminAlerts />} />
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>
       </Route>

@@ -24,8 +24,11 @@ import {
   ShoppingCart,
   History,
   DollarSign,
+  Bell,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
+import { useEffect, useState } from 'react';
+import { adminGetActiveAlertCount, adminRefreshAlerts } from '../lib/database';
 
 const navItems = [
   { to: '/admin/dashboard',  icon: LayoutDashboard, label: 'Dashboard' },
@@ -45,6 +48,7 @@ const navItems = [
   { to: '/admin/procurement', icon: ShoppingCart,     label: 'Procurement' },
   { to: '/admin/stock-movements', icon: History,      label: 'Stock Movements' },
   { to: '/admin/pricing',     icon: DollarSign,        label: 'Cost & Pricing' },
+  { to: '/admin/alerts',     icon: Bell,              label: 'Alerts', badge: true },
   { to: '/admin/banners',    icon: Megaphone,         label: 'Banners' },
   { to: '/admin/settings',   icon: Settings,        label: 'Settings' },
 ];
@@ -53,11 +57,26 @@ export function AdminLayout() {
   const { session, signOut } = useAdminAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [alertCount, setAlertCount] = useState(0);
 
   async function handleSignOut() {
     await signOut();
     navigate('/admin/login', { replace: true });
   }
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try { await adminRefreshAlerts(); } catch { /* ignore */ }
+      try {
+        const c = await adminGetActiveAlertCount();
+        if (mounted) setAlertCount(c);
+      } catch { /* ignore */ }
+    }
+    load();
+    const t = setInterval(load, 60000);
+    return () => { mounted = false; clearInterval(t); };
+  }, []);
 
   const email = session?.user?.email ?? '';
   const initials = email.slice(0, 2).toUpperCase();
@@ -97,7 +116,7 @@ export function AdminLayout() {
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-0.5">
-          {navItems.map(({ to, icon: Icon, label }) => (
+          {navItems.map(({ to, icon: Icon, label, badge }) => (
             <NavLink
               key={to}
               to={to}
@@ -114,7 +133,10 @@ export function AdminLayout() {
                 <>
                   <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-white' : 'text-slate-500 group-hover:text-slate-300'}`} />
                   <span className="flex-1">{label}</span>
-                  {isActive && <ChevronRight className="w-3.5 h-3.5 text-blue-200" />}
+                  {badge && alertCount > 0 && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-red-500 text-white tabular-nums">{alertCount > 99 ? '99+' : alertCount}</span>
+                  )}
+                  {isActive && !badge && <ChevronRight className="w-3.5 h-3.5 text-blue-200" />}
                 </>
               )}
             </NavLink>

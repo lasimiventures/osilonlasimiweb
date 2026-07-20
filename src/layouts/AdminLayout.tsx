@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -27,7 +27,6 @@ import {
   Bell,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
-import { useEffect, useState } from 'react';
 import { adminGetActiveAlertCount, adminRefreshAlerts } from '../lib/database';
 
 const navItems = [

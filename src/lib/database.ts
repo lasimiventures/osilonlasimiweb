@@ -642,6 +642,80 @@ export async function adminTogglePreferredSupplier(id: string, isPreferred: bool
   return data;
 }
 
+// Admin — Supplier Catalogue Sync (Milestone 6.5)
+
+export interface SupplierCatalogRow {
+  id: string;
+  supplier_id: string;
+  product_id: string | null;
+  supplier_sku: string | null;
+  cost_price: number;
+  moq: number;
+  pack_size: number;
+  is_primary_supplier: boolean;
+  last_cost_update: string | null;
+  product: { name: string; sku: string; brand: string } | null;
+}
+
+export async function adminGetSupplierCatalog(supplierId: string): Promise<SupplierCatalogRow[]> {
+  const { data, error } = await supabase
+    .from('supplier_product_catalog')
+    .select('id,supplier_id,product_id,supplier_sku,cost_price,moq,pack_size,is_primary_supplier,last_cost_update,product:products(name,sku,brand)')
+    .eq('supplier_id', supplierId)
+    .order('supplier_sku');
+  if (error) throw error;
+  return (data ?? []) as unknown as SupplierCatalogRow[];
+}
+
+export async function adminUpsertSupplierCatalogRow(row: {
+  supplier_id: string;
+  product_id: string;
+  supplier_sku: string | null;
+  cost_price: number;
+  moq?: number;
+  pack_size?: number;
+  is_primary_supplier?: boolean;
+}): Promise<void> {
+  const payload = {
+    supplier_id: row.supplier_id,
+    product_id: row.product_id,
+    supplier_sku: row.supplier_sku ?? null,
+    cost_price: row.cost_price,
+    moq: row.moq ?? 1,
+    pack_size: row.pack_size ?? 1,
+    is_primary_supplier: row.is_primary_supplier ?? false,
+    last_cost_update: new Date().toISOString().slice(0, 10),
+  };
+  const { error } = await supabase
+    .from('supplier_product_catalog')
+    .upsert(payload, { onConflict: 'supplier_id,product_id' });
+  if (error) throw error;
+}
+
+export async function adminDeleteSupplierCatalogRow(id: string): Promise<void> {
+  const { error } = await supabase.from('supplier_product_catalog').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function adminGetSuppliersForSync(): Promise<{ id: string; name: string; slug: string; currency: string }[]> {
+  const { data, error } = await supabase
+    .from('suppliers')
+    .select('id,name,slug,currency')
+    .eq('status', 'active')
+    .order('name');
+  if (error) throw error;
+  return data ?? [];
+}
+
+export async function adminGetProductsForSync(): Promise<{ id: string; name: string; sku: string; brand: string; category: string }[]> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('id,name,sku,brand,category')
+    .order('name');
+  if (error) throw error;
+  return data ?? [];
+}
+
 export async function adminGetSupplierCategories() {
   const { data, error } = await supabase
     .from('supplier_categories')

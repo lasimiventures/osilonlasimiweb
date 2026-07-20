@@ -720,3 +720,51 @@ export async function adminGetProcurementStatus() {
   if (error) throw error;
   return data;
 }
+
+// Admin — Stock Movements
+
+export async function adminGetStockMovements(filters?: {
+  productId?: string;
+  warehouseId?: string;
+  movementType?: string;
+  limit?: number;
+}) {
+  let query = supabase
+    .from('stock_movements')
+    .select('id,movement_number,product_id,product:products(name,sku),warehouse_id,warehouse:warehouses(name,code),movement_type,quantity_change,quantity_before,quantity_after,reference_type,reference_number,reason,notes,performed_by,created_at')
+    .order('created_at', { ascending: false });
+  if (filters?.productId) query = query.eq('product_id', filters.productId);
+  if (filters?.warehouseId) query = query.eq('warehouse_id', filters.warehouseId);
+  if (filters?.movementType && filters.movementType !== 'all') query = query.eq('movement_type', filters.movementType);
+  if (filters?.limit) query = query.limit(filters.limit);
+  const { data, error } = await query;
+  if (error) throw error;
+  return data;
+}
+
+export async function adminRecordStockMovement(params: {
+  product_id: string;
+  warehouse_id: string;
+  movement_type: string;
+  quantity_change: number;
+  reference_type?: string;
+  reference_id?: string;
+  reference_number?: string;
+  reason?: string;
+  notes?: string;
+  performed_by?: string;
+}) {
+  const { data, error } = await supabase.rpc('record_stock_movement', { params: params as unknown as Record<string, unknown> });
+  if (error) throw error;
+  return data;
+}
+
+export async function adminGetProductMovementSummary() {
+  const { data, error } = await supabase
+    .from('product_movement_summary')
+    .select('*')
+    .order('last_movement_at', { ascending: false, nullsFirst: false })
+    .limit(200);
+  if (error) throw error;
+  return data;
+}

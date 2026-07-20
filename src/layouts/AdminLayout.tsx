@@ -22,6 +22,7 @@ import {
   BarChart3,
   Building2,
   ShoppingCart,
+  History,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 
@@ -41,6 +42,7 @@ const navItems = [
   { to: '/admin/crm',        icon: BarChart3,         label: 'CRM Prep' },
   { to: '/admin/suppliers',  icon: Building2,         label: 'Suppliers' },
   { to: '/admin/procurement', icon: ShoppingCart,     label: 'Procurement' },
+  { to: '/admin/stock-movements', icon: History,      label: 'Stock Movements' },
   { to: '/admin/banners',    icon: Megaphone,         label: 'Banners' },
   { to: '/admin/settings',   icon: Settings,        label: 'Settings' },
 ];

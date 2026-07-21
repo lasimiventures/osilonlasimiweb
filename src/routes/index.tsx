@@ -26,6 +26,8 @@ import { Register } from '../pages/Register';
 import { ForgotPassword } from '../pages/ForgotPassword';
 import { ResetPassword } from '../pages/ResetPassword';
 import { Account } from '../pages/Account';
+import { QuoteDetail } from '../pages/QuoteDetail';
+import { RFQDetail } from '../pages/RFQDetail';
 import { AdminLogin } from '../pages/admin/Login';
 import { AdminDashboard } from '../pages/admin/Dashboard';
 import { AdminOrders } from '../pages/admin/Orders';
@@ -94,6 +96,8 @@ export function AppRoutes() {
         <Route path="/terms-and-conditions" element={<TermsConditions />} />
         <Route path="/bulk-quote" element={<BulkQuote />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/account/quotes/:id" element={<QuoteDetail />} />
+        <Route path="/account/rfqs/:id" element={<RFQDetail />} />
         <Route path="*" element={<NotFound />} />
       </Route>
 

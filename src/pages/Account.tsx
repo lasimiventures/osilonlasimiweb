@@ -507,9 +507,11 @@ function OrdersTab({ email }: { email: string }) {
 interface QuoteRow {
   id: string;
   reference: string;
+  quote_number: string | null;
   status: string;
   total_items: number;
   submitted_at: string;
+  grand_total: number | null;
 }
 
 function QuotesTab({ email }: { email: string }) {
@@ -520,7 +522,7 @@ function QuotesTab({ email }: { email: string }) {
   useEffect(() => {
     supabase
       .from('quote_requests')
-      .select('id,reference,status,total_items,submitted_at')
+      .select('id,reference,quote_number,status,total_items,submitted_at,grand_total')
       .eq('customer_email', email)
       .eq('source', 'quote_form')
       .order('submitted_at', { ascending: false })
@@ -550,12 +552,12 @@ function QuotesTab({ email }: { email: string }) {
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
       <div className="divide-y divide-slate-100">
         {quotes.map(q => (
-          <div key={q.id} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors">
+          <Link key={q.id} to={`/account/quotes/${q.id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors group">
             <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
               <FileText className="w-5 h-5 text-amber-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900">{q.reference}</p>
+              <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">{q.quote_number ?? q.reference}</p>
               <p className="text-xs text-slate-500 flex items-center gap-1.5">
                 <Calendar className="w-3 h-3" />
                 {new Date(q.submitted_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
@@ -563,8 +565,14 @@ function QuotesTab({ email }: { email: string }) {
                 {q.total_items} item{q.total_items !== 1 ? 's' : ''}
               </p>
             </div>
+            {q.grand_total != null && (
+              <span className="text-sm font-semibold text-slate-900 tabular-nums hidden sm:inline">
+                KSh {Number(q.grand_total).toLocaleString()}
+              </span>
+            )}
             <StatusBadge status={q.status} />
-          </div>
+            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" />
+          </Link>
         ))}
       </div>
     </div>
@@ -618,12 +626,12 @@ function RFQsTab({ email }: { email: string }) {
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
       <div className="divide-y divide-slate-100">
         {rfqs.map(r => (
-          <div key={r.id} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors">
+          <Link key={r.id} to={`/account/rfqs/${r.id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors group">
             <div className="w-10 h-10 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
               <FileSpreadsheet className="w-5 h-5 text-violet-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900">{r.rfq_number}</p>
+              <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">{r.rfq_number}</p>
               <p className="text-xs text-slate-500 flex items-center gap-1.5">
                 <Calendar className="w-3 h-3" />
                 {new Date(r.submitted_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
@@ -633,7 +641,8 @@ function RFQsTab({ email }: { email: string }) {
               </p>
             </div>
             <StatusBadge status={r.status} />
-          </div>
+            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" />
+          </Link>
         ))}
       </div>
     </div>

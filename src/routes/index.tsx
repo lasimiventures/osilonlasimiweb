@@ -61,6 +61,7 @@ import { AdminStockMovements } from '../pages/admin/StockMovements';
 import { AdminPricing } from '../pages/admin/Pricing';
 import { AdminAlerts } from '../pages/admin/Alerts';
 import { AdminSettings } from '../pages/admin/Settings';
+import { AdminUsers } from '../pages/admin/Users';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -128,6 +129,7 @@ export function AppRoutes() {
           <Route path="/admin/banners" element={<AdminBanners />} />
           <Route path="/admin/banners/new" element={<AdminBannerForm />} />
           <Route path="/admin/banners/:id/edit" element={<AdminBannerForm />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/customers" element={<AdminCustomers />} />
           <Route path="/admin/customers/:email" element={<AdminCustomerDetail />} />
           <Route path="/admin/rfqs" element={<AdminRFQs />} />

@@ -5,7 +5,7 @@ import {
   Users, Layers, Boxes, Loader2, Edit3, Trash2, Package,
   TrendingUp, AlertTriangle, Download,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 
 interface WarehouseRow {
   id: string;

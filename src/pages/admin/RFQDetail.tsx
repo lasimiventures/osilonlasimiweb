@@ -6,7 +6,7 @@ import {
   ChevronDown, Loader2, ExternalLink, Download, Trash2, CheckCircle2,
   AlertCircle, User, MapPin, Edit3, Save, X,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

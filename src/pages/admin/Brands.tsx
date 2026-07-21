@@ -4,7 +4,7 @@ import {
   Plus, Search, RefreshCcw, Pencil, Trash2,
   Tag, AlertCircle, ShoppingBag, FileText, Users, Globe,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 import { adminDeleteBrand } from '../../lib/database';
 
 // ─── types ────────────────────────────────────────────────────────────────────

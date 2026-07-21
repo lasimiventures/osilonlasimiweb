@@ -4,7 +4,7 @@ import {
   Plus, Search, RefreshCcw, Pencil, Trash2, Star, Truck,
   AlertCircle, Building2, Mail, Phone, Globe, ChevronDown,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 import { adminDeleteSupplier, adminTogglePreferredSupplier } from '../../lib/database';
 
 interface SupplierRow {

@@ -8,7 +8,7 @@ import {
   Send, Eye, Trash2, Copy, Archive, ArchiveRestore, MoreHorizontal,
   Hammer, Download, ShoppingCart,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 import { generateQuotePdf } from '../../lib/quotePdf';
 import type { PdfQuoteData } from '../../lib/quotePdf';
 import { SendQuoteModal } from '../../components/admin/SendQuoteModal';

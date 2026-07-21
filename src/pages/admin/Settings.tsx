@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Settings, Save, CheckCircle2, Loader2, AlertCircle, Store, Bell, Globe } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 
 export function AdminSettings() {
   const [saving, setSaving] = useState(false);

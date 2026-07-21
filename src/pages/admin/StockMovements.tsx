@@ -4,7 +4,7 @@ import {
   RefreshCcw, Search, AlertCircle, Plus, ArrowDownCircle, ArrowUpCircle,
   Package, TrendingUp, TrendingDown, History, X, Loader2, Warehouse,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 import {
   adminGetStockMovements, adminRecordStockMovement,
   adminGetProductMovementSummary,

@@ -27,6 +27,7 @@ import {
   Bell,
   RefreshCw,
   GitBranch,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import { adminGetActiveAlertCount, adminRefreshAlerts } from '../lib/database';
@@ -35,6 +36,7 @@ const navItems = [
   { to: '/admin/dashboard',  icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/admin/orders',     icon: ShoppingBag,     label: 'Orders' },
   { to: '/admin/customers',  icon: Users,           label: 'Customers' },
+  { to: '/admin/users',     icon: ShieldCheck,     label: 'User Management' },
   { to: '/admin/products',   icon: Package,         label: 'Products' },
   { to: '/admin/inventory',  icon: Boxes,           label: 'Inventory' },
   { to: '/admin/warehouses', icon: Warehouse,       label: 'Warehouses' },

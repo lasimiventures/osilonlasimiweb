@@ -5,7 +5,7 @@ import {
   TrendingUp, Package, Truck, CheckCircle, XCircle, Clock,
   FileText, Trash2, Save, AlertCircle, X,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 
 type View = 'list' | 'create' | 'detail';
 type TransferStatus = 'draft' | 'pending' | 'in_transit' | 'received' | 'cancelled';

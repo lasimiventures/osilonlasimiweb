@@ -6,7 +6,7 @@ import {
   Building2, Mail, Phone, Calendar, DollarSign,
   ShoppingBag, FileText, FileSpreadsheet, AlertCircle,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 import {
   type CRMContact, type CRMDeal, type CRMTarget, type ExportDataType,
   CONTACT_FIELD_MAPS, DEAL_FIELD_MAPS, CRM_META,

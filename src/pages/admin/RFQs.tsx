@@ -4,7 +4,7 @@ import {
   FileSpreadsheet, Search, Shield, Heart, GraduationCap, Briefcase,
   Factory, Building2, ChevronRight, Hash, DollarSign, Calendar,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 
 interface RFQRow {
   id: string;

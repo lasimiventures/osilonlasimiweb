@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft, Save, AlertCircle, Loader2, ShoppingCart, Trash2, Plus, Info,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 import {
   adminGetPurchaseOrderById, adminCreatePurchaseOrder, adminUpdatePurchaseOrder,
   adminGetSupplierPaymentTerms,

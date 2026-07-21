@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ShoppingCart, Check, Package, Shield, Truck, Headphones, Zap, Award, Building2, Users, ChevronRight, Download, Users2, PhoneCall, MessageSquare, Phone } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Check, Package, Shield, Truck, Headphones, Zap, Award, Building2, Users, ChevronRight, Download, Users2, PhoneCall, MessageSquare, Phone, Heart } from 'lucide-react';
 import { SEO, generateProductSchema, generateBreadcrumbSchema, generateProductPageTitle, generateProductDescription, getCanonicalUrl, AVAILABILITY_SCHEMA_MAP } from '../components/SEO';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { ProductGrid } from '../components/ProductGrid';
@@ -12,6 +12,7 @@ import { productFaqs } from '../data/faqs';
 import { useQuote } from '../context/QuoteContext';
 import { useRecentlyViewed } from '../context/RecentlyViewedContext';
 import { useShoppingCart } from '../context/ShoppingCartContext';
+import { useSavedItems } from '../context/SavedItemsContext';
 
 const benefitIcons = [Package, Shield, Truck, Headphones, Zap, Award];
 
@@ -60,6 +61,7 @@ export function ProductDetail() {
   const [showBulkModal, setShowBulkModal] = useState(false);
   const { addItem } = useQuote();
   const { addItem: addToCart } = useShoppingCart();
+  const { toggleSave, isSaved } = useSavedItems();
   const { trackProduct, recentlyViewed } = useRecentlyViewed();
   const navigate = useNavigate();
 
@@ -270,12 +272,23 @@ export function ProductDetail() {
                       <ShoppingCart className="w-4 h-4" /> Add to Quote
                     </button>
                     <button
-                      onClick={() => setShowBulkModal(true)}
-                      className="flex items-center justify-center gap-2 px-4 py-3 border border-blue-200 bg-blue-50 rounded-lg text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                      onClick={() => toggleSave(product)}
+                      className={`flex items-center justify-center gap-2 px-4 py-3 font-semibold rounded-lg border transition-all ${
+                        isSaved(product.id)
+                          ? 'bg-rose-50 border-rose-300 text-rose-600'
+                          : 'border-slate-300 text-slate-700 hover:border-rose-300 hover:text-rose-600 hover:bg-rose-50'
+                      }`}
                     >
-                      <Users2 className="w-4 h-4" /> Bulk Quote
+                      <Heart className={`w-4 h-4 ${isSaved(product.id) ? 'fill-current' : ''}`} />
+                      {isSaved(product.id) ? 'Saved' : 'Save'}
                     </button>
                   </div>
+                  <button
+                    onClick={() => setShowBulkModal(true)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-blue-200 bg-blue-50 rounded-lg text-sm font-medium text-blue-700 hover:bg-blue-100 transition-colors"
+                  >
+                    <Users2 className="w-4 h-4" /> Bulk Pricing Request
+                  </button>
                 </div>
 
                 {/* Call for Price panel */}

@@ -9,6 +9,7 @@ import { CatalogProvider } from './context/CatalogContext';
 import { AdminAuthProvider } from './context/AdminAuthContext';
 import { CustomerAuthProvider } from './context/CustomerAuthContext';
 import { ShoppingCartProvider } from './context/ShoppingCartContext';
+import { SavedItemsProvider } from './context/SavedItemsContext';
 import { trackPageView, trackEvent } from './utils/analytics';
 
 function PageTracker() {
@@ -29,6 +30,7 @@ function App() {
         <CustomerAuthProvider>
         <CatalogProvider>
           <ShoppingCartProvider>
+            <SavedItemsProvider>
             <QuoteProvider>
               <RecentlyViewedProvider>
                 <CompareProvider>
@@ -37,6 +39,7 @@ function App() {
                 </CompareProvider>
               </RecentlyViewedProvider>
             </QuoteProvider>
+            </SavedItemsProvider>
           </ShoppingCartProvider>
         </CatalogProvider>
         </CustomerAuthProvider>

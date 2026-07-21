@@ -4,10 +4,11 @@ import {
   Menu, X, ChevronDown, ShoppingCart, Search, MapPin, Phone, Mail,
   Laptop, Monitor, Smartphone, Tablet, Printer, Wifi,
   Shield, Settings, Cloud, Database, Wrench, Lightbulb, LayoutGrid, Globe, Info, Plug, Code,
-  ShoppingBag,
+  ShoppingBag, User, LogOut, Package, LayoutDashboard,
 } from 'lucide-react';
 import { useQuote } from '../context/QuoteContext';
 import { useShoppingCart } from '../context/ShoppingCartContext';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { services } from '../data/services';
 import { useCatalog } from '../context/CatalogContext';
 
@@ -154,6 +155,9 @@ export function Navbar() {
   const navigate = useNavigate();
   const { itemCount: quoteCount } = useQuote();
   const { itemCount: cartCount } = useShoppingCart();
+  const { session, profile, signOut } = useCustomerAuth();
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -170,6 +174,9 @@ export function Navbar() {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setShowSuggestions(false);
+      }
+      if (accountRef.current && !accountRef.current.contains(e.target as Node)) {
+        setAccountMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -387,6 +394,72 @@ export function Navbar() {
                   </span>
                 )}
               </Link>
+
+              {/* Account */}
+              <div className="relative" ref={accountRef}>
+                {session ? (
+                  <button
+                    onClick={() => setAccountMenuOpen(v => !v)}
+                    className="flex items-center gap-2 h-9 px-2 sm:px-3 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    aria-label="Account"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-xs font-bold">
+                      {(profile?.full_name || profile?.email || 'U').charAt(0).toUpperCase()}
+                    </div>
+                    <span className="hidden sm:inline text-sm font-medium max-w-[100px] truncate">
+                      {profile?.full_name?.split(' ')[0] || 'Account'}
+                    </span>
+                    <ChevronDown className={`hidden sm:inline w-3 h-3 transition-transform ${accountMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="flex items-center gap-1.5 h-9 px-2 sm:px-3 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    aria-label="Sign in"
+                  >
+                    <User className="w-5 h-5" />
+                    <span className="hidden sm:inline text-sm font-medium">Sign in</span>
+                  </Link>
+                )}
+
+                {session && accountMenuOpen && (
+                  <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50">
+                    <div className="px-4 py-2 border-b border-slate-100">
+                      <p className="text-sm font-semibold text-slate-900 truncate">{profile?.full_name || 'My Account'}</p>
+                      <p className="text-xs text-slate-500 truncate">{profile?.email}</p>
+                    </div>
+                    <Link
+                      to="/account"
+                      onClick={() => setAccountMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                    >
+                      <User className="w-4 h-4 text-slate-400" /> My Profile
+                    </Link>
+                    <Link
+                      to="/account"
+                      onClick={() => setAccountMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                    >
+                      <Package className="w-4 h-4 text-slate-400" /> My Orders
+                    </Link>
+                    {profile?.is_admin && (
+                      <Link
+                        to="/admin/dashboard"
+                        onClick={() => setAccountMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors"
+                      >
+                        <LayoutDashboard className="w-4 h-4 text-slate-400" /> Admin Portal
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => { setAccountMenuOpen(false); signOut(); navigate('/'); }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-slate-700 hover:bg-red-50 hover:text-red-600 transition-colors border-t border-slate-100 mt-1"
+                    >
+                      <LogOut className="w-4 h-4 text-slate-400" /> Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Request Quote */}
               <Link

@@ -21,6 +21,11 @@ import { PrivacyPolicy } from '../pages/PrivacyPolicy';
 import { TermsConditions } from '../pages/TermsConditions';
 import { NotFound } from '../pages/NotFound';
 import { BulkQuote } from '../pages/BulkQuote';
+import { Login } from '../pages/Login';
+import { Register } from '../pages/Register';
+import { ForgotPassword } from '../pages/ForgotPassword';
+import { ResetPassword } from '../pages/ResetPassword';
+import { Account } from '../pages/Account';
 import { AdminLogin } from '../pages/admin/Login';
 import { AdminDashboard } from '../pages/admin/Dashboard';
 import { AdminOrders } from '../pages/admin/Orders';
@@ -60,6 +65,12 @@ import { AdminNotFound } from '../pages/admin/NotFound';
 export function AppRoutes() {
   return (
     <Routes>
+      {/* Customer auth — standalone (no storefront chrome) */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
       {/* Public storefront */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
@@ -80,6 +91,7 @@ export function AppRoutes() {
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsConditions />} />
         <Route path="/bulk-quote" element={<BulkQuote />} />
+        <Route path="/account" element={<Account />} />
         <Route path="*" element={<NotFound />} />
       </Route>
 

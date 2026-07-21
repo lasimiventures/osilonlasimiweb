@@ -60,6 +60,7 @@ import { AdminPurchaseOrderDetail } from '../pages/admin/PurchaseOrderDetail';
 import { AdminStockMovements } from '../pages/admin/StockMovements';
 import { AdminPricing } from '../pages/admin/Pricing';
 import { AdminAlerts } from '../pages/admin/Alerts';
+import { AdminSettings } from '../pages/admin/Settings';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -107,7 +108,6 @@ export function AppRoutes() {
           <Route path="/admin/products" element={<AdminProducts />} />
           <Route path="/admin/products/new" element={<AdminProductForm />} />
           <Route path="/admin/products/import" element={<AdminProductImport />} />
-          <Route path="/admin/products/import" element={<AdminProductImport />} />
           <Route path="/admin/products/:id/edit" element={<AdminProductForm />} />
           <Route path="/admin/products/:id/history" element={<AdminProductHistory />} />
           <Route path="/admin/product-history" element={<AdminProductHistory />} />
@@ -145,6 +145,7 @@ export function AppRoutes() {
           <Route path="/admin/stock-movements" element={<AdminStockMovements />} />
           <Route path="/admin/pricing" element={<AdminPricing />} />
           <Route path="/admin/alerts" element={<AdminAlerts />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>
       </Route>

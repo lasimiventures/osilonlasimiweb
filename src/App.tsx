@@ -7,6 +7,7 @@ import { RecentlyViewedProvider } from './context/RecentlyViewedContext';
 import { CompareProvider } from './context/CompareContext';
 import { CatalogProvider } from './context/CatalogContext';
 import { AdminAuthProvider } from './context/AdminAuthContext';
+import { CustomerAuthProvider } from './context/CustomerAuthContext';
 import { ShoppingCartProvider } from './context/ShoppingCartContext';
 import { trackPageView, trackEvent } from './utils/analytics';
 
@@ -25,6 +26,7 @@ function App() {
   return (
     <BrowserRouter>
       <AdminAuthProvider>
+        <CustomerAuthProvider>
         <CatalogProvider>
           <ShoppingCartProvider>
             <QuoteProvider>
@@ -37,6 +39,7 @@ function App() {
             </QuoteProvider>
           </ShoppingCartProvider>
         </CatalogProvider>
+        </CustomerAuthProvider>
       </AdminAuthProvider>
     </BrowserRouter>
   );

@@ -86,6 +86,7 @@ export function RequestQuote() {
         total_items: itemCount,
         source: 'quote_form',
       })
+      .select()
       .maybeSingle();
 
     if (quoteErr || !quoteData) {

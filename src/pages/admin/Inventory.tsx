@@ -5,7 +5,7 @@ import {
   TrendingUp, TrendingDown, Save, X, Loader2, Edit3,
   PackageCheck, PackageX, Clock, ShieldCheck, Download,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

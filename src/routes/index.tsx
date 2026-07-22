@@ -26,6 +26,11 @@ import { Register } from '../pages/Register';
 import { ForgotPassword } from '../pages/ForgotPassword';
 import { ResetPassword } from '../pages/ResetPassword';
 import { Account } from '../pages/Account';
+import { QuoteDetail } from '../pages/QuoteDetail';
+import { RFQDetail } from '../pages/RFQDetail';
+import { OrderDetail } from '../pages/OrderDetail';
+import { Support } from '../pages/Support';
+import { SavedLists } from '../pages/SavedLists';
 import { AdminLogin } from '../pages/admin/Login';
 import { AdminDashboard } from '../pages/admin/Dashboard';
 import { AdminOrders } from '../pages/admin/Orders';
@@ -60,6 +65,8 @@ import { AdminPurchaseOrderDetail } from '../pages/admin/PurchaseOrderDetail';
 import { AdminStockMovements } from '../pages/admin/StockMovements';
 import { AdminPricing } from '../pages/admin/Pricing';
 import { AdminAlerts } from '../pages/admin/Alerts';
+import { AdminSettings } from '../pages/admin/Settings';
+import { AdminUsers } from '../pages/admin/Users';
 import { AdminNotFound } from '../pages/admin/NotFound';
 
 export function AppRoutes() {
@@ -92,6 +99,11 @@ export function AppRoutes() {
         <Route path="/terms-and-conditions" element={<TermsConditions />} />
         <Route path="/bulk-quote" element={<BulkQuote />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/account/quotes/:id" element={<QuoteDetail />} />
+        <Route path="/account/rfqs/:id" element={<RFQDetail />} />
+        <Route path="/account/orders/:id" element={<OrderDetail />} />
+        <Route path="/account/support" element={<Support />} />
+        <Route path="/account/lists" element={<SavedLists />} />
         <Route path="*" element={<NotFound />} />
       </Route>
 
@@ -106,7 +118,6 @@ export function AppRoutes() {
           <Route path="/admin/orders" element={<AdminOrders />} />
           <Route path="/admin/products" element={<AdminProducts />} />
           <Route path="/admin/products/new" element={<AdminProductForm />} />
-          <Route path="/admin/products/import" element={<AdminProductImport />} />
           <Route path="/admin/products/import" element={<AdminProductImport />} />
           <Route path="/admin/products/:id/edit" element={<AdminProductForm />} />
           <Route path="/admin/products/:id/history" element={<AdminProductHistory />} />
@@ -128,6 +139,7 @@ export function AppRoutes() {
           <Route path="/admin/banners" element={<AdminBanners />} />
           <Route path="/admin/banners/new" element={<AdminBannerForm />} />
           <Route path="/admin/banners/:id/edit" element={<AdminBannerForm />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/customers" element={<AdminCustomers />} />
           <Route path="/admin/customers/:email" element={<AdminCustomerDetail />} />
           <Route path="/admin/rfqs" element={<AdminRFQs />} />
@@ -145,6 +157,7 @@ export function AppRoutes() {
           <Route path="/admin/stock-movements" element={<AdminStockMovements />} />
           <Route path="/admin/pricing" element={<AdminPricing />} />
           <Route path="/admin/alerts" element={<AdminAlerts />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
           <Route path="/admin/*" element={<AdminNotFound />} />
         </Route>
       </Route>

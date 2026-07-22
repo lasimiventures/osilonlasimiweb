@@ -6,7 +6,7 @@ import {
   CheckCircle, AlertCircle, Send, StickyNote, PhoneCall, Loader2,
   TrendingUp, Calendar, Hash,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

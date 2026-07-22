@@ -4,7 +4,7 @@ import {
   Package, Search, Filter, RefreshCcw, ChevronDown, AlertCircle,
   Eye, CheckCircle2, Clock, Truck, XCircle, RotateCcw, FileText,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 
 interface OrderItem {
   id: string;

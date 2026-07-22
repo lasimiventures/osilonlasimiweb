@@ -5,7 +5,7 @@ import {
   Users, Layers, Boxes, Package, MapPin, Phone, Mail,
   AlertCircle, Edit3, X, Check,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 
 type Tab = 'details' | 'contacts' | 'locations' | 'stock';
 

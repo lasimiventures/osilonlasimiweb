@@ -9,6 +9,17 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Separate client for the admin portal. Uses a distinct localStorage key so
+// admin and customer sessions are independent — logging into the admin portal
+// does not log you into the storefront, and vice versa.
+export const supabaseAdmin = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storageKey: 'osil-admin-auth',
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
+
 // Database types
 export interface Database {
   public: {

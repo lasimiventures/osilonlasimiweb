@@ -6,7 +6,7 @@ import {
   ChevronLeft, ChevronRight, UploadCloud, PencilLine, X,
   History,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 import { adminDeleteProduct } from '../../lib/database';
 import { BulkEditModal } from '../../components/admin/BulkEditModal';
 

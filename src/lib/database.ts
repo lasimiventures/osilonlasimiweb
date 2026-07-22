@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, supabaseAdmin } from './supabase';
 
 // Connection test function
 export async function testConnection(): Promise<{ success: boolean; message: string }> {
@@ -256,7 +256,7 @@ export async function updateOrderStatus(orderId: string, status: string, fromSta
 // Admin — Category CRUD
 
 export async function adminGetCategoryById(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('categories')
     .select('*')
     .eq('id', id)
@@ -266,7 +266,7 @@ export async function adminGetCategoryById(id: string) {
 }
 
 export async function adminCreateCategory(data: Record<string, unknown>) {
-  const { data: created, error } = await supabase
+  const { data: created, error } = await supabaseAdmin
     .from('categories')
     .insert(data)
     .select()
@@ -276,7 +276,7 @@ export async function adminCreateCategory(data: Record<string, unknown>) {
 }
 
 export async function adminUpdateCategory(id: string, data: Record<string, unknown>) {
-  const { data: updated, error } = await supabase
+  const { data: updated, error } = await supabaseAdmin
     .from('categories')
     .update(data)
     .eq('id', id)
@@ -287,14 +287,14 @@ export async function adminUpdateCategory(id: string, data: Record<string, unkno
 }
 
 export async function adminDeleteCategory(id: string) {
-  const { error } = await supabase.from('categories').delete().eq('id', id);
+  const { error } = await supabaseAdmin.from('categories').delete().eq('id', id);
   if (error) throw error;
 }
 
 // Admin — Brand CRUD
 
 export async function adminGetBrandById(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('brands')
     .select('*')
     .eq('id', id)
@@ -304,7 +304,7 @@ export async function adminGetBrandById(id: string) {
 }
 
 export async function adminCreateBrand(data: Record<string, unknown>) {
-  const { data: created, error } = await supabase
+  const { data: created, error } = await supabaseAdmin
     .from('brands')
     .insert(data)
     .select()
@@ -314,7 +314,7 @@ export async function adminCreateBrand(data: Record<string, unknown>) {
 }
 
 export async function adminUpdateBrand(id: string, data: Record<string, unknown>) {
-  const { data: updated, error } = await supabase
+  const { data: updated, error } = await supabaseAdmin
     .from('brands')
     .update(data)
     .eq('id', id)
@@ -325,14 +325,14 @@ export async function adminUpdateBrand(id: string, data: Record<string, unknown>
 }
 
 export async function adminDeleteBrand(id: string) {
-  const { error } = await supabase.from('brands').delete().eq('id', id);
+  const { error } = await supabaseAdmin.from('brands').delete().eq('id', id);
   if (error) throw error;
 }
 
 // Admin — Product CRUD
 
 export async function adminGetProductById(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('products')
     .select('*, product_inventory(*)')
     .eq('id', id)
@@ -342,7 +342,7 @@ export async function adminGetProductById(id: string) {
 }
 
 export async function adminCreateProduct(data: Record<string, unknown>) {
-  const { data: created, error } = await supabase
+  const { data: created, error } = await supabaseAdmin
     .from('products')
     .insert(data)
     .select()
@@ -352,7 +352,7 @@ export async function adminCreateProduct(data: Record<string, unknown>) {
 }
 
 export async function adminUpdateProduct(id: string, data: Record<string, unknown>) {
-  const { data: updated, error } = await supabase
+  const { data: updated, error } = await supabaseAdmin
     .from('products')
     .update(data)
     .eq('id', id)
@@ -363,7 +363,7 @@ export async function adminUpdateProduct(id: string, data: Record<string, unknow
 }
 
 export async function adminDeleteProduct(id: string) {
-  const { error } = await supabase.from('products').delete().eq('id', id);
+  const { error } = await supabaseAdmin.from('products').delete().eq('id', id);
   if (error) throw error;
 }
 
@@ -388,7 +388,7 @@ export interface MediaAsset {
 }
 
 export async function getMediaAssets(assetType?: string): Promise<MediaAsset[]> {
-  let query = supabase.from('media_assets').select('*').order('created_at', { ascending: false });
+  let query = supabaseAdmin.from('media_assets').select('*').order('created_at', { ascending: false });
   if (assetType && assetType !== 'all') query = query.eq('asset_type', assetType);
   const { data, error } = await query;
   if (error) throw error;
@@ -396,23 +396,23 @@ export async function getMediaAssets(assetType?: string): Promise<MediaAsset[]> 
 }
 
 export async function createMediaAsset(asset: Omit<MediaAsset, 'id' | 'created_at' | 'updated_at'>): Promise<MediaAsset> {
-  const { data, error } = await supabase.from('media_assets').insert(asset).select().single();
+  const { data, error } = await supabaseAdmin.from('media_assets').insert(asset).select().single();
   if (error) throw error;
   return data as MediaAsset;
 }
 
 export async function updateMediaAsset(id: string, updates: Partial<MediaAsset>): Promise<void> {
-  const { error } = await supabase.from('media_assets').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id);
+  const { error } = await supabaseAdmin.from('media_assets').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id);
   if (error) throw error;
 }
 
 export async function deleteMediaAsset(id: string): Promise<void> {
-  const { error } = await supabase.from('media_assets').delete().eq('id', id);
+  const { error } = await supabaseAdmin.from('media_assets').delete().eq('id', id);
   if (error) throw error;
 }
 
 export async function adminBulkInsertProducts(rows: Record<string, unknown>[]): Promise<{ inserted: number; errors: string[] }> {
-  const { data, error } = await supabase.from('products').insert(rows).select('id');
+  const { data, error } = await supabaseAdmin.from('products').insert(rows).select('id');
   if (error) {
     return { inserted: 0, errors: [error.message] };
   }
@@ -420,13 +420,13 @@ export async function adminBulkInsertProducts(rows: Record<string, unknown>[]): 
 }
 
 export async function adminBulkUpdateProducts(ids: string[], data: Record<string, unknown>): Promise<{ updated: number; errors: string[] }> {
-  const { data: updated, error } = await supabase.from('products').update(data).in('id', ids).select('id');
+  const { data: updated, error } = await supabaseAdmin.from('products').update(data).in('id', ids).select('id');
   if (error) return { updated: 0, errors: [error.message] };
   return { updated: updated?.length ?? 0, errors: [] };
 }
 
 export async function adminBulkUpdateInventory(productIds: string[], data: Record<string, unknown>): Promise<{ updated: number; errors: string[] }> {
-  const { data: updated, error } = await supabase.from('product_inventory').update(data).in('product_id', productIds).select('product_id');
+  const { data: updated, error } = await supabaseAdmin.from('product_inventory').update(data).in('product_id', productIds).select('product_id');
   if (error) return { updated: 0, errors: [error.message] };
   return { updated: updated?.length ?? 0, errors: [] };
 }
@@ -442,9 +442,9 @@ export interface ImportValidationData {
 
 export async function adminGetImportValidationData(): Promise<ImportValidationData> {
   const [skus, slugs, brands, categories] = await Promise.all([
-    supabase.from('products').select('sku, slug'),
-    supabase.from('brands').select('name, slug'),
-    supabase.from('categories').select('name, slug'),
+    supabaseAdmin.from('products').select('sku, slug'),
+    supabaseAdmin.from('brands').select('name, slug'),
+    supabaseAdmin.from('categories').select('name, slug'),
   ]);
   // Note: skus/slugs come from the products table, brands/categories from their tables
 
@@ -534,7 +534,7 @@ export async function getActiveBanners(type?: 'hero' | 'promo') {
 }
 
 export async function adminGetBanners() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('banners')
     .select('*')
     .order('banner_type')
@@ -544,7 +544,7 @@ export async function adminGetBanners() {
 }
 
 export async function adminGetBannerById(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('banners')
     .select('*')
     .eq('id', id)
@@ -554,7 +554,7 @@ export async function adminGetBannerById(id: string) {
 }
 
 export async function adminCreateBanner(payload: Record<string, unknown>) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('banners')
     .insert(payload)
     .select()
@@ -564,7 +564,7 @@ export async function adminCreateBanner(payload: Record<string, unknown>) {
 }
 
 export async function adminUpdateBanner(id: string, payload: Record<string, unknown>) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('banners')
     .update({ ...payload, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -575,12 +575,12 @@ export async function adminUpdateBanner(id: string, payload: Record<string, unkn
 }
 
 export async function adminDeleteBanner(id: string) {
-  const { error } = await supabase.from('banners').delete().eq('id', id);
+  const { error } = await supabaseAdmin.from('banners').delete().eq('id', id);
   if (error) throw error;
 }
 
 export async function adminToggleBannerActive(id: string, isActive: boolean) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('banners')
     .update({ is_active: isActive, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -593,7 +593,7 @@ export async function adminToggleBannerActive(id: string, isActive: boolean) {
 // Admin — Supplier CRUD
 
 export async function adminGetSupplierById(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('suppliers')
     .select('*, category:supplier_categories(id,name,slug), payment_terms:supplier_payment_terms(id,name,code), supplier_contacts(id,name,position,email,phone,is_primary)')
     .eq('id', id)
@@ -603,7 +603,7 @@ export async function adminGetSupplierById(id: string) {
 }
 
 export async function adminCreateSupplier(data: Record<string, unknown>) {
-  const { data: created, error } = await supabase
+  const { data: created, error } = await supabaseAdmin
     .from('suppliers')
     .insert(data)
     .select()
@@ -613,7 +613,7 @@ export async function adminCreateSupplier(data: Record<string, unknown>) {
 }
 
 export async function adminUpdateSupplier(id: string, data: Record<string, unknown>) {
-  const { data: updated, error } = await supabase
+  const { data: updated, error } = await supabaseAdmin
     .from('suppliers')
     .update(data)
     .eq('id', id)
@@ -624,7 +624,7 @@ export async function adminUpdateSupplier(id: string, data: Record<string, unkno
 }
 
 export async function adminDeleteSupplier(id: string) {
-  const { error } = await supabase.from('suppliers').delete().eq('id', id);
+  const { error } = await supabaseAdmin.from('suppliers').delete().eq('id', id);
   if (error) throw error;
 }
 
@@ -632,7 +632,7 @@ export async function adminTogglePreferredSupplier(id: string, isPreferred: bool
   const payload: Record<string, unknown> = { is_preferred: isPreferred };
   if (isPreferred) payload.preferred_since = new Date().toISOString();
   else payload.preferred_since = null;
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('suppliers')
     .update(payload)
     .eq('id', id)
@@ -658,7 +658,7 @@ export interface SupplierCatalogRow {
 }
 
 export async function adminGetSupplierCatalog(supplierId: string): Promise<SupplierCatalogRow[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('supplier_product_catalog')
     .select('id,supplier_id,product_id,supplier_sku,cost_price,moq,pack_size,is_primary_supplier,last_cost_update,product:products(name,sku,brand)')
     .eq('supplier_id', supplierId)
@@ -686,19 +686,19 @@ export async function adminUpsertSupplierCatalogRow(row: {
     is_primary_supplier: row.is_primary_supplier ?? false,
     last_cost_update: new Date().toISOString().slice(0, 10),
   };
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('supplier_product_catalog')
     .upsert(payload, { onConflict: 'supplier_id,product_id' });
   if (error) throw error;
 }
 
 export async function adminDeleteSupplierCatalogRow(id: string): Promise<void> {
-  const { error } = await supabase.from('supplier_product_catalog').delete().eq('id', id);
+  const { error } = await supabaseAdmin.from('supplier_product_catalog').delete().eq('id', id);
   if (error) throw error;
 }
 
 export async function adminGetSuppliersForSync(): Promise<{ id: string; name: string; slug: string; currency: string }[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('suppliers')
     .select('id,name,slug,currency')
     .eq('status', 'active')
@@ -708,7 +708,7 @@ export async function adminGetSuppliersForSync(): Promise<{ id: string; name: st
 }
 
 export async function adminGetProductsForSync(): Promise<{ id: string; name: string; sku: string; brand: string; category: string }[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('products')
     .select('id,name,sku,brand,category')
     .order('name');
@@ -717,7 +717,7 @@ export async function adminGetProductsForSync(): Promise<{ id: string; name: str
 }
 
 export async function adminGetSupplierCategories() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('supplier_categories')
     .select('id,name,slug,description')
     .order('name');
@@ -726,7 +726,7 @@ export async function adminGetSupplierCategories() {
 }
 
 export async function adminGetSupplierPaymentTerms() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('supplier_payment_terms')
     .select('id,name,code,description,default_days,is_active')
     .order('default_days');
@@ -737,7 +737,7 @@ export async function adminGetSupplierPaymentTerms() {
 // Admin — Purchase Order CRUD
 
 export async function adminGetPurchaseOrders() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('purchase_orders')
     .select('id,po_number,supplier_id,supplier:suppliers(id,name),warehouse:warehouses(id,name,code),status,order_date,expected_delivery_date,currency,total,created_at')
     .order('created_at', { ascending: false });
@@ -746,7 +746,7 @@ export async function adminGetPurchaseOrders() {
 }
 
 export async function adminGetPurchaseOrderById(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('purchase_orders')
     .select('*, supplier:suppliers(id,name,slug), warehouse:warehouses(id,name,code), payment_terms:supplier_payment_terms(id,name,code), purchase_order_items(*, product:products(id,name,sku))')
     .eq('id', id)
@@ -756,14 +756,14 @@ export async function adminGetPurchaseOrderById(id: string) {
 }
 
 export async function adminCreatePurchaseOrder(header: Record<string, unknown>, items: Array<Record<string, unknown>>) {
-  const { data: created, error } = await supabase
+  const { data: created, error } = await supabaseAdmin
     .from('purchase_orders')
     .insert(header)
     .select()
     .single();
   if (error) throw error;
   if (items.length > 0) {
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await supabaseAdmin
       .from('purchase_order_items')
       .insert(items.map(it => ({ ...it, po_id: created.id })));
     if (itemsError) throw itemsError;
@@ -772,7 +772,7 @@ export async function adminCreatePurchaseOrder(header: Record<string, unknown>, 
 }
 
 export async function adminUpdatePurchaseOrder(id: string, header: Record<string, unknown>, items: Array<Record<string, unknown>>) {
-  const { data: updated, error } = await supabase
+  const { data: updated, error } = await supabaseAdmin
     .from('purchase_orders')
     .update(header)
     .eq('id', id)
@@ -781,8 +781,8 @@ export async function adminUpdatePurchaseOrder(id: string, header: Record<string
   if (error) throw error;
   // Replace items only when a fresh list is provided
   if (items.length > 0) {
-    await supabase.from('purchase_order_items').delete().eq('po_id', id);
-    const { error: itemsError } = await supabase
+    await supabaseAdmin.from('purchase_order_items').delete().eq('po_id', id);
+    const { error: itemsError } = await supabaseAdmin
       .from('purchase_order_items')
       .insert(items.map(it => ({ ...it, po_id: id })));
     if (itemsError) throw itemsError;
@@ -791,7 +791,7 @@ export async function adminUpdatePurchaseOrder(id: string, header: Record<string
 }
 
 export async function adminUpdatePurchaseOrderStatus(id: string, status: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('purchase_orders')
     .update({ status })
     .eq('id', id)
@@ -802,14 +802,14 @@ export async function adminUpdatePurchaseOrderStatus(id: string, status: string)
 }
 
 export async function adminDeletePurchaseOrder(id: string) {
-  const { error } = await supabase.from('purchase_orders').delete().eq('id', id);
+  const { error } = await supabaseAdmin.from('purchase_orders').delete().eq('id', id);
   if (error) throw error;
 }
 
 // Admin — Goods Received Notes
 
 export async function adminGetGRNsForPO(poId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('goods_received_notes')
     .select('id,grn_number,po_id,warehouse:warehouses(id,name,code),received_by,received_date,status,notes, goods_received_note_items(id,quantity_received,quantity_rejected,rejection_reason,product_id,po_item_id)')
     .eq('po_id', poId)
@@ -819,14 +819,14 @@ export async function adminGetGRNsForPO(poId: string) {
 }
 
 export async function adminCreateGRN(grn: Record<string, unknown>, items: Array<Record<string, unknown>>) {
-  const { data: created, error } = await supabase
+  const { data: created, error } = await supabaseAdmin
     .from('goods_received_notes')
     .insert(grn)
     .select()
     .single();
   if (error) throw error;
   if (items.length > 0) {
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await supabaseAdmin
       .from('goods_received_note_items')
       .insert(items.map(it => ({ ...it, grn_id: created.id })));
     if (itemsError) throw itemsError;
@@ -837,7 +837,7 @@ export async function adminCreateGRN(grn: Record<string, unknown>, items: Array<
 // Admin — Supplier Deliveries
 
 export async function adminGetSupplierDeliveries() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('supplier_deliveries')
     .select('id,delivery_number,supplier:suppliers(name),po:purchase_orders(po_number),carrier,tracking_number,shipped_date,expected_delivery_date,actual_delivery_date,status,warehouse:warehouses(name),created_at')
     .order('created_at', { ascending: false });
@@ -846,7 +846,7 @@ export async function adminGetSupplierDeliveries() {
 }
 
 export async function adminCreateSupplierDelivery(delivery: Record<string, unknown>) {
-  const { data: created, error } = await supabase
+  const { data: created, error } = await supabaseAdmin
     .from('supplier_deliveries')
     .insert(delivery)
     .select()
@@ -858,7 +858,7 @@ export async function adminCreateSupplierDelivery(delivery: Record<string, unkno
 export async function adminUpdateDeliveryStatus(id: string, status: string, actualDeliveryDate?: string) {
   const payload: Record<string, unknown> = { status };
   if (actualDeliveryDate) payload.actual_delivery_date = actualDeliveryDate;
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('supplier_deliveries')
     .update(payload)
     .eq('id', id)
@@ -871,7 +871,7 @@ export async function adminUpdateDeliveryStatus(id: string, status: string, actu
 // Admin — Back Orders
 
 export async function adminGetBackOrders() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('back_orders')
     .select('id,po:purchase_orders(po_number),supplier:suppliers(name),product:products(name,sku),quantity_backordered,reason,status,expected_date,fulfilled_date,created_at')
     .order('created_at', { ascending: false });
@@ -882,7 +882,7 @@ export async function adminGetBackOrders() {
 export async function adminUpdateBackOrderStatus(id: string, status: string) {
   const payload: Record<string, unknown> = { status };
   if (status === 'fulfilled') payload.fulfilled_date = new Date().toISOString().slice(0, 10);
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('back_orders')
     .update(payload)
     .eq('id', id)
@@ -895,7 +895,7 @@ export async function adminUpdateBackOrderStatus(id: string, status: string) {
 // Admin — Procurement status summary
 
 export async function adminGetProcurementStatus() {
-  const { data, error } = await supabase.rpc('procurement_status_summary');
+  const { data, error } = await supabaseAdmin.rpc('procurement_status_summary');
   if (error) throw error;
   return data;
 }
@@ -908,7 +908,7 @@ export async function adminGetStockMovements(filters?: {
   movementType?: string;
   limit?: number;
 }) {
-  let query = supabase
+  let query = supabaseAdmin
     .from('stock_movements')
     .select('id,movement_number,product_id,product:products(name,sku),warehouse_id,warehouse:warehouses(name,code),movement_type,quantity_change,quantity_before,quantity_after,reference_type,reference_number,reason,notes,performed_by,created_at')
     .order('created_at', { ascending: false });
@@ -933,13 +933,13 @@ export async function adminRecordStockMovement(params: {
   notes?: string;
   performed_by?: string;
 }) {
-  const { data, error } = await supabase.rpc('record_stock_movement', { params: params as unknown as Record<string, unknown> });
+  const { data, error } = await supabaseAdmin.rpc('record_stock_movement', { params: params as unknown as Record<string, unknown> });
   if (error) throw error;
   return data;
 }
 
 export async function adminGetProductMovementSummary() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('product_movement_summary')
     .select('*')
     .order('last_movement_at', { ascending: false, nullsFirst: false })
@@ -951,7 +951,7 @@ export async function adminGetProductMovementSummary() {
 // Admin — Cost & Pricing
 
 export async function adminGetPricingOverview() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('product_pricing_view')
     .select('id,name,sku,brand,category,cost_price,selling_price,distributor_price,dealer_price,promotional_price,promo_start_date,promo_end_date,promo_active,effective_price,margin_amount,margin_pct,markup_pct,on_hand,availability,pricing_currency')
     .order('name');
@@ -960,7 +960,7 @@ export async function adminGetPricingOverview() {
 }
 
 export async function adminGetCostHistory(productId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('product_cost_history')
     .select('id,old_cost,new_cost,change_source,reference_type,reference_number,changed_by,notes,created_at')
     .eq('product_id', productId)
@@ -987,7 +987,7 @@ export interface ProductRevision {
 }
 
 export async function adminGetProductRevisions(productId: string): Promise<ProductRevision[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('product_revisions')
     .select('id,product_id,revision_number,change_type,changed_fields,old_values,new_values,changed_by,change_source,notes,created_at,product:products(name,sku,brand)')
     .eq('product_id', productId)
@@ -1000,7 +1000,7 @@ export async function adminGetAllProductRevisions(filter?: {
   changeType?: string;
   limit?: number;
 }): Promise<ProductRevision[]> {
-  let q = supabase
+  let q = supabaseAdmin
     .from('product_revisions')
     .select('id,product_id,revision_number,change_type,changed_fields,old_values,new_values,changed_by,change_source,notes,created_at,product:products(name,sku,brand)')
     .order('created_at', { ascending: false })
@@ -1012,7 +1012,7 @@ export async function adminGetAllProductRevisions(filter?: {
 }
 
 export async function adminGetRevisionStats(): Promise<Record<string, number>> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('product_revisions')
     .select('change_type');
   if (error) throw error;
@@ -1051,13 +1051,13 @@ export interface InventoryAlert {
 }
 
 export async function adminRefreshAlerts(): Promise<number> {
-  const { data, error } = await supabase.rpc('refresh_inventory_alerts');
+  const { data, error } = await supabaseAdmin.rpc('refresh_inventory_alerts');
   if (error) throw error;
   return data as number;
 }
 
 export async function adminGetAlerts(status?: 'active'|'acknowledged'|'resolved') {
-  let q = supabase
+  let q = supabaseAdmin
     .from('inventory_alerts')
     .select('*')
     .order('created_at', { ascending: false })
@@ -1069,7 +1069,7 @@ export async function adminGetAlerts(status?: 'active'|'acknowledged'|'resolved'
 }
 
 export async function adminAcknowledgeAlert(id: string, by: string) {
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('inventory_alerts')
     .update({ status: 'acknowledged', acknowledged_by: by, acknowledged_at: new Date().toISOString() })
     .eq('id', id);
@@ -1077,7 +1077,7 @@ export async function adminAcknowledgeAlert(id: string, by: string) {
 }
 
 export async function adminResolveAlert(id: string, by: string) {
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from('inventory_alerts')
     .update({ status: 'resolved', resolved_by: by, resolved_at: new Date().toISOString() })
     .eq('id', id);
@@ -1085,7 +1085,7 @@ export async function adminResolveAlert(id: string, by: string) {
 }
 
 export async function adminGetActiveAlertCount(): Promise<number> {
-  const { count, error } = await supabase
+  const { count, error } = await supabaseAdmin
     .from('inventory_alerts')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'active');

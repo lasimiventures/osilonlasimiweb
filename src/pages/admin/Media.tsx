@@ -6,7 +6,7 @@ import {
   AlertCircle, Loader2, X, ExternalLink, HardDrive, Link2, Pencil,
   Package, Layers, Tag, BookOpen, FileType2,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 import {
   getMediaAssets, createMediaAsset, updateMediaAsset, deleteMediaAsset,
   type MediaAsset,

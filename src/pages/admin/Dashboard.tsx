@@ -6,7 +6,7 @@ import {
   AlertCircle, Search, RefreshCcw, ShoppingBag,
   Image, TrendingUp, TrendingDown, Minus,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 
 // ─── types ────────────────────────────────────────────────────────────────────

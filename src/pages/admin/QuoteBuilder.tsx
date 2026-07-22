@@ -7,7 +7,7 @@ import {
   Ban, Hourglass, Clock, RotateCcw, Send, Eye, Download,
   History, ExternalLink, ShoppingCart,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 import { generateQuotePdf } from '../../lib/quotePdf';
 import type { PdfQuoteData } from '../../lib/quotePdf';
 import { SendQuoteModal } from '../../components/admin/SendQuoteModal';

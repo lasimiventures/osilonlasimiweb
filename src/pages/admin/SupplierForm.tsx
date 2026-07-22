@@ -4,7 +4,7 @@ import {
   ArrowLeft, Save, AlertCircle, Loader2,
   Building2, Truck, DollarSign, Star, Info, User, Trash2, Plus,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 import {
   adminGetSupplierById, adminCreateSupplier, adminUpdateSupplier,
   adminGetSupplierCategories, adminGetSupplierPaymentTerms,

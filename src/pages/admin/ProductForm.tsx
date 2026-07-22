@@ -5,7 +5,7 @@ import {
   Loader2, ImagePlus, Tag, Package, Info, Boxes, DollarSign,
 } from 'lucide-react';
 import { adminCreateProduct, adminUpdateProduct, adminGetProductById, getCategories, getBrands } from '../../lib/database';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 

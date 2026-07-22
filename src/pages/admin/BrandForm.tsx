@@ -4,7 +4,7 @@ import {
   ArrowLeft, Save, AlertCircle, Loader2,
   Tag, ImagePlus, Globe, Info,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabaseAdmin as supabase } from '../../lib/supabase';
 import { adminCreateBrand, adminUpdateBrand, adminGetBrandById } from '../../lib/database';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────

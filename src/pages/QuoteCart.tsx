@@ -1,13 +1,19 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart, Send, MoveRight, ShoppingBag } from 'lucide-react';
+import { Minus, Plus, Trash2, ArrowLeft, ShoppingCart, Send, MoveRight, ShoppingBag, Bookmark, Loader2 } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { useQuote } from '../context/QuoteContext';
 import { useShoppingCart } from '../context/ShoppingCartContext';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
+import { supabase } from '../lib/supabase';
 
 export function QuoteCart() {
   const { items, removeItem, updateQuantity, clearQuote, itemCount } = useQuote();
   const { addItem: addToCart, items: cartItems } = useShoppingCart();
+  const { session } = useCustomerAuth();
   const navigate = useNavigate();
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
   function moveToCart(item: typeof items[0]) {
     const alreadyInCart = cartItems.find(c => c.productId === item.productId);
@@ -141,6 +147,41 @@ export function QuoteCart() {
                 >
                   <Send className="w-4 h-4" /> Proceed to Quote
                 </button>
+                {session && (
+                  <button
+                    onClick={async () => {
+                      if (!session.user.id) return;
+                      setSaving(true);
+                      const listName = `Quote List ${new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                      const { data: listData, error: listErr } = await supabase.from('saved_lists').insert({
+                        user_id: session.user.id,
+                        name: listName,
+                        list_type: 'quote',
+                      }).select().maybeSingle();
+                      if (listErr || !listData) { setSaveMsg('Failed to save quote list.'); setSaving(false); return; }
+                      const insertItems = items.map(i => ({
+                        list_id: listData.id,
+                        product_id: i.productId,
+                        product_name: i.product.name,
+                        product_sku: i.product.sku,
+                        product_slug: i.product.slug,
+                        brand: i.product.brand,
+                        image: i.product.images[0] ?? null,
+                        quantity: i.quantity,
+                        unit_price: i.product.displayPrice ?? i.product.price ?? null,
+                      }));
+                      await supabase.from('saved_list_items').insert(insertItems);
+                      setSaving(false);
+                      setSaveMsg('Quote list saved! Find it in My Lists.');
+                      setTimeout(() => setSaveMsg(null), 4000);
+                    }}
+                    disabled={saving}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-amber-200 text-amber-700 font-medium rounded-lg hover:bg-amber-50 transition-colors text-sm disabled:opacity-50 mb-3"
+                  >
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bookmark className="w-4 h-4" />} Save Quote List
+                  </button>
+                )}
+                {saveMsg && <p className="text-xs text-emerald-600 text-center mb-3">{saveMsg}</p>}
                 <Link
                   to="/cart"
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-slate-200 text-slate-700 font-medium rounded-lg hover:border-green-300 hover:text-green-700 transition-colors text-sm"

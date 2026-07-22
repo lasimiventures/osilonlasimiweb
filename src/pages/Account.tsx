@@ -5,7 +5,7 @@ import {
   Loader2, CheckCircle2, Package, FileText, ShoppingBag, LogOut, Shield,
   ChevronRight, Calendar, MapPinned, Briefcase, Globe, Heart, ShoppingCart,
   Trash2, Minus, Plus, FileSpreadsheet, Inbox, FolderOpen, Truck,
-  LifeBuoy,
+  LifeBuoy, Bookmark,
 } from 'lucide-react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useShoppingCart } from '../context/ShoppingCartContext';
@@ -14,7 +14,7 @@ import { useCatalog } from '../context/CatalogContext';
 import { supabase } from '../lib/supabase';
 import type { Product } from '../types';
 
-type Tab = 'profile' | 'security' | 'orders' | 'quotes' | 'rfqs' | 'bulk' | 'cart' | 'saved' | 'support';
+type Tab = 'profile' | 'security' | 'orders' | 'quotes' | 'rfqs' | 'bulk' | 'cart' | 'saved' | 'support' | 'lists';
 
 export function Account() {
   const { session, profile, loading, updateProfile, updatePassword, signOut, refreshProfile } = useCustomerAuth();
@@ -41,6 +41,7 @@ export function Account() {
     { id: 'bulk', label: 'Bulk Requests', icon: Inbox },
     { id: 'cart', label: 'Shopping Cart', icon: ShoppingCart },
     { id: 'saved', label: 'Saved Items', icon: Heart },
+    { id: 'lists', label: 'My Lists', icon: Bookmark },
     { id: 'support', label: 'Support', icon: LifeBuoy },
   ];
 
@@ -104,6 +105,16 @@ export function Account() {
           <p className="text-xs text-slate-500 mb-4">Manage support tickets, warranty claims, product returns, and browse our knowledge base.</p>
           <Link to="/account/support" className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 border border-blue-200 hover:border-blue-300 px-4 py-2 rounded-xl transition-colors">
             Open Support Centre <ChevronRight className="w-4 h-4" />
+          </Link>
+        </div>
+      )}
+      {tab === 'lists' && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+          <Bookmark className="w-10 h-10 text-blue-500 mx-auto mb-3" />
+          <p className="text-sm font-semibold text-slate-700 mb-1">My Saved Lists</p>
+          <p className="text-xs text-slate-500 mb-4">Save carts, quote lists, create favourite product collections, and reorder past purchases.</p>
+          <Link to="/account/lists" className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700 border border-blue-200 hover:border-blue-300 px-4 py-2 rounded-xl transition-colors">
+            Open My Lists <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
       )}

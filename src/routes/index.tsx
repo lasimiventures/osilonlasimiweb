@@ -30,6 +30,7 @@ import { QuoteDetail } from '../pages/QuoteDetail';
 import { RFQDetail } from '../pages/RFQDetail';
 import { OrderDetail } from '../pages/OrderDetail';
 import { Support } from '../pages/Support';
+import { SavedLists } from '../pages/SavedLists';
 import { AdminLogin } from '../pages/admin/Login';
 import { AdminDashboard } from '../pages/admin/Dashboard';
 import { AdminOrders } from '../pages/admin/Orders';
@@ -102,6 +103,7 @@ export function AppRoutes() {
         <Route path="/account/rfqs/:id" element={<RFQDetail />} />
         <Route path="/account/orders/:id" element={<OrderDetail />} />
         <Route path="/account/support" element={<Support />} />
+        <Route path="/account/lists" element={<SavedLists />} />
         <Route path="*" element={<NotFound />} />
       </Route>
 

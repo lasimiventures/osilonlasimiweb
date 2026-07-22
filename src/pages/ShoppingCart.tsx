@@ -1,15 +1,21 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag, ArrowRight, FileText, MoveRight } from 'lucide-react';
+import { Minus, Plus, Trash2, ArrowLeft, ShoppingBag, ArrowRight, FileText, MoveRight, Bookmark, Loader2 } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { useShoppingCart } from '../context/ShoppingCartContext';
 import { useQuote } from '../context/QuoteContext';
 import { useCatalog } from '../context/CatalogContext';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
+import { supabase } from '../lib/supabase';
 
 export function ShoppingCart() {
   const { items, removeItem, updateQuantity, clearCart, itemCount, estimatedTotal } = useShoppingCart();
   const { addItem: addToQuote } = useQuote();
   const { getProductBySlug } = useCatalog();
+  const { session } = useCustomerAuth();
   const navigate = useNavigate();
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
 
   function moveToQuote(item: typeof items[0]) {
     const product = getProductBySlug(item.productSlug);
@@ -148,6 +154,41 @@ export function ShoppingCart() {
                 >
                   Proceed to Checkout <ArrowRight className="w-4 h-4" />
                 </button>
+                {session && (
+                  <button
+                    onClick={async () => {
+                      if (!session.user.id) return;
+                      setSaving(true);
+                      const listName = `Cart ${new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                      const { data: listData, error: listErr } = await supabase.from('saved_lists').insert({
+                        user_id: session.user.id,
+                        name: listName,
+                        list_type: 'cart',
+                      }).select().maybeSingle();
+                      if (listErr || !listData) { setSaveMsg('Failed to save cart.'); setSaving(false); return; }
+                      const insertItems = items.map(i => ({
+                        list_id: listData.id,
+                        product_id: i.productId,
+                        product_name: i.productName,
+                        product_sku: i.productSku,
+                        product_slug: i.productSlug,
+                        brand: i.brand,
+                        image: i.image,
+                        quantity: i.quantity,
+                        unit_price: i.unitPrice,
+                      }));
+                      await supabase.from('saved_list_items').insert(insertItems);
+                      setSaving(false);
+                      setSaveMsg('Cart saved! Find it in My Lists.');
+                      setTimeout(() => setSaveMsg(null), 4000);
+                    }}
+                    disabled={saving}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-blue-200 text-blue-700 font-medium rounded-lg hover:bg-blue-50 transition-colors text-sm disabled:opacity-50 mb-3"
+                  >
+                    {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bookmark className="w-4 h-4" />} Save Cart for Later
+                  </button>
+                )}
+                {saveMsg && <p className="text-xs text-emerald-600 text-center mb-3">{saveMsg}</p>}
                 <Link
                   to="/quote-cart"
                   className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-blue-200 text-blue-700 font-medium rounded-lg hover:bg-blue-50 transition-colors text-sm"

@@ -4,7 +4,7 @@ import {
   User, Mail, Phone, Building2, MapPin, Lock, Eye, EyeOff, AlertCircle,
   Loader2, CheckCircle2, Package, FileText, ShoppingBag, LogOut, Shield,
   ChevronRight, Calendar, MapPinned, Briefcase, Globe, Heart, ShoppingCart,
-  Trash2, Minus, Plus, FileSpreadsheet, Inbox, FolderOpen,
+  Trash2, Minus, Plus, FileSpreadsheet, Inbox, FolderOpen, Truck,
 } from 'lucide-react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { useShoppingCart } from '../context/ShoppingCartContext';
@@ -438,6 +438,7 @@ interface OrderRow {
   order_number: string;
   total_value: number | null;
   order_status: string;
+  delivery_status: string | null;
   created_at: string;
 }
 
@@ -449,7 +450,7 @@ function OrdersTab({ email }: { email: string }) {
   useEffect(() => {
     supabase
       .from('orders')
-      .select('id,order_number,total_value,order_status,created_at')
+      .select('id,order_number,total_value,order_status,delivery_status,created_at')
       .eq('email', email)
       .order('created_at', { ascending: false })
       .limit(20)
@@ -478,24 +479,32 @@ function OrdersTab({ email }: { email: string }) {
     <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
       <div className="divide-y divide-slate-100">
         {orders.map(o => (
-          <div key={o.id} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors">
+          <Link key={o.id} to={`/account/orders/${o.id}`} className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors group">
             <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
               <Package className="w-5 h-5 text-blue-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-900">#{o.order_number}</p>
+              <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">#{o.order_number}</p>
               <p className="text-xs text-slate-500 flex items-center gap-1.5">
                 <Calendar className="w-3 h-3" />
                 {new Date(o.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                {o.delivery_status && o.delivery_status !== 'pending' && o.delivery_status !== o.order_status && (
+                  <>
+                    <span className="text-slate-300">·</span>
+                    <Truck className="w-3 h-3" />
+                    <span className="capitalize">{o.delivery_status.replace(/_/g, ' ')}</span>
+                  </>
+                )}
               </p>
             </div>
-            <StatusBadge status={o.order_status} />
             {o.total_value != null && (
-              <span className="text-sm font-semibold text-slate-900 tabular-nums">
+              <span className="text-sm font-semibold text-slate-900 tabular-nums hidden sm:inline">
                 KSh {Number(o.total_value).toLocaleString()}
               </span>
             )}
-          </div>
+            <StatusBadge status={o.order_status} />
+            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" />
+          </Link>
         ))}
       </div>
     </div>

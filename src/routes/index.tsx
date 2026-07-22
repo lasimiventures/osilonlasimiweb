@@ -28,6 +28,7 @@ import { ResetPassword } from '../pages/ResetPassword';
 import { Account } from '../pages/Account';
 import { QuoteDetail } from '../pages/QuoteDetail';
 import { RFQDetail } from '../pages/RFQDetail';
+import { OrderDetail } from '../pages/OrderDetail';
 import { AdminLogin } from '../pages/admin/Login';
 import { AdminDashboard } from '../pages/admin/Dashboard';
 import { AdminOrders } from '../pages/admin/Orders';
@@ -98,6 +99,7 @@ export function AppRoutes() {
         <Route path="/account" element={<Account />} />
         <Route path="/account/quotes/:id" element={<QuoteDetail />} />
         <Route path="/account/rfqs/:id" element={<RFQDetail />} />
+        <Route path="/account/orders/:id" element={<OrderDetail />} />
         <Route path="*" element={<NotFound />} />
       </Route>
 

@@ -19,6 +19,10 @@ export interface Product {
   relatedProducts: string[];
   tags: string[];
   datasheetUrl?: string;
+  // SEO fields
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  seoKeywords?: string[];
   // B2C commerce fields
   buyNowEnabled: boolean;
   callForPrice: boolean;

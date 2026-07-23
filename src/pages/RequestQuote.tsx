@@ -1,17 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, CheckCircle, ShoppingCart, ArrowRight, Trash2, Loader2, AlertCircle } from 'lucide-react';
 import { SEO } from '../components/SEO';
 import { useQuote } from '../context/QuoteContext';
+import { useCustomerAuth } from '../context/CustomerAuthContext';
 import { supabase } from '../lib/supabase';
 import type { CustomerInfo } from '../types';
 
 export function RequestQuote() {
   const { items, itemCount, removeItem, updateQuantity, clearQuote } = useQuote();
+  const { profile, session } = useCustomerAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<CustomerInfo>({
     fullName: '', email: '', phone: '', company: '', position: '', address: '', city: '', country: 'Kenya', message: '',
   });
+
+  useEffect(() => {
+    if (profile) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: profile.full_name ?? prev.fullName,
+        email: profile.email ?? prev.email,
+        phone: profile.phone ?? prev.phone,
+        company: profile.company ?? prev.company,
+        position: profile.position ?? prev.position,
+        address: profile.address ?? prev.address,
+        city: profile.city ?? prev.city,
+        country: profile.country ?? prev.country,
+      }));
+    } else if (session?.user) {
+      setFormData(prev => ({ ...prev, email: session.user.email ?? prev.email }));
+    }
+  }, [profile, session]);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [quoteNumber, setQuoteNumber] = useState<string | null>(null);
@@ -85,6 +105,7 @@ export function RequestQuote() {
         message: formData.message || null,
         total_items: itemCount,
         source: 'quote_form',
+        customer_id: session?.user?.id ?? null,
       })
       .select()
       .maybeSingle();

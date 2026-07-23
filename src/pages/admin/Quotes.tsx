@@ -105,6 +105,7 @@ const STATUS_TRANSITIONS: Record<string, { label: string; to: string; variant: '
   under_review:      [{ label: 'Issue Quote',      to: 'quoted',            variant: 'primary' }, { label: 'Reject', to: 'rejected', variant: 'danger' }],
   quoted:            [{ label: 'Mark Awaiting',    to: 'awaiting_customer', variant: 'primary' }, { label: 'Accept', to: 'accepted', variant: 'primary' }, { label: 'Reject', to: 'rejected', variant: 'danger' }],
   awaiting_customer: [{ label: 'Accept',           to: 'accepted',          variant: 'primary' }, { label: 'Reject', to: 'rejected', variant: 'danger' }, { label: 'Expire', to: 'expired', variant: 'neutral' }],
+  revision_requested:[{ label: 'Re-Issue Quote',     to: 'quoted',            variant: 'primary' }, { label: 'Mark Awaiting', to: 'awaiting_customer', variant: 'primary' }, { label: 'Reject', to: 'rejected', variant: 'danger' }],
   accepted:          [{ label: 'Convert to Order', to: 'converted_to_order', variant: 'primary' }],
   rejected:          [],
   expired:           [],
@@ -348,6 +349,10 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
   const visibleItems = items.filter(i => !i.toDelete);
   const transitions = STATUS_TRANSITIONS[quote.status] ?? [];
   const computedTotal = visibleItems.reduce((s, i) => s + (i.subtotal ?? 0), 0);
+
+  useEffect(() => {
+    setTotalValue(computedTotal > 0 ? computedTotal.toString() : '');
+  }, [computedTotal]);
 
   return (
     <div className="fixed inset-0 z-40 flex">

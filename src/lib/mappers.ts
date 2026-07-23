@@ -21,6 +21,9 @@ type RawProduct = {
   related_products: string[];
   tags: string[];
   datasheet_url?: string;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  seo_keywords?: string[];
   buy_now_enabled?: boolean;
   call_for_price?: boolean;
   display_price?: number | null;
@@ -110,6 +113,9 @@ export function mapProduct(raw: RawProduct): Product {
     relatedProducts: raw.related_products ?? [],
     tags: raw.tags ?? [],
     datasheetUrl: raw.datasheet_url,
+    metaTitle: raw.meta_title ?? null,
+    metaDescription: raw.meta_description ?? null,
+    seoKeywords: raw.seo_keywords ?? [],
     buyNowEnabled: raw.buy_now_enabled ?? true,
     callForPrice: raw.call_for_price ?? false,
     displayPrice: raw.display_price ?? null,

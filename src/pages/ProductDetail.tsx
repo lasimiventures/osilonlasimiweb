@@ -76,8 +76,8 @@ export function ProductDetail() {
   const seoData = useMemo(() => {
     if (!product) return null;
 
-    const title = generateProductPageTitle(product.name, product.brand, product.category);
-    const description = generateProductDescription(product.name, product.brand, product.category, product.tags);
+    const title = product.metaTitle || generateProductPageTitle(product.name, product.brand, product.category);
+    const description = product.metaDescription || generateProductDescription(product.name, product.brand, product.category, product.tags);
     const canonicalUrl = getCanonicalUrl(`/products/${product.slug}`);
 
     const productSchema = generateProductSchema({
@@ -142,15 +142,17 @@ export function ProductDetail() {
     'pre-order': 'bg-blue-100 text-blue-700 border-blue-200',
   };
 
-  const seoKeywords = [
-    product.name,
-    product.brand,
-    product.category,
-    'Kenya',
-    'OSIL Ltd',
-    'ICT solutions',
-    ...product.tags,
-  ];
+  const seoKeywords = product.seoKeywords && product.seoKeywords.length > 0
+    ? product.seoKeywords
+    : [
+        product.name,
+        product.brand,
+        product.category,
+        'Kenya',
+        'OSIL Ltd',
+        'ICT solutions',
+        ...product.tags,
+      ];
 
   return (
     <>

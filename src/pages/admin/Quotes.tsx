@@ -349,6 +349,10 @@ function QuoteSlideOver({ quote, onClose, onSaved, onDuplicate, onArchive, onDel
   const transitions = STATUS_TRANSITIONS[quote.status] ?? [];
   const computedTotal = visibleItems.reduce((s, i) => s + (i.subtotal ?? 0), 0);
 
+  useEffect(() => {
+    setTotalValue(computedTotal > 0 ? computedTotal.toString() : '');
+  }, [computedTotal]);
+
   return (
     <div className="fixed inset-0 z-40 flex">
       <div className="flex-1 bg-black/60" onClick={onClose} />

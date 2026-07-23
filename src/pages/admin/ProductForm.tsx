@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft, Save, Plus, Trash2, AlertCircle,
-  Loader2, ImagePlus, Tag, Package, Info, Boxes, DollarSign,
+  Loader2, ImagePlus, Tag, Package, Info, Boxes, DollarSign, Search,
 } from 'lucide-react';
 import { adminCreateProduct, adminUpdateProduct, adminGetProductById, getCategories, getBrands } from '../../lib/database';
 import { supabaseAdmin as supabase } from '../../lib/supabase';
@@ -48,6 +48,9 @@ interface FormState {
   is_best_seller: boolean;
   tags: string;
   datasheet_url: string;
+  meta_title: string;
+  meta_description: string;
+  seo_keywords: string;
   buy_now_enabled: boolean;
   call_for_price: boolean;
   display_price: string;
@@ -76,6 +79,7 @@ const EMPTY_FORM: FormState = {
   pricing_currency: 'KES', availability: 'in-stock',
   is_featured: false, is_new: false, is_best_seller: false,
   tags: '', datasheet_url: '',
+  meta_title: '', meta_description: '', seo_keywords: '',
   buy_now_enabled: true, call_for_price: false,
   display_price: '', price_visible: false,
   minimum_order_quantity: '1', maximum_order_quantity: '',
@@ -114,6 +118,9 @@ function dbToForm(raw: any): FormState {
     is_best_seller: raw.is_best_seller ?? false,
     tags: (raw.tags ?? []).join(', '),
     datasheet_url: raw.datasheet_url ?? '',
+    meta_title: raw.meta_title ?? '',
+    meta_description: raw.meta_description ?? '',
+    seo_keywords: (raw.seo_keywords ?? []).join(', '),
     buy_now_enabled: raw.buy_now_enabled ?? true,
     call_for_price: raw.call_for_price ?? false,
     display_price: raw.display_price != null ? String(raw.display_price) : '',
@@ -161,6 +168,9 @@ function formToDb(form: FormState) {
     is_best_seller: form.is_best_seller,
     tags: form.tags.split(',').map(t => t.trim()).filter(Boolean),
     datasheet_url: form.datasheet_url.trim() || null,
+    meta_title: form.meta_title.trim() || null,
+    meta_description: form.meta_description.trim() || null,
+    seo_keywords: form.seo_keywords.split(',').map(k => k.trim()).filter(Boolean),
     buy_now_enabled: form.buy_now_enabled,
     call_for_price: form.call_for_price,
     display_price: form.display_price ? parseFloat(form.display_price) : null,
@@ -797,6 +807,45 @@ export function AdminProductForm() {
             className={inputCls}
             placeholder="https://…/datasheet.pdf"
           />
+        </SectionCard>
+
+        {/* SEO */}
+        <SectionCard title="SEO Settings" icon={Search}>
+          <div className="space-y-4">
+            <div>
+              <label className={labelCls}>Meta Title <span className="text-slate-500 font-normal">(optional)</span></label>
+              <input
+                value={form.meta_title}
+                onChange={e => set('meta_title', e.target.value)}
+                className={inputCls}
+                placeholder="e.g. HP OMEN 16-am0073dx Gaming Laptop in Kenya | RTX 5060 | OSIL Ltd"
+                maxLength={70}
+              />
+              <p className="text-xs text-slate-500 mt-1">{form.meta_title.length}/70 characters — overrides auto-generated title</p>
+            </div>
+            <div>
+              <label className={labelCls}>Meta Description <span className="text-slate-500 font-normal">(optional)</span></label>
+              <textarea
+                value={form.meta_description}
+                onChange={e => set('meta_description', e.target.value)}
+                className={`${inputCls} resize-none`}
+                rows={3}
+                placeholder="e.g. Buy HP OMEN 16-am0073dx gaming laptop in Kenya. Intel Core Ultra 7, RTX 5060, 16GB DDR5, 1TB SSD. Genuine warranty, fast delivery from OSIL Ltd Nairobi."
+                maxLength={160}
+              />
+              <p className="text-xs text-slate-500 mt-1">{form.meta_description.length}/160 characters — overrides auto-generated description</p>
+            </div>
+            <div>
+              <label className={labelCls}>SEO Keywords <span className="text-slate-500 font-normal">(comma-separated)</span></label>
+              <input
+                value={form.seo_keywords}
+                onChange={e => set('seo_keywords', e.target.value)}
+                className={inputCls}
+                placeholder="HP OMEN 16-am0073dx Kenya, gaming laptop Nairobi, RTX 5060 laptop Kenya"
+              />
+              <p className="text-xs text-slate-500 mt-1">Targeted keywords for search engine ranking</p>
+            </div>
+          </div>
         </SectionCard>
 
         {/* Save bar */}

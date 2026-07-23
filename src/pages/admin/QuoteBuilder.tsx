@@ -232,7 +232,7 @@ export function AdminQuoteBuilder() {
         const { data: hist } = await supabase
           .from('quote_history')
           .select('id, event_type, from_status, to_status, actor, metadata, created_at')
-          .eq('quote_request_id', quoteId)
+          .eq('quote_request_id', id)
           .order('created_at', { ascending: false });
         setHistory((hist ?? []) as QuoteHistoryEvent[]);
         setLoading(false);

@@ -97,6 +97,7 @@ export function QuoteDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [action, setAction] = useState<'approve' | 'revision' | 'convert' | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [revisionNote, setRevisionNote] = useState('');
   const [pdfLoading, setPdfLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -233,13 +234,13 @@ export function QuoteDetail() {
 
   async function handleRequestRevision() {
     if (!quote || !revisionNote.trim()) return;
-    setAction('revision');
+    setSubmitting(true);
     setActionError(null);
     const { error } = await supabase
       .from('quote_requests')
       .update({ status: 'revision_requested', quote_status: 'revision_requested', customer_notes: revisionNote.trim() })
       .eq('id', quote.id);
-    if (error) { setActionError('Failed to submit revision request: ' + error.message); setAction(null); return; }
+    if (error) { setActionError('Failed to submit revision request: ' + error.message); setSubmitting(false); return; }
     await supabase.from('quote_history').insert({
       quote_request_id: quote.id, event_type: 'revision_requested',
       from_status: quote.status, to_status: 'revision_requested', actor: 'customer',
@@ -249,6 +250,7 @@ export function QuoteDetail() {
     setRevisionNote('');
     setSuccessMsg('Revision request sent. Our team will review and update your quote.');
     setAction(null);
+    setSubmitting(false);
     setTimeout(() => setSuccessMsg(null), 4000);
     loadData();
   }
@@ -434,7 +436,7 @@ export function QuoteDetail() {
             <button onClick={() => { setAction(null); setRevisionNote(''); }} className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800">Cancel</button>
             <button
               onClick={handleRequestRevision}
-              disabled={!revisionNote.trim() || action === 'revision'}
+              disabled={!revisionNote.trim() || submitting}
               className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors disabled:opacity-50"
             >
               <Send className="w-4 h-4" /> Submit Request

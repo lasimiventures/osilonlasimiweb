@@ -6,12 +6,16 @@ import {
   Calendar, User, Building2, Mail, Phone, ShieldCheck,
 } from 'lucide-react';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
+import { useQuote } from '../context/QuoteContext';
 import { supabase } from '../lib/supabase';
+import { useCatalog } from '../context/CatalogContext';
+import type { Product } from '../types';
 import { generateQuotePdf, type PdfQuoteData } from '../lib/quotePdf';
 import type { PdfQuoteItem } from '../lib/quotePdf';
 
 interface QuoteItem {
   id: string;
+  product_id: string | null;
   product_name: string;
   product_sku: string | null;
   quantity: number;
@@ -91,6 +95,8 @@ export function QuoteDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { session, loading: authLoading } = useCustomerAuth();
+  const { addItem, clearQuote } = useQuote();
+  const { getProductById } = useCatalog();
   const [quote, setQuote] = useState<QuoteDetail | null>(null);
   const [items, setItems] = useState<QuoteItem[]>([]);
   const [history, setHistory] = useState<HistoryEvent[]>([]);
@@ -154,10 +160,11 @@ export function QuoteDetail() {
   const vat = (quote.vat_pct / 100) * (discSubtotal + charges);
   const grandTotal = discSubtotal + charges + vat;
 
-  const canApprove = ['quoted', 'awaiting_customer'].includes(quote.status);
+  const canApprove = ['quoted', 'awaiting_customer', 'revision_requested'].includes(quote.status);
   const canRequestRevision = ['quoted', 'awaiting_customer', 'under_review'].includes(quote.status);
   const canConvert = quote.status === 'accepted' && !quote.converted_order_id;
   const isConverted = quote.status === 'converted_to_order' || !!quote.converted_order_id;
+  const canRepeat = !isConverted;
 
   async function handleDownloadPdf() {
     if (!quote) return;
@@ -253,6 +260,44 @@ export function QuoteDetail() {
     setSubmitting(false);
     setTimeout(() => setSuccessMsg(null), 4000);
     loadData();
+  }
+
+  async function handleRepeatQuote() {
+    if (!quote) return;
+    clearQuote();
+    let loaded = 0;
+    for (const item of items) {
+      if (item.product_id) {
+        const product = getProductById(item.product_id);
+        if (product) {
+          addItem(product, item.quantity);
+          loaded++;
+          continue;
+        }
+      }
+      // Fallback: construct a minimal Product from the quote item data
+      const stub: Product = {
+        id: item.product_id ?? `stub-${item.id}`,
+        name: item.product_name,
+        slug: (item.product_name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+        sku: item.product_sku ?? '',
+        brand: '',
+        category: '',
+        description: '',
+        images: [],
+        specs: {},
+        displayPrice: item.unit_price,
+        status: 'active',
+        createdAt: '',
+      } as unknown as Product;
+      addItem(stub, item.quantity);
+      loaded++;
+    }
+    if (loaded > 0) {
+      navigate('/request-quote');
+    } else {
+      setActionError('Could not load quote items. Please add products manually.');
+    }
   }
 
   async function handleConvertToOrder() {
@@ -412,6 +457,16 @@ export function QuoteDetail() {
             <ShoppingCart className="w-4 h-4" />
             Order #{quote.linked_order_number}
           </Link>
+        )}
+
+        {canRepeat && (
+          <button
+            onClick={handleRepeatQuote}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-slate-700 border border-slate-300 hover:bg-slate-50 rounded-xl transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Repeat Quotation
+          </button>
         )}
       </div>
 

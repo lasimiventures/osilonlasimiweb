@@ -1,41 +1,12 @@
-import { useState, useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '../../context/AdminAuthContext';
-import { supabaseAdmin as supabase } from '../../lib/supabase';
 import { Loader2, ShieldAlert } from 'lucide-react';
 
 export function AdminRoute() {
-  const { session, loading } = useAdminAuth();
+  const { session, adminProfile, loading } = useAdminAuth();
   const location = useLocation();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
 
-  useEffect(() => {
-    if (loading) return;
-    if (!session) {
-      setProfileLoading(false);
-      setIsAdmin(false);
-      return;
-    }
-    let mounted = true;
-    supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', session.user.id)
-      .maybeSingle()
-      .then(({ data, error }) => {
-        if (!mounted) return;
-        if (error || !data) {
-          setIsAdmin(false);
-        } else {
-          setIsAdmin(Boolean(data.is_admin));
-        }
-        setProfileLoading(false);
-      });
-    return () => { mounted = false; };
-  }, [session, loading]);
-
-  if (loading || profileLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
         <Loader2 className="w-6 h-6 text-blue-500 animate-spin" />
@@ -48,7 +19,7 @@ export function AdminRoute() {
     return <Navigate to={`/admin/login?next=${next}`} replace />;
   }
 
-  if (!isAdmin) {
+  if (!adminProfile || !adminProfile.admin_role) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-8">
         <div className="text-center max-w-sm">
@@ -57,7 +28,7 @@ export function AdminRoute() {
           </div>
           <h1 className="text-xl font-bold text-white mb-2">Access denied</h1>
           <p className="text-slate-400 text-sm mb-6">
-            Your account doesn't have administrator access. Please contact an administrator if you believe this is an error.
+            Your account doesn't have administrator access. Please contact a Super Admin if you believe this is an error.
           </p>
           <a
             href="/account"
